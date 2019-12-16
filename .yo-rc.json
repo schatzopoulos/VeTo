@@ -1,0 +1,39 @@
+{
+  "generator-jhipster": {
+    "promptValues": {
+      "packageName": "athenarc.imsi.sdl"
+    },
+    "jhipsterVersion": "6.5.1",
+    "applicationType": "monolith",
+    "baseName": "SpOT",
+    "packageName": "athenarc.imsi.sdl",
+    "packageFolder": "athenarc/imsi/sdl",
+    "serverPort": "8080",
+    "authenticationType": "jwt",
+    "cacheProvider": "no",
+    "enableHibernateCache": false,
+    "websocket": false,
+    "databaseType": "mongodb",
+    "devDatabaseType": "mongodb",
+    "prodDatabaseType": "mongodb",
+    "searchEngine": false,
+    "messageBroker": false,
+    "serviceDiscoveryType": false,
+    "buildTool": "maven",
+    "enableSwaggerCodegen": false,
+    "jwtSecretKey": "NTYyOTdkNjcwMmU4OGFhMjNjYTk3ZDNhOGMxMGIwYjMyMjdhMDUyZTM4MGJiN2U5YzVlYjc4YTRmY2YxNDdjZGI2YWExNDE2ZDdkYmZjODkwZjgyYjRmZDI3NTM3YzViZmEyZjUzOWIxYjI1MDhhMWE0ODQwMWYxNzQzYmY4MzU=",
+    "embeddableLaunchScript": false,
+    "useSass": true,
+    "clientPackageManager": "npm",
+    "clientFramework": "react",
+    "clientTheme": "none",
+    "clientThemeVariant": "",
+    "testFrameworks": [],
+    "jhiPrefix": "jhi",
+    "entitySuffix": "",
+    "dtoSuffix": "DTO",
+    "otherModules": [],
+    "enableTranslation": false,
+    "blueprints": []
+  }
+}
