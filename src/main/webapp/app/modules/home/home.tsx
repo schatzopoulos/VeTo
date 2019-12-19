@@ -4,19 +4,37 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 
 import { connect } from 'react-redux';
-import { Row, Col, Alert } from 'reactstrap';
+import { Card, Row, Col, Alert } from 'reactstrap';
 
 import { IRootState } from 'app/shared/reducers';
+import CytoscapeComponent from 'react-cytoscapejs';
 
 export type IHomeProp = StateProps;
 
 export const Home = (props: IHomeProp) => {
   const { account } = props;
+  const elements = [
+    { data: { id: 'P', label: 'Paper' } },
+    { data: { id: 'A', label: 'Author' } },
+    { data: { id: 'V', label: 'Venue' } },
+    { data: { id: 'T', label: 'Topic' } },
+    { data: { source: 'P', target: 'P'} },
+    { data: { source: 'A', target: 'P', label: 'Edge from Node1 to Node2' } },
+    { data: { source: 'T', target: 'P', label: 'Edge from Node1 to Node2' } },
+    { data: { source: 'V', target: 'P', label: 'Edge from Node1 to Node2' } }
 
-  return (
+  ];
+  const style = { width: '600px', height: '600px' };
+  const layout = { name: 'random' };  
+
+ return (
     <Row>
       <Col md="9">
-        <h2>Welcome, Java Hipster!</h2>
+      <h2>Welcome to SpOT</h2>
+      <Card>
+        <CytoscapeComponent elements={elements} style={style} layout={layout} zoomingEnabled={false} />
+      </Card>
+
         <p className="lead">This is your homepage</p>
         {account && account.login ? (
           <div>
@@ -80,9 +98,6 @@ export const Home = (props: IHomeProp) => {
           </a>
           !
         </p>
-      </Col>
-      <Col md="3" className="pad">
-        <span className="hipster rounded" />
       </Col>
     </Row>
   );
