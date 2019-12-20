@@ -4,103 +4,120 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 
 import { connect } from 'react-redux';
-import { Card, Row, Col, Alert } from 'reactstrap';
-
+import { Card, Row, Col, Alert, InputGroup, InputGroupAddon, InputGroupText, Input, Button, Label } from 'reactstrap';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { IRootState } from 'app/shared/reducers';
 import CytoscapeComponent from 'react-cytoscapejs';
-
 export type IHomeProp = StateProps;
 
-export const Home = (props: IHomeProp) => {
-  const { account } = props;
-  const elements = [
-    { data: { id: 'P', label: 'Paper' } },
-    { data: { id: 'A', label: 'Author' } },
-    { data: { id: 'V', label: 'Venue' } },
-    { data: { id: 'T', label: 'Topic' } },
-    { data: { source: 'P', target: 'P'} },
-    { data: { source: 'A', target: 'P', label: 'Edge from Node1 to Node2' } },
-    { data: { source: 'T', target: 'P', label: 'Edge from Node1 to Node2' } },
-    { data: { source: 'V', target: 'P', label: 'Edge from Node1 to Node2' } }
+interface IHomeState {
+	readonly account: any;
+	readonly cy: any;
+	initCy: boolean;		// flag to init cytoscape only once
+	metapath: string;
+}
 
-  ];
-  const style = { width: '600px', height: '600px' };
-  const layout = { name: 'random' };  
+export class Home extends React.Component<IHomeProp> {
+	readonly state: IHomeState = { 
+		account: undefined,
+		cy: undefined,
+		initCy: true,
+		metapath: '',
+	};
 
- return (
-    <Row>
-      <Col md="9">
-      <h2>Welcome to SpOT</h2>
-      <Card>
-        <CytoscapeComponent elements={elements} style={style} layout={layout} zoomingEnabled={false} />
-      </Card>
+	/**
+	 * Initialize cytoscape graph
+	 * @param cy cytoscape object
+	 */
+	handleCy(cy) {
+				
+		if (this.state.initCy === true) {
 
-        <p className="lead">This is your homepage</p>
-        {account && account.login ? (
-          <div>
-            <Alert color="success">You are logged in as user {account.login}.</Alert>
-          </div>
-        ) : (
-          <div>
-            <Alert color="warning">
-              If you want to
-              <Link to="/login" className="alert-link">
-                {' '}
-                sign in
-              </Link>
-              , you can try the default accounts:
-              <br />- Administrator (login=&quot;admin&quot; and password=&quot;admin&quot;)
-              <br />- User (login=&quot;user&quot; and password=&quot;user&quot;).
-            </Alert>
+			cy.on('tap', 'node', (e) => {
+				const node = e.target;
+				const nodeId = node.data('id');
+				this.setState({
+					metapath: this.state.metapath + nodeId
+				});
+			});
 
-            <Alert color="warning">
-              You do not have an account yet?&nbsp;
-              <Link to="/account/register" className="alert-link">
-                Register a new account
-              </Link>
-            </Alert>
-          </div>
-        )}
-        <p>If you have any question on JHipster:</p>
+			cy.on('mouseover', 'node', function(e){
+				const sel = e.target;
+				console.log(sel.outgoers());
+				const neighbors = sel.outgoers().union(sel.incomers());
+				neighbors.animate({
+					style: { 'background-color': "red" }
+				});
+			});
 
-        <ul>
-          <li>
-            <a href="https://www.jhipster.tech/" target="_blank" rel="noopener noreferrer">
-              JHipster homepage
-            </a>
-          </li>
-          <li>
-            <a href="http://stackoverflow.com/tags/jhipster/info" target="_blank" rel="noopener noreferrer">
-              JHipster on Stack Overflow
-            </a>
-          </li>
-          <li>
-            <a href="https://github.com/jhipster/generator-jhipster/issues?state=open" target="_blank" rel="noopener noreferrer">
-              JHipster bug tracker
-            </a>
-          </li>
-          <li>
-            <a href="https://gitter.im/jhipster/generator-jhipster" target="_blank" rel="noopener noreferrer">
-              JHipster public chat room
-            </a>
-          </li>
-          <li>
-            <a href="https://twitter.com/jhipster" target="_blank" rel="noopener noreferrer">
-              follow @jhipster on Twitter
-            </a>
-          </li>
-        </ul>
+			// cy.on('mouseout', 'node', function(e){
+			// 	const sel = e.target;
+			// 	cy.elements().removeClass('semitransp');
+			// 	sel.removeClass('highlight').outgoers().removeClass('highlight');
+			// });
 
-        <p>
-          If you like JHipster, do not forget to give us a star on{' '}
-          <a href="https://github.com/jhipster/generator-jhipster" target="_blank" rel="noopener noreferrer">
-            Github
-          </a>
-          !
-        </p>
-      </Col>
-    </Row>
-  );
+			// set flag that cytoscape is initialized
+			this.setState({ initCy: false });
+		}
+	}
+	
+	/**
+	 * Delete last character of the metapath
+	 */
+	deleteLast() {
+
+		this.setState({
+			metapath: this.state.metapath.substr(0, this.state.metapath.length-1)
+		});
+	}
+	render() {
+		const elements = [
+			{ data: { id: 'P', label: 'Paper' } },
+			{ data: { id: 'A', label: 'Author' } },
+			{ data: { id: 'V', label: 'Venue' } },
+			{ data: { id: 'T', label: 'Topic' } },
+			{ data: { source: 'P', target: 'P'} },
+			{ data: { source: 'A', target: 'P', label: 'Edge from Node1 to Node2' } },
+			{ data: { source: 'T', target: 'P', label: 'Edge from Node1 to Node2' } },
+			{ data: { source: 'V', target: 'P', label: 'Edge from Node1 to Node2' } }
+		];
+
+		const style = { 
+			width: '600px', 
+			height: '600px',
+			'node.highlight': { 
+				'border-color': '#FFF',
+				'border-width': '2px'
+			}
+		};
+
+		const layout = { 
+			name: 'cose',
+			animate: false,
+		};  
+
+		return (
+			<Row>
+				<Col md="5">
+					<h2>Welcome to SpOT</h2>
+					
+					<Card>
+						<CytoscapeComponent cy={this.handleCy.bind(this)} elements={elements} style={style} layout={layout} zoomingEnabled={false} />
+					</Card>
+					
+				</Col>
+				<Col md="4">
+					<Label>metapath</Label>
+					<InputGroup>
+						<Input placeholder="Select graph nodes to define the metapath" value={this.state.metapath} disabled={true}/>
+						<InputGroupAddon addonType="append">
+							<Button color="danger" title="Delete last node" onClick={this.deleteLast.bind(this)} ><FontAwesomeIcon icon="arrow-left" /></Button>
+						</InputGroupAddon>
+					</InputGroup>
+				</Col>
+			</Row>
+		);
+	}
 };
 
 const mapStateToProps = storeState => ({
