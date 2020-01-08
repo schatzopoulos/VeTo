@@ -8,57 +8,93 @@ import { Card, Row, Col, Alert, InputGroup, InputGroupAddon, InputGroupText, Inp
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { IRootState } from 'app/shared/reducers';
 import CytoscapeComponent from 'react-cytoscapejs';
+import { any } from 'prop-types';
 export type IHomeProp = StateProps;
 
-interface IHomeState {
-	readonly account: any;
-	readonly cy: any;
-	initCy: boolean;		// flag to init cytoscape only once
-	metapath: string;
-}
-
 export class Home extends React.Component<IHomeProp> {
-	readonly state: IHomeState = { 
+	readonly state: any = { 
 		account: undefined,
-		cy: undefined,
-		initCy: true,
 		metapath: '',
+		metapathNodes: [],
+		neighbors: undefined,
 	};
+	cy: any;
 
-	/**
-	 * Initialize cytoscape graph
-	 * @param cy cytoscape object
-	 */
-	handleCy(cy) {
-				
-		if (this.state.initCy === true) {
-
-			cy.on('tap', 'node', (e) => {
-				const node = e.target;
-				const nodeId = node.data('id');
-				this.setState({
-					metapath: this.state.metapath + nodeId
-				});
-			});
-
-			cy.on('mouseover', 'node', function(e){
-				const sel = e.target;
-				console.log(sel.outgoers());
-				const neighbors = sel.outgoers().union(sel.incomers());
-				neighbors.animate({
-					style: { 'background-color': "red" }
-				});
-			});
-
-			// cy.on('mouseout', 'node', function(e){
-			// 	const sel = e.target;
-			// 	cy.elements().removeClass('semitransp');
-			// 	sel.removeClass('highlight').outgoers().removeClass('highlight');
-			// });
-
-			// set flag that cytoscape is initialized
-			this.setState({ initCy: false });
+	validMove(node) {
+		// allow first move to be anywhere
+		if (!this.state.neighbors) {
+			return true;
 		}
+
+		return this.state.neighbors.contains(node);
+	}
+
+	animateNeighbors(node) {
+		const nodes = this.cy.filter('node');
+
+		if (!node) {
+			nodes.animate({
+				style: { 'background-color': 'grey', 'border-width': '0px' }
+			}); 
+			return;
+		}
+
+		node.animate({
+			style: { 'border-color': 'red', 'border-width': '2px' },
+		});
+		
+		const neighbors = node.neighborhood();
+
+		nodes.not(neighbors).animate({
+			style: { 'background-color': 'grey' }
+		}); 
+
+		nodes.not(node).animate({
+			style: { 'border-width': '0px' }
+		});
+
+		neighbors.animate({
+			style: { 'background-color': 'green' },
+		});
+
+		this.setState({
+			neighbors
+		});
+	}
+
+	componentDidMount() {
+		
+		// center align graph 
+		this.cy.center();
+
+		// init all nodes with grey color
+		const nodes = this.cy.filter('node');
+		nodes.animate({
+			style: { 'background-color': 'grey', 'border-width': '0px' }
+		}); 
+
+		// change state and animate on node click
+		this.cy.on('tap', 'node', (e) => {
+			
+			const node = e.target;
+
+			if (!this.validMove(node)) {
+				alert("This selection is not allowed, please select on of the nodes denoted with green color");
+				return;
+			}
+
+			const metapath = this.state.metapath + node.data('id');
+			const metapathNodes = [...this.state.metapathNodes];	// copy array
+			metapathNodes.push(node);
+
+			this.setState({
+				metapath,
+				metapathNodes, 
+			}, () => {
+				this.animateNeighbors(node);
+			});
+			
+		});
 	}
 	
 	/**
@@ -66,10 +102,19 @@ export class Home extends React.Component<IHomeProp> {
 	 */
 	deleteLast() {
 
+		const metapath = this.state.metapath.substr(0, this.state.metapath.length-1);
+		const metapathNodes = [...this.state.metapathNodes];	// copy array
+		metapathNodes.pop();
+		const node = metapathNodes[metapathNodes.length-1];
 		this.setState({
-			metapath: this.state.metapath.substr(0, this.state.metapath.length-1)
+			metapath,
+			metapathNodes,
+		}, () => {
+			this.animateNeighbors(node);
 		});
+
 	}
+
 	render() {
 		const elements = [
 			{ data: { id: 'P', label: 'Paper' } },
@@ -83,12 +128,8 @@ export class Home extends React.Component<IHomeProp> {
 		];
 
 		const style = { 
-			width: '600px', 
-			height: '600px',
-			'node.highlight': { 
-				'border-color': '#FFF',
-				'border-width': '2px'
-			}
+			width: '200px', 
+			height: '200px',
 		};
 
 		const layout = { 
@@ -98,11 +139,11 @@ export class Home extends React.Component<IHomeProp> {
 
 		return (
 			<Row>
-				<Col md="5">
+				<Col md="6">
 					<h2>Welcome to SpOT</h2>
 					
 					<Card>
-						<CytoscapeComponent cy={this.handleCy.bind(this)} elements={elements} style={style} layout={layout} zoomingEnabled={false} />
+						<CytoscapeComponent cy={ (cy) => { this.cy = cy } } elements={elements} style={style} layout={layout} zoomingEnabled={false} />
 					</Card>
 					
 				</Col>
