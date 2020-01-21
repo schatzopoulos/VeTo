@@ -2,7 +2,6 @@ import './home.scss';
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-
 import { connect } from 'react-redux';
 import { Card, 
 	Row, 
@@ -26,7 +25,7 @@ import { Card,
 	ListGroupItemHeading,
 	ListGroupItemText,
 	Container,
-
+	Dropdown,
 } from 'reactstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { IRootState } from 'app/shared/reducers';
@@ -43,6 +42,8 @@ export class Home extends React.Component<IHomeProp> {
 		metapath: [],
 		neighbors: undefined,
 		constraints: {},
+		dropdownOpen: false,
+		dropdownValue: "Ranking (HRank)",
 	};
 	cy: any;
 
@@ -193,8 +194,26 @@ export class Home extends React.Component<IHomeProp> {
 			constraints 
 		});
 	}
-	render() {
+
+	execute(e) {
+		e.preventDefault();
 		console.log(this.state.constraints);
+
+	}
+
+	toggleDropdown() {
+		this.setState({
+			dropdownOpen: !this.state.dropdownOpen,
+		});
+	}
+
+	handleDropdown(e) {
+		this.setState({
+			dropdownValue: e.target.innerHTML,
+		})
+	}
+
+	render() {
 
 		const elements = [
 			{ data: { id: 'P', label: 'Paper', attributes: [ { name: 'id', type: 'numeric' } , { name: 'title', type: 'string' }, { name: 'year', type: 'numeric' } ] } },
@@ -270,6 +289,7 @@ export class Home extends React.Component<IHomeProp> {
 				}
 			</ListGroup>
 			</Col>
+			
 		</Row>;
 
 		
@@ -283,23 +303,40 @@ export class Home extends React.Component<IHomeProp> {
 						<CytoscapeComponent cy={ (cy) => { this.cy = cy } } elements={elements} style={style} layout={layout} zoomingEnabled={false} />
 					</Card>
 					<br/>
-					<h4>Metapath</h4>
-					<InputGroup>
-						<Input placeholder="Select graph nodes to define the metapath" value={metapathStr} disabled={true}/>
-						<InputGroupAddon addonType="append">
-							<Button color="danger" title="Delete last node" onClick={this.deleteLast.bind(this)} ><FontAwesomeIcon icon="arrow-left" /></Button>
-						</InputGroupAddon>
-					</InputGroup>
-					
+					<Row>
+					<Col md="6">
+						<h4>Metapath</h4>
+						<InputGroup>
+							<Input placeholder="Select graph nodes to define the metapath" value={metapathStr} disabled={true}/>
+							<InputGroupAddon addonType="append">
+								<Button color="danger" title="Delete last node" onClick={this.deleteLast.bind(this)} ><FontAwesomeIcon icon="arrow-left" /></Button>
+							</InputGroupAddon>
+						</InputGroup>
+					</Col>
+
+					<Col md="6">
+						<h4>Algorithm</h4>
+						<Dropdown value={0} style={{ width: "100%" }} isOpen={this.state.dropdownOpen} toggle={this.toggleDropdown.bind(this)} onClick={this.handleDropdown.bind(this)}>
+							<DropdownToggle caret>
+								{this.state.dropdownValue}
+								</DropdownToggle>
+							<DropdownMenu>
+								<DropdownItem value={0}>Ranking (HRank)</DropdownItem>
+								<DropdownItem value={1}>Metapath Associations</DropdownItem>
+							</DropdownMenu>
+						</Dropdown>
+					</Col>
+					</Row>
 				</Col>
 				<Col md="6">
 					{
 						(this.state.metapath.length > 0) && constraintsPanel		
 					}
 				</Col>
-				{/* <Col md='12'>
-					<Button color="success" block disabled style={{height: '100%'}}>Run</Button>
-				</Col> */}
+				<Col md='12'>
+					<br/>
+					<Button color="success" disabled={_.isEmpty(this.state.constraints)} onClick={this.execute.bind(this)}>Run</Button>
+				</Col>
 			</Row>
 		);
 	}
