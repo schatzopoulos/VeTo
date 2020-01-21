@@ -197,10 +197,10 @@ export class Home extends React.Component<IHomeProp> {
 		console.log(this.state.constraints);
 
 		const elements = [
-			{ data: { id: 'P', label: 'Paper', attributes: [ { name: 'id', type: 'integer' } , { name: 'title', type: 'string' }, { name: 'year', type: 'integer' } ] } },
-			{ data: { id: 'A', label: 'Author', attributes: [ { name: 'id', type: 'integer' } , { name: 'name', type: 'string' } ] } },
-			{ data: { id: 'V', label: 'Venue', attributes: [ { name: 'id', type: 'integer' } , { name: 'name', type: 'string' } ] } },
-			{ data: { id: 'T', label: 'Topic', attributes: [ { name: 'id', type: 'integer' } , { name: 'name', type: 'string' } ] } },
+			{ data: { id: 'P', label: 'Paper', attributes: [ { name: 'id', type: 'numeric' } , { name: 'title', type: 'string' }, { name: 'year', type: 'numeric' } ] } },
+			{ data: { id: 'A', label: 'Author', attributes: [ { name: 'id', type: 'numeric' } , { name: 'name', type: 'string' } ] } },
+			{ data: { id: 'V', label: 'Venue', attributes: [ { name: 'id', type: 'numeric' } , { name: 'name', type: 'string' } ] } },
+			{ data: { id: 'T', label: 'Topic', attributes: [ { name: 'id', type: 'numeric' } , { name: 'name', type: 'string' } ] } },
 			{ data: { source: 'P', target: 'P'} },
 			{ data: { source: 'A', target: 'P', label: 'Edge from Node1 to Node2' } },
 			{ data: { source: 'T', target: 'P', label: 'Edge from Node1 to Node2' } },
@@ -297,9 +297,9 @@ export class Home extends React.Component<IHomeProp> {
 						(this.state.metapath.length > 0) && constraintsPanel		
 					}
 				</Col>
-				<Col md='12'>
+				{/* <Col md='12'>
 					<Button color="success" block disabled style={{height: '100%'}}>Run</Button>
-				</Col>
+				</Col> */}
 			</Row>
 		);
 	}
