@@ -1,10 +1,5 @@
 package athenarc.imsi.sdl.config;
 
-import athenarc.imsi.sdl.security.*;
-import athenarc.imsi.sdl.security.jwt.*;
-
-import org.springframework.beans.factory.BeanInitializationException;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpMethod;
@@ -20,6 +15,10 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter;
 import org.springframework.web.filter.CorsFilter;
 import org.zalando.problem.spring.web.advice.security.SecurityProblemSupport;
+
+import athenarc.imsi.sdl.security.AuthoritiesConstants;
+import athenarc.imsi.sdl.security.jwt.JWTConfigurer;
+import athenarc.imsi.sdl.security.jwt.TokenProvider;
 
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true, securedEnabled = true)
@@ -78,6 +77,9 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
         .and()
             .authorizeRequests()
+            .antMatchers("/api/ranking/submit").permitAll()
+            .antMatchers("/api/ranking/get").permitAll()
+
             .antMatchers("/api/authenticate").permitAll()
             .antMatchers("/api/register").permitAll()
             .antMatchers("/api/activate").permitAll()

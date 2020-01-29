@@ -6,47 +6,49 @@ import { connect } from 'react-redux';
 import { Card, 
 	Row, 
 	Col, 
-	Alert, 
 	InputGroup, 
 	InputGroupAddon, 
-	InputGroupText, 
 	Input, 
 	Button, 
 	Label,
-	CardTitle, 
-	CardText,	
-	InputGroupButtonDropdown,
 	UncontrolledDropdown,
 	DropdownToggle,
 	DropdownMenu,
 	DropdownItem,
 	ListGroupItem,
 	ListGroup,
-	ListGroupItemHeading,
-	ListGroupItemText,
+	CustomInput,
+	Progress,
 	Container,
-	Dropdown,
 } from 'reactstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { IRootState } from 'app/shared/reducers';
 import CytoscapeComponent from 'react-cytoscapejs';
-import { any } from 'prop-types';
-import  _ from 'lodash';
+import  _  from 'lodash';
 import { loadMoreDataWhenScrolled } from 'react-jhipster';
-import { NODATA } from 'dns';
-export type IHomeProp = StateProps;
+import { rankingRun, rankingGetResults } from '../ranking/ranking.reducer';
+import DocsPage from '../administration/docs/docs';
+import RankingResultsPanel from '../ranking/results/results'
+
+export interface IHomeProp extends StateProps, DispatchProps {
+	loading: boolean;
+	progress: number;
+	progressMsg: string;
+	error: string;
+	docs: any;
+	uuid: string;
+}
 
 export class Home extends React.Component<IHomeProp> {
 	readonly state: any = { 
-		account: undefined,
 		metapath: [],
 		neighbors: undefined,
 		constraints: {},
-		dropdownOpen: false,
-		dropdownValue: "Ranking (HRank)",
+		analysis: "ranking",
 	};
 	cy: any;
-
+	polling: any;
+	
 	validMove(node) {
 		// allow first move to be anywhere
 		if (!this.state.neighbors) {
@@ -72,26 +74,47 @@ export class Home extends React.Component<IHomeProp> {
 		}
 
 		node.animate({
-			style: { 'border-color': 'red', 'border-width': '2px' },
+			style: { 'background-color': 'green' },
 		});
 		
 		const neighbors = node.neighborhood();
 
 		nodes.not(neighbors).animate({
-			style: { 'background-color': 'grey' }
+			style: { 'border-width': '0px' }
 		}); 
 
 		nodes.not(node).animate({
-			style: { 'border-width': '0px' }
+			style: { 'border-width': '0px', 'background-color': 'grey' }
 		});
 
 		neighbors.animate({
-			style: { 'background-color': 'green' },
+			style: { 'border-color': 'red', 'border-width': '2px' },
+			
 		});
 
 		this.setState({
 			neighbors
 		});
+	}
+
+	pollForResults() {
+		this.polling = setInterval( () => {
+			this.props.rankingGetResults(this.props.uuid);
+		}, 1000);
+	}
+
+	componentDidUpdate(prevProps) {
+
+		// new uuid detected, start polling
+		if (this.props.loading && !prevProps.loading) {
+			this.pollForResults();
+		} else if (prevProps.loading && !this.props.loading) {
+			clearInterval(this.polling);
+		}
+	}
+
+	componentWillUnmount() {
+		clearInterval(this.polling);
 	}
 
 	componentDidMount() {
@@ -163,8 +186,9 @@ export class Home extends React.Component<IHomeProp> {
 		// create object for attribute, if not present
 		if (! (options.field in constraints[options.entity])) {
 			constraints[options.entity][options.field] = {
-				operation: '=',
-				value: ''
+				// operation: '=',
+				// value: '', 
+				enabled: false,
 			}
 		}
 	}
@@ -198,25 +222,32 @@ export class Home extends React.Component<IHomeProp> {
 	execute(e) {
 		e.preventDefault();
 		console.log(this.state.constraints);
-
+		this.props.rankingRun();
 	}
 
-	toggleDropdown() {
+	handleAnalysisDropdown(e) {
 		this.setState({
-			dropdownOpen: !this.state.dropdownOpen,
+			analysis: e.target.value,
 		});
 	}
 
-	handleDropdown(e) {
+	handleConstraintSwitch(options, e) {
+		// create object for entity, if not present
+		const constraints = {...this.state.constraints};
+		this.checkAndCreateConstraints(constraints, options);
+		
+		constraints[options.entity][options.field]['enabled'] = !constraints[options.entity][options.field]['enabled'];
+
 		this.setState({
-			dropdownValue: e.target.innerHTML,
-		})
+			constraints 
+		}, () => {
+			console.log(this.state.constraints);
+		});
 	}
 
 	render() {
-
 		const elements = [
-			{ data: { id: 'P', label: 'Paper', attributes: [ { name: 'id', type: 'numeric' } , { name: 'title', type: 'string' }, { name: 'year', type: 'numeric' } ] } },
+			{ data: { id: 'P', label: 'Paper', attributes: [ { name: 'id', type: 'numeric' } , { name: 'year', type: 'numeric' } ] } },
 			{ data: { id: 'A', label: 'Author', attributes: [ { name: 'id', type: 'numeric' } , { name: 'name', type: 'string' } ] } },
 			{ data: { id: 'V', label: 'Venue', attributes: [ { name: 'id', type: 'numeric' } , { name: 'name', type: 'string' } ] } },
 			{ data: { id: 'T', label: 'Topic', attributes: [ { name: 'id', type: 'numeric' } , { name: 'name', type: 'string' } ] } },
@@ -260,28 +291,42 @@ export class Home extends React.Component<IHomeProp> {
 										entity: node.data('label'),
 										field: attr.name,
 									};
+									
+									let isFilterDisabled = true;
+									if (this.checkNested(this.state.constraints, constraintOptions.entity, constraintOptions.field, 'enabled')) {
+										isFilterDisabled  = !this.state.constraints[constraintOptions.entity][constraintOptions.field]['enabled'];
+									}
+									
+									return <Row form key={attr.name}>
 
+									</Row>;
+									
 									return <Row key={attr.name} className='attribute-row'>
-									<Col md='4' key={attr.name}>
-										<Label>{attr.name}</Label> <span className='attribute-type'>(:{attr.type})</span>
-									</Col>
-									<Col md='2'>
-									<UncontrolledDropdown>
-										<DropdownToggle caret>
-											{dropDownValue}
-										</DropdownToggle>
-										<DropdownMenu onClick={this.handleDropdownChange.bind(this, constraintOptions)}>
-											<DropdownItem >{'='}</DropdownItem>
-											<DropdownItem>{'>'}</DropdownItem>
-											<DropdownItem>{'<'}</DropdownItem>
-											<DropdownItem>{'>='}</DropdownItem>
-											<DropdownItem>{'<='}</DropdownItem>
+										<Col md='1'>
+											<CustomInput type="switch" id={constraintOptions.entity + '.' + constraintOptions.field + '_switch'} onClick={this.handleConstraintSwitch.bind(this, constraintOptions)} />
+										</Col>
+										<Col md='2' key={attr.name}>
+											<Label>{attr.name}</Label> <span className='attribute-type'>(:{attr.type})</span>
+										</Col>
+										<Col md='2'>
+											<UncontrolledDropdown>
+												<DropdownToggle caret>
+													{dropDownValue}
+												</DropdownToggle>
+												<DropdownMenu onClick={this.handleDropdownChange.bind(this, constraintOptions)}>
+													<DropdownItem >{'='}</DropdownItem>
+													<DropdownItem>{'>'}</DropdownItem>
+													<DropdownItem>{'<'}</DropdownItem>
+													<DropdownItem>{'>='}</DropdownItem>
+													<DropdownItem>{'<='}</DropdownItem>
 
-										</DropdownMenu>
-									</UncontrolledDropdown>
-								  </Col>
-								  <Col md='6'><Input onChange={this.handleInputChange.bind(this, constraintOptions)}/></Col>
-								  </Row>;
+												</DropdownMenu>
+											</UncontrolledDropdown>
+										</Col>
+										<Col md='7'>
+											<Input disabled={isFilterDisabled} onChange={this.handleInputChange.bind(this, constraintOptions)}/>
+										</Col>
+									</Row>;
 								})
 							}							
 						</ListGroupItem>
@@ -292,8 +337,8 @@ export class Home extends React.Component<IHomeProp> {
 			
 		</Row>;
 
-		
 		return (
+			<Container>
 			<Row>
 				<Col md="12">
 					<h2>Welcome to SpOT</h2>
@@ -304,28 +349,24 @@ export class Home extends React.Component<IHomeProp> {
 					</Card>
 					<br/>
 					<Row>
-					<Col md="6">
-						<h4>Metapath</h4>
-						<InputGroup>
-							<Input placeholder="Select graph nodes to define the metapath" value={metapathStr} disabled={true}/>
-							<InputGroupAddon addonType="append">
-								<Button color="danger" title="Delete last node" onClick={this.deleteLast.bind(this)} ><FontAwesomeIcon icon="arrow-left" /></Button>
-							</InputGroupAddon>
-						</InputGroup>
-					</Col>
+						<Col md="6">
+							<h4>Metapath</h4>
+							<InputGroup>
+								<Input placeholder="Select graph nodes to define the metapath" value={metapathStr} disabled={true}/>
+								<InputGroupAddon addonType="append">
+									<Button color="danger" title="Delete last node" onClick={this.deleteLast.bind(this)} ><FontAwesomeIcon icon="arrow-left" /></Button>
+								</InputGroupAddon>
+							</InputGroup>
+						</Col>
 
-					<Col md="6">
-						<h4>Algorithm</h4>
-						<Dropdown value={0} style={{ width: "100%" }} isOpen={this.state.dropdownOpen} toggle={this.toggleDropdown.bind(this)} onClick={this.handleDropdown.bind(this)}>
-							<DropdownToggle caret>
-								{this.state.dropdownValue}
-								</DropdownToggle>
-							<DropdownMenu>
-								<DropdownItem value={0}>Ranking (HRank)</DropdownItem>
-								<DropdownItem value={1}>Metapath Associations</DropdownItem>
-							</DropdownMenu>
-						</Dropdown>
-					</Col>
+						<Col md="6">
+							<h4>Analysis</h4>
+							<Input id="analysis-dropdown" type="select" value={this.state.analysis} onChange={this.handleAnalysisDropdown.bind(this)} >
+								<option value={"ranking"}>Ranking (HRank)</option>
+								<option value={"associations"}>Metapath Associations</option>
+								<option value={"topk"}>Top-k Similarity</option>
+							</Input>
+						</Col>
 					</Row>
 				</Col>
 				<Col md="6">
@@ -335,18 +376,49 @@ export class Home extends React.Component<IHomeProp> {
 				</Col>
 				<Col md='12'>
 					<br/>
-					<Button color="success" disabled={_.isEmpty(this.state.constraints)} onClick={this.execute.bind(this)}>Run</Button>
+					{/* <Button color="success" disabled={_.isEmpty(this.state.constraints)} onClick={this.execute.bind(this)}>Run</Button> */}
+					<Button color="success" disabled={this.props.loading} onClick={this.execute.bind(this)}>
+						<FontAwesomeIcon icon="play" /> Run
+					</Button>
+
+				</Col>
+				<Col md='12'>
+					<br/>
+					{
+						(this.props.loading) && <Progress animated color="info" value={this.props.progress}>{this.props.progressMsg}</Progress>
+					}
+					{
+						(this.props.docs) && 
+							<div>
+								<h2>Results</h2>
+								<RankingResultsPanel docs={this.props.docs}/>
+							</div>
+					}
 				</Col>
 			</Row>
+			</Container>
 		);
 	}
 };
 
-const mapStateToProps = storeState => ({
-  account: storeState.authentication.account,
-  isAuthenticated: storeState.authentication.isAuthenticated
+const mapStateToProps = (storeState: IRootState) => ({  
+	loading: storeState.ranking.loading,
+	progress: storeState.ranking.progress,
+	progressMsg: storeState.ranking.progressMsg,
+	error: storeState.ranking.error,
+	docs: storeState.ranking.docs,
+	uuid: storeState.ranking.uuid,  
 });
 
-type StateProps = ReturnType<typeof mapStateToProps>;
+const mapDispatchToProps = { rankingRun, rankingGetResults };
 
-export default connect(mapStateToProps)(Home);
+type StateProps = ReturnType<typeof mapStateToProps>;
+type DispatchProps = typeof mapDispatchToProps;
+
+export default connect(
+	mapStateToProps,
+	mapDispatchToProps,
+)(Home);
+
+
+
