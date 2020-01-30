@@ -338,7 +338,7 @@ export class Home extends React.Component<IHomeProp> {
 		</Row>;
 
 		return (
-			<Container>
+			<Container fluid>
 			<Row>
 				<Col md="12">
 					<h2>Welcome to SpOT</h2>
@@ -380,9 +380,9 @@ export class Home extends React.Component<IHomeProp> {
 					<Button color="success" disabled={this.props.loading} onClick={this.execute.bind(this)}>
 						<FontAwesomeIcon icon="play" /> Run
 					</Button>
-
 				</Col>
 				<Col md='12'>
+					<Container>
 					<br/>
 					{
 						(this.props.loading) && <Progress animated color="info" value={this.props.progress}>{this.props.progressMsg}</Progress>
@@ -394,6 +394,7 @@ export class Home extends React.Component<IHomeProp> {
 								<RankingResultsPanel docs={this.props.docs}/>
 							</div>
 					}
+					</Container>
 				</Col>
 			</Row>
 			</Container>

@@ -24,7 +24,6 @@ import athenarc.imsi.sdl.SpOtApp;
 public class RankingResourceIT {
 
     private MockMvc restMockMvc;
-    static String uuid;
 
     @BeforeEach
     public void setUp() {
@@ -41,16 +40,8 @@ public class RankingResourceIT {
      */
     @Test
     public void testSubmit() throws Exception {
-        // restMockMvc.perform(post("/api/ranking/submit"))
-        //     .andExpect(status().isOk());
-
-        MvcResult result = restMockMvc.perform(post("/api/ranking/submit"))
-            .andExpect(status().isOk())
-            .andReturn();
-
-        String content = result.getResponse().getContentAsString();
-        Document response = Document.parse(content);
-        uuid = response.getString("id");
+        restMockMvc.perform(post("/api/ranking/submit"))
+            .andExpect(status().isOk());
     }
 
     /**
@@ -58,6 +49,10 @@ public class RankingResourceIT {
      */
     @Test
     public void testStatus() throws Exception {
+        MvcResult result = restMockMvc.perform(post("/api/ranking/submit")).andExpect(status().isOk()).andReturn();
+        String content = result.getResponse().getContentAsString();
+        Document response = Document.parse(content);
+        String uuid = response.getString("id");
 
         MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders.get("/api/ranking/get");
         requestBuilder.param("id", uuid);
