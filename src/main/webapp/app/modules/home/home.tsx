@@ -29,17 +29,18 @@ import { loadMoreDataWhenScrolled } from 'react-jhipster';
 import { rankingRun, rankingGetResults } from '../ranking/ranking.reducer';
 import DocsPage from '../administration/docs/docs';
 import RankingResultsPanel from '../ranking/results/results'
+import ConstraintItem from '../constraints/constraint-item';
 
-export interface IHomeProp extends StateProps, DispatchProps {
+export interface IHomeProps extends StateProps, DispatchProps {
 	loading: boolean;
 	progress: number;
 	progressMsg: string;
 	error: string;
 	docs: any;
 	uuid: string;
-}
+};
 
-export class Home extends React.Component<IHomeProp> {
+export class Home extends React.Component<IHomeProps> {
 	readonly state: any = { 
 		metapath: [],
 		neighbors: undefined,
@@ -168,51 +169,41 @@ export class Home extends React.Component<IHomeProp> {
 
 	}
 
-	checkNested(obj, ...args) {
-		for (let i = 0; i < args.length; i++) {
-			if (!obj || !(args[i] in obj)) {
-			return false;
-			}
-			obj = obj[args[i]];
-		}
-		return true;
-	}
-
-	checkAndCreateConstraints(constraints, options) {
-		if (! (options.entity in constraints)) {
-			constraints[options.entity] = {};
+	checkAndCreateConstraints(constraints, { entity, field }) {
+		if (! (entity in constraints)) {
+			constraints[entity] = {};
 		}
 
 		// create object for attribute, if not present
-		if (! (options.field in constraints[options.entity])) {
-			constraints[options.entity][options.field] = {
-				// operation: '=',
-				// value: '', 
+		if (! (field in constraints[entity])) {
+			constraints[entity][field] = {
+				operation: '=',
+				value: null, 
 				enabled: false,
 			}
 		}
 	}
 
-	handleDropdownChange(options, e) {
+	handleConstraintOpDropdown({ entity, field }, value) {
 		
 		// create object for entity, if not present
 		const constraints = {...this.state.constraints};
-		this.checkAndCreateConstraints(constraints, options);
+		this.checkAndCreateConstraints(constraints, { entity, field });
 
-		constraints[options.entity][options.field]['operation'] = e.target.textContent;
+		constraints[entity][field]['operation'] = value;
 
 		this.setState({
 			constraints 
 		});
 	}
 
-	handleInputChange(options, e) {
+	handleConstraintInputChange({ entity, field }, value) {
 
 		// create object for entity, if not present
 		const constraints = {...this.state.constraints};
-		this.checkAndCreateConstraints(constraints, options);
+		this.checkAndCreateConstraints(constraints, { entity, field });
 
-		constraints[options.entity][options.field]['value'] = e.target.value;
+		constraints[entity][field]['value'] = value;
 
 		this.setState({
 			constraints 
@@ -221,8 +212,13 @@ export class Home extends React.Component<IHomeProp> {
 
 	execute(e) {
 		e.preventDefault();
-		console.log(this.state.constraints);
-		this.props.rankingRun();
+		const metapath = this.state.metapath.map(n => n.data('id')).join('');
+
+		if (this.state.analysis === 'ranking') {
+			this.props.rankingRun(metapath, this.state.constraints);
+		} else {
+			alert("This type of analysis will be implemented soon");
+		}
 	}
 
 	handleAnalysisDropdown(e) {
@@ -231,21 +227,29 @@ export class Home extends React.Component<IHomeProp> {
 		});
 	}
 
-	handleConstraintSwitch(options, e) {
+	handleConstraintSwitch({ entity, field }) {
+
 		// create object for entity, if not present
 		const constraints = {...this.state.constraints};
-		this.checkAndCreateConstraints(constraints, options);
+		this.checkAndCreateConstraints(constraints, { entity, field });
 		
-		constraints[options.entity][options.field]['enabled'] = !constraints[options.entity][options.field]['enabled'];
+		constraints[entity][field]['enabled'] = !constraints[entity][field]['enabled'];
 
 		this.setState({
 			constraints 
-		}, () => {
-			console.log(this.state.constraints);
+		});
+	}
+
+	handleRemoveEntityConstraints(entity) {
+		const constraints = {...this.state.constraints};
+		delete constraints[entity];
+		this.setState({
+			constraints 
 		});
 	}
 
 	render() {
+console.log(this.state.constraints);
 		const elements = [
 			{ data: { id: 'P', label: 'Paper', attributes: [ { name: 'id', type: 'numeric' } , { name: 'year', type: 'numeric' } ] } },
 			{ data: { id: 'A', label: 'Author', attributes: [ { name: 'id', type: 'numeric' } , { name: 'name', type: 'string' } ] } },
@@ -269,74 +273,30 @@ export class Home extends React.Component<IHomeProp> {
 		const metapathStr = this.state.metapath.map(n => n.data('id')).join('');
 
 		const constraintsPanel = <Row>
-			<Col md="12">
-				<h4>Constraints</h4>
-			</Col>
-			<Col md="12">
-			<ListGroup>
-				{
-					_.uniq(this.state.metapath).map( (node: any) => {
-						return <ListGroupItem md='12' key={node.data('id')}> 
-								<h5>{ node.data('label') }</h5>
-							{
-								node.data('attributes').map( (attr) => {
-
-									// check if operation for this dropdown was changed
-									let dropDownValue = '=';
-									if (this.checkNested(this.state.constraints, node.data('label'), attr.name, 'operation')) {
-										dropDownValue = this.state.constraints[node.data('label')][attr.name]['operation'];
-									}
-
-									const constraintOptions = {
-										entity: node.data('label'),
-										field: attr.name,
-									};
-									
-									let isFilterDisabled = true;
-									if (this.checkNested(this.state.constraints, constraintOptions.entity, constraintOptions.field, 'enabled')) {
-										isFilterDisabled  = !this.state.constraints[constraintOptions.entity][constraintOptions.field]['enabled'];
-									}
-									
-									return <Row form key={attr.name}>
-
-									</Row>;
-									
-									return <Row key={attr.name} className='attribute-row'>
-										<Col md='1'>
-											<CustomInput type="switch" id={constraintOptions.entity + '.' + constraintOptions.field + '_switch'} onClick={this.handleConstraintSwitch.bind(this, constraintOptions)} />
-										</Col>
-										<Col md='2' key={attr.name}>
-											<Label>{attr.name}</Label> <span className='attribute-type'>(:{attr.type})</span>
-										</Col>
-										<Col md='2'>
-											<UncontrolledDropdown>
-												<DropdownToggle caret>
-													{dropDownValue}
-												</DropdownToggle>
-												<DropdownMenu onClick={this.handleDropdownChange.bind(this, constraintOptions)}>
-													<DropdownItem >{'='}</DropdownItem>
-													<DropdownItem>{'>'}</DropdownItem>
-													<DropdownItem>{'<'}</DropdownItem>
-													<DropdownItem>{'>='}</DropdownItem>
-													<DropdownItem>{'<='}</DropdownItem>
-
-												</DropdownMenu>
-											</UncontrolledDropdown>
-										</Col>
-										<Col md='7'>
-											<Input disabled={isFilterDisabled} onChange={this.handleInputChange.bind(this, constraintOptions)}/>
-										</Col>
-									</Row>;
-								})
-							}							
-						</ListGroupItem>
-					})
-				}
-			</ListGroup>
-			</Col>
-			
+		<Col md="12">
+			<h4>Constraints</h4>
+		</Col>
+		<Col md="12">
+		<ListGroup>
+			{
+				_.uniq(this.state.metapath).map( (node: any) => {
+					const entity = node.data('label')
+					return <ConstraintItem 
+						key={entity}
+						entity={ entity }
+						node={ node }
+						entityConstraints={this.state.constraints[entity] || null}
+						handleSwitch={this.handleConstraintSwitch.bind(this)}
+						handleDropdown={this.handleConstraintOpDropdown.bind(this)}
+						handleInput={this.handleConstraintInputChange.bind(this)}
+						handleRemoveEntity={this.handleRemoveEntityConstraints.bind(this)}
+					/>
+				})
+			}
+		</ListGroup>
+		</Col>
 		</Row>;
-
+						
 		return (
 			<Container fluid>
 			<Row>

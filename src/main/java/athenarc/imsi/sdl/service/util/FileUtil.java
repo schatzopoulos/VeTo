@@ -12,6 +12,7 @@ import java.io.PrintWriter;
 import org.bson.Document;
 
 import athenarc.imsi.sdl.config.Constants;
+import athenarc.imsi.sdl.web.rest.vm.QueryConfigVM;
 
 /**
  * Utility class for file and dir management.
@@ -53,7 +54,7 @@ public final class FileUtil {
         return lastLine;
     }
 
-    public static String writeConfig(String outputDir) throws IOException {
+    public static String writeConfig(String outputDir, QueryConfigVM queryConfig) throws IOException {
         Document config = new Document();
         config.put("indir", Constants.DBLP_NODES_DIR);
         config.put("irdir", Constants.DBLP_RELARTIONS_DIR);
@@ -68,8 +69,8 @@ public final class FileUtil {
         constraints.put("P", "year >= 2000 and year <= 2018");
 
         Document query = new Document();
-        query.put("metapath", "APC");
-        query.put("constraints", constraints);
+        query.put("metapath", queryConfig.getMetapath());
+        query.put("constraints", queryConfig.getConstraints());
 
         config.put("query", query);
         

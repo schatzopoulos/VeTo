@@ -3,6 +3,7 @@ import axios from 'axios';
 import { REQUEST, SUCCESS, FAILURE } from 'app/shared/reducers/action-type.util';
 import { getSession, displayAuthError } from 'app/shared/reducers/authentication';
 import { isNullOrUndefined } from 'util';
+import { forOwn } from 'lodash';
 const apiUrl = 'api/ranking';
 
 export const ACTION_TYPES = {
@@ -94,7 +95,26 @@ export const rankingGetResults = id => ({
   })
 });
 
-export const rankingRun = () => ({
-  type: ACTION_TYPES.SUBMIT,
-  payload: axios.post(`${apiUrl}/submit`)
-});
+export const rankingRun = (metapath, constraints) => {
+  const payload = { metapath };
+
+  payload['constraints'] = {};
+  forOwn(constraints, (entityConstraint, entity) => {
+    const e = entity.substr(0, 1);
+    const c = [];
+
+    forOwn(entityConstraint, ({ enabled, operation, value }, field) => {
+      if (enabled && operation && value) {
+        c.push(`${field} ${operation} ${value}`);
+      }
+    });
+    payload['constraints'][e] = c.join(' AND ');
+  });
+
+  console.log(payload);
+
+  return {
+    type: ACTION_TYPES.SUBMIT,
+    payload: axios.post(`${apiUrl}/submit`, payload)
+  };
+};

@@ -4,17 +4,21 @@ import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 
+import javax.validation.Valid;
+
 import org.bson.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import athenarc.imsi.sdl.service.RankingService;
 import athenarc.imsi.sdl.service.util.FileUtil;
+import athenarc.imsi.sdl.web.rest.vm.QueryConfigVM;
 
 /**
  * RankingResource controller
@@ -32,14 +36,15 @@ public class RankingResource {
     * POST submit
     */
     @PostMapping("/submit")
-    public Document submit() {
+    public Document submit(@Valid @RequestBody QueryConfigVM config) {
+        
         String id = UUID.randomUUID().toString();
         log.debug("Ranking task submitted with id: " + id);
 
         try {
 
             // run async method from service
-            rankingService.submit(id);        
+            rankingService.submit(id, config);        
 
         } catch (java.io.IOException | InterruptedException e) {
             throw new RuntimeException("Error running ranking task: " + id);

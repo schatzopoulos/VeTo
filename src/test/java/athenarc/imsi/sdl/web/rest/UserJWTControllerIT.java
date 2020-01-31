@@ -1,11 +1,13 @@
 package athenarc.imsi.sdl.web.rest;
 
-import athenarc.imsi.sdl.SpOtApp;
-import athenarc.imsi.sdl.domain.User;
-import athenarc.imsi.sdl.repository.UserRepository;
-import athenarc.imsi.sdl.security.jwt.TokenProvider;
-import athenarc.imsi.sdl.web.rest.errors.ExceptionTranslator;
-import athenarc.imsi.sdl.web.rest.vm.LoginVM;
+import static org.hamcrest.Matchers.isEmptyString;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.nullValue;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,13 +17,12 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
-import static org.hamcrest.Matchers.nullValue;
-import static org.hamcrest.Matchers.isEmptyString;
-import static org.hamcrest.Matchers.not;
+import athenarc.imsi.sdl.SpOtApp;
+import athenarc.imsi.sdl.domain.User;
+import athenarc.imsi.sdl.repository.UserRepository;
+import athenarc.imsi.sdl.security.jwt.TokenProvider;
+import athenarc.imsi.sdl.web.rest.errors.ExceptionTranslator;
+import athenarc.imsi.sdl.web.rest.vm.LoginVM;
 
 /**
  * Integration tests for the {@link UserJWTController} REST controller.

@@ -22,20 +22,21 @@ import org.springframework.stereotype.Service;
 
 import athenarc.imsi.sdl.config.Constants;
 import athenarc.imsi.sdl.service.util.FileUtil;
+import athenarc.imsi.sdl.web.rest.vm.QueryConfigVM;
 @Service
 public class RankingService {
 
     private final Logger log = LoggerFactory.getLogger(RankingService.class);
 
     @Async
-    public void submit(String id) 
+    public void submit(String id, QueryConfigVM queryConfig) 
         throws java.io.IOException, InterruptedException {
         
         // create folder to store results
         String outputDir = FileUtil.createDir("ranking", id);
         String outputLog = FileUtil.getLogfile("ranking", id);
         
-        String config = FileUtil.writeConfig(outputDir);
+        String config = FileUtil.writeConfig(outputDir, queryConfig);
 
         // prepare ranking script arguments
         ProcessBuilder pb = new ProcessBuilder();
