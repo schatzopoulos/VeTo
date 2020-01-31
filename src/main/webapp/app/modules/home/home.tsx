@@ -27,7 +27,6 @@ import CytoscapeComponent from 'react-cytoscapejs';
 import  _  from 'lodash';
 import { loadMoreDataWhenScrolled } from 'react-jhipster';
 import { rankingRun, rankingGetResults } from '../ranking/ranking.reducer';
-import DocsPage from '../administration/docs/docs';
 import RankingResultsPanel from '../ranking/results/results'
 import ConstraintItem from '../constraints/constraint-item';
 
@@ -43,6 +42,7 @@ export interface IHomeProps extends StateProps, DispatchProps {
 export class Home extends React.Component<IHomeProps> {
 	readonly state: any = { 
 		metapath: [],
+		metapathStr: '',
 		neighbors: undefined,
 		constraints: {},
 		analysis: "ranking",
@@ -141,9 +141,11 @@ export class Home extends React.Component<IHomeProps> {
 
 			const metapath = [...this.state.metapath];	// copy array
 			metapath.push(node);
+			const metapathStr = metapath.map(n => n.data('id')).join('');
 
 			this.setState({
 				metapath, 
+				metapathStr,
 			}, () => {
 				this.animateNeighbors(node);
 			});
@@ -159,10 +161,13 @@ export class Home extends React.Component<IHomeProps> {
 		// const metapath = this.state.metapath.substr(0, this.state.metapath.length-1);
 		const metapath = [...this.state.metapath];	// copy array
 		metapath.pop();
+		const metapathStr = metapath.map(n => n.data('id')).join('');
+
 		const node = metapath[metapath.length-1];
 
 		this.setState({
 			metapath,
+			metapathStr,
 		}, () => {
 			this.animateNeighbors(node);
 		});
@@ -184,6 +189,11 @@ export class Home extends React.Component<IHomeProps> {
 		}
 	}
 
+	getSymmetricMetapath() {
+		const reversedPart = this.state.metapathStr.slice(0, -1).split("").reverse().join("");
+		return this.state.metapathStr + reversedPart;
+	}
+	
 	handleConstraintOpDropdown({ entity, field }, value) {
 		
 		// create object for entity, if not present
@@ -212,10 +222,9 @@ export class Home extends React.Component<IHomeProps> {
 
 	execute(e) {
 		e.preventDefault();
-		const metapath = this.state.metapath.map(n => n.data('id')).join('');
 
 		if (this.state.analysis === 'ranking') {
-			this.props.rankingRun(metapath, this.state.constraints);
+			this.props.rankingRun(this.getSymmetricMetapath(), this.state.constraints);
 		} else {
 			alert("This type of analysis will be implemented soon");
 		}
@@ -249,6 +258,7 @@ export class Home extends React.Component<IHomeProps> {
 	}
 
 	render() {
+		const symmetricMetapath = this.getSymmetricMetapath();
 console.log(this.state.constraints);
 		const elements = [
 			{ data: { id: 'P', label: 'Paper', attributes: [ { name: 'id', type: 'numeric' } , { name: 'year', type: 'numeric' } ] } },
@@ -270,7 +280,6 @@ console.log(this.state.constraints);
 			name: 'cose',
 			animate: false,
 		};  
-		const metapathStr = this.state.metapath.map(n => n.data('id')).join('');
 
 		const constraintsPanel = <Row>
 		<Col md="12">
@@ -312,11 +321,14 @@ console.log(this.state.constraints);
 						<Col md="6">
 							<h4>Metapath</h4>
 							<InputGroup>
-								<Input placeholder="Select graph nodes to define the metapath" value={metapathStr} disabled={true}/>
+								<Input placeholder="Select nodes on the graph to define the metapath" value={this.state.metapathStr} disabled={true}/>
 								<InputGroupAddon addonType="append">
 									<Button color="danger" title="Delete last node" onClick={this.deleteLast.bind(this)} ><FontAwesomeIcon icon="arrow-left" /></Button>
 								</InputGroupAddon>
 							</InputGroup>
+							<div className="symmetric-metapath">
+								Symmetric Metapath: {(this.state.metapathStr.length > 1) ? symmetricMetapath: '-'}			
+							</div>
 						</Col>
 
 						<Col md="6">
@@ -336,8 +348,7 @@ console.log(this.state.constraints);
 				</Col>
 				<Col md='12'>
 					<br/>
-					{/* <Button color="success" disabled={_.isEmpty(this.state.constraints)} onClick={this.execute.bind(this)}>Run</Button> */}
-					<Button color="success" disabled={this.props.loading} onClick={this.execute.bind(this)}>
+					<Button color="success" disabled={this.props.loading || (this.state.metapath.length < 2)} onClick={this.execute.bind(this)}>
 						<FontAwesomeIcon icon="play" /> Run
 					</Button>
 				</Col>
