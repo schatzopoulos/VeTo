@@ -103,16 +103,11 @@ public class RankingService {
         return docs;
     }
 
-    public int getProgress(String stage, int step) {
-        System.out.println(stage);
-        System.out.println(step);
-
+    public double getProgress(String stage, int step) {
         if (stage.equals("Associations Mining")) {
-            System.out.println("edw");
-
-            return (step / 7) * 50;
+            return (step / 7.0) * 50;
         } else {
-            return (step / 5) * 50 + 50;
+            return (step / 5.0) * 50 + 50;
         }
     }
 }

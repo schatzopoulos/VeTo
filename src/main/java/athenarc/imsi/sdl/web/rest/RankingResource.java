@@ -37,7 +37,6 @@ public class RankingResource {
     */
     @PostMapping("/submit")
     public Document submit(@Valid @RequestBody QueryConfigVM config) {
-        System.out.println("edw" + config.toString());
         String id = UUID.randomUUID().toString();
         log.debug("Ranking task submitted with id: " + id);
 
