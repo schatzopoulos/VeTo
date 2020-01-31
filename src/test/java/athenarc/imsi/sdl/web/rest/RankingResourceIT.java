@@ -8,6 +8,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockitoAnnotations;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
@@ -40,8 +41,10 @@ public class RankingResourceIT {
      */
     @Test
     public void testSubmit() throws Exception {
-        restMockMvc.perform(post("/api/ranking/submit"))
-            .andExpect(status().isOk());
+        restMockMvc.perform(post("/api/ranking/submit")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content("{ \"metapath\": \"APA\", \"constraints\": { \"P\": \"year > 2015\" } }"))    
+        .andExpect(status().isOk());
     }
 
     /**
@@ -49,7 +52,10 @@ public class RankingResourceIT {
      */
     @Test
     public void testStatus() throws Exception {
-        MvcResult result = restMockMvc.perform(post("/api/ranking/submit")).andExpect(status().isOk()).andReturn();
+        MvcResult result = restMockMvc.perform(post("/api/ranking/submit")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content("{ \"metapath\": \"APA\", \"constraints\": { \"P\": \"year > 2015\" } }"))
+        .andExpect(status().isOk()).andReturn();
         String content = result.getResponse().getContentAsString();
         Document response = Document.parse(content);
         String uuid = response.getString("id");

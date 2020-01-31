@@ -37,14 +37,14 @@ public class RankingResource {
     */
     @PostMapping("/submit")
     public Document submit(@Valid @RequestBody QueryConfigVM config) {
-        
+        System.out.println("edw" + config.toString());
         String id = UUID.randomUUID().toString();
         log.debug("Ranking task submitted with id: " + id);
 
         try {
 
             // run async method from service
-            rankingService.submit(id, config);        
+            rankingService.submit(id, config.getMetapath(), config.getConstraints());        
 
         } catch (java.io.IOException | InterruptedException e) {
             throw new RuntimeException("Error running ranking task: " + id);
