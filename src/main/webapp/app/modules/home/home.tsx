@@ -29,6 +29,7 @@ import { loadMoreDataWhenScrolled } from 'react-jhipster';
 import { rankingRun, rankingGetResults } from '../ranking/ranking.reducer';
 import RankingResultsPanel from '../ranking/results/results'
 import ConstraintItem from '../constraints/constraint-item';
+import { __metadata } from 'tslib';
 
 export interface IHomeProps extends StateProps, DispatchProps {
 	loading: boolean;
@@ -36,6 +37,7 @@ export interface IHomeProps extends StateProps, DispatchProps {
 	progressMsg: string;
 	error: string;
 	docs: any;
+	meta: any;
 	uuid: string;
 };
 
@@ -326,7 +328,7 @@ console.log(this.state.constraints);
 									<Button color="danger" title="Delete last node" onClick={this.deleteLast.bind(this)} ><FontAwesomeIcon icon="arrow-left" /></Button>
 								</InputGroupAddon>
 							</InputGroup>
-							<div className="symmetric-metapath">
+							<div className="small-grey">
 								Symmetric Metapath: {(this.state.metapathStr.length > 1) ? symmetricMetapath: '-'}			
 							</div>
 						</Col>
@@ -362,6 +364,9 @@ console.log(this.state.constraints);
 						(this.props.docs) && 
 							<div>
 								<h2>Results</h2>
+								<div className="small-grey">
+									{this.props.meta.page} of {this.props.meta.totalPages} pages. ({this.props.meta.totalRecords} results)
+								</div>
 								<RankingResultsPanel docs={this.props.docs}/>
 							</div>
 					}
@@ -379,6 +384,7 @@ const mapStateToProps = (storeState: IRootState) => ({
 	progressMsg: storeState.ranking.progressMsg,
 	error: storeState.ranking.error,
 	docs: storeState.ranking.docs,
+	meta: storeState.ranking.meta,
 	uuid: storeState.ranking.uuid,  
 });
 

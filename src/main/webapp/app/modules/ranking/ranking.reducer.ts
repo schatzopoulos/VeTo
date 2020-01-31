@@ -17,7 +17,8 @@ const initialState = {
   progressMsg: null as string,
   error: null as string,
   uuid: null as string,
-  docs: null as any
+  docs: null as any,
+  meta: null as any
 };
 
 export type RankingState = Readonly<typeof initialState>;
@@ -33,7 +34,8 @@ export default (state: RankingState = initialState, action): RankingState => {
         progressMsg: null,
         error: null,
         uuid: null,
-        docs: null
+        docs: null,
+        meta: null
       };
     case REQUEST(ACTION_TYPES.GET_RESULTS):
       return state;
@@ -47,7 +49,8 @@ export default (state: RankingState = initialState, action): RankingState => {
         progressMsg: null,
         error: errorMsg,
         uuid: null,
-        docs: null
+        docs: null,
+        meta: null
       };
     }
     case SUCCESS(ACTION_TYPES.SUBMIT): {
@@ -62,10 +65,12 @@ export default (state: RankingState = initialState, action): RankingState => {
 
       let loading = true;
       let docs = null;
+      let meta = null;
       let uuid = data.id;
       if (data.docs) {
         loading = false;
         docs = data.docs;
+        meta = data._meta;
         uuid = null;
       }
 
@@ -76,7 +81,8 @@ export default (state: RankingState = initialState, action): RankingState => {
         progressMsg: `${data.stage}: ${data.step}`,
         error: null,
         uuid,
-        docs
+        docs,
+        meta
       };
     }
     default:
