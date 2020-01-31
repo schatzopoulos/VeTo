@@ -115,7 +115,7 @@ export const rankingRun = (metapath, constraints) => {
       }
     });
 
-    if (c.length != 0) payload['constraints'][e] = c.join(' AND ');
+    if (c.length !== 0) payload['constraints'][e] = c.join(' AND ');
   });
 
   console.log(payload);
