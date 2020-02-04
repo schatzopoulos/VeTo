@@ -3,7 +3,9 @@ import axios from 'axios';
 import { REQUEST, SUCCESS, FAILURE } from 'app/shared/reducers/action-type.util';
 import { getSession, displayAuthError } from 'app/shared/reducers/authentication';
 import { isNullOrUndefined } from 'util';
-import { forOwn } from 'lodash';
+import _ from 'lodash';
+import { loadMoreDataWhenScrolled } from 'react-jhipster';
+import { format } from 'path';
 const apiUrl = 'api/ranking';
 
 export const ACTION_TYPES = {
@@ -92,6 +94,36 @@ export default (state: RankingState = initialState, action): RankingState => {
 
 // Actions
 
+function formatPayload(metapath, constraints) {
+  const payload = { metapath };
+
+  payload['constraints'] = {};
+  _.forOwn(constraints, (entityConstraint, entity) => {
+    const e = entity.substr(0, 1);
+    let entityConditions = [];
+
+    _.forOwn(entityConstraint, ({ enabled, type, conditions }, field) => {
+      if (enabled) {
+        entityConditions = conditions
+          .filter(element => element.value)
+          .map(element => {
+            let value;
+            if (type === 'numeric') {
+              value = parseInt(element.value, 10);
+            } else {
+              value = `'${element.value}'`;
+            }
+            return `${element.logicOp || ''} ${field} ${element.operation} ${value}`;
+          });
+      }
+
+      if (entityConditions.length > 0) {
+        payload['constraints'][e] = entityConditions.join(' ');
+      }
+    });
+  });
+  return payload;
+}
 export const rankingGetResults = id => ({
   type: ACTION_TYPES.GET_RESULTS,
   payload: axios.get(`${apiUrl}/get`, {
@@ -102,24 +134,8 @@ export const rankingGetResults = id => ({
 });
 
 export const rankingRun = (metapath, constraints) => {
-  const payload = { metapath };
-
-  payload['constraints'] = {};
-  forOwn(constraints, (entityConstraint, entity) => {
-    const e = entity.substr(0, 1);
-    const c = [];
-
-    forOwn(entityConstraint, ({ enabled, operation, value }, field) => {
-      if (enabled && operation && value) {
-        c.push(`${field} ${operation} ${value}`);
-      }
-    });
-
-    if (c.length !== 0) payload['constraints'][e] = c.join(' AND ');
-  });
-
+  const payload = formatPayload(metapath, constraints);
   console.log(payload);
-
   return {
     type: ACTION_TYPES.SUBMIT,
     payload: axios.post(`${apiUrl}/submit`, payload)

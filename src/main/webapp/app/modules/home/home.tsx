@@ -141,13 +141,31 @@ export class Home extends React.Component<IHomeProps> {
 				return;
 			}
 
+			// set metapath
 			const metapath = [...this.state.metapath];	// copy array
 			metapath.push(node);
 			const metapathStr = metapath.map(n => n.data('id')).join('');
 
+			// set constraints 
+			const constraints = {...this.state.constraints};
+			// const attrs = node.data('attributes').filter(n => (n.name !== 'id'));
+			_.forOwn(node.data('attributes'), (value) => {
+				const entity = node.data('label');
+				const field = value.name;
+
+				// create constraints for node, if not already present
+				if ( !(entity in constraints) || !(field in constraints[entity])) {
+					this.checkAndCreateConstraints(constraints, { 
+						entity, 
+						field, 
+					}, value.type);
+				}
+			});
+
 			this.setState({
 				metapath, 
 				metapathStr,
+				constraints,
 			}, () => {
 				this.animateNeighbors(node);
 			});
@@ -160,7 +178,6 @@ export class Home extends React.Component<IHomeProps> {
 	 */
 	deleteLast() {
 
-		// const metapath = this.state.metapath.substr(0, this.state.metapath.length-1);
 		const metapath = [...this.state.metapath];	// copy array
 		metapath.pop();
 		const metapathStr = metapath.map(n => n.data('id')).join('');
@@ -172,11 +189,10 @@ export class Home extends React.Component<IHomeProps> {
 			metapathStr,
 		}, () => {
 			this.animateNeighbors(node);
-		});
-
+		});	
 	}
 
-	checkAndCreateConstraints(constraints, { entity, field }) {
+	checkAndCreateConstraints(constraints, { entity, field }, type=null) {
 		if (! (entity in constraints)) {
 			constraints[entity] = {};
 		}
@@ -184,10 +200,24 @@ export class Home extends React.Component<IHomeProps> {
 		// create object for attribute, if not present
 		if (! (field in constraints[entity])) {
 			constraints[entity][field] = {
+				nextIndex: 0,
+				enabled: true,
+				type,
+				conditions: [],
+			};
+		} 
+		
+		const index = constraints[entity][field]['nextIndex'];
+		constraints[entity][field]['nextIndex'] += 1;
+
+		const found = constraints[entity][field]['conditions'].includes(c => c.index === index);
+		if (!found) {
+			constraints[entity][field]['conditions'].push({
+				index,
+				value: null,
 				operation: '=',
-				value: null, 
-				enabled: false,
-			}
+				logicOp: (index > 0) ? 'and' : undefined,
+			});		
 		}
 	}
 
@@ -196,29 +226,58 @@ export class Home extends React.Component<IHomeProps> {
 		return this.state.metapathStr + reversedPart;
 	}
 	
-	handleConstraintOpDropdown({ entity, field }, value) {
-		
-		// create object for entity, if not present
+	handleConstraintOpDropdown({ entity, field, index }, value) {
 		const constraints = {...this.state.constraints};
-		this.checkAndCreateConstraints(constraints, { entity, field });
-
-		constraints[entity][field]['operation'] = value;
+		const found = constraints[entity][field]['conditions'].find(c => c.index === index);
+		if (found) {
+			found['operation'] = value;
+		}
 
 		this.setState({
 			constraints 
 		});
 	}
 
-	handleConstraintInputChange({ entity, field }, value) {
-
-		// create object for entity, if not present
+	handleConstraintLogicOpDropdown({ entity, field, index }, value) {
 		const constraints = {...this.state.constraints};
-		this.checkAndCreateConstraints(constraints, { entity, field });
-
-		constraints[entity][field]['value'] = value;
+		const found = constraints[entity][field]['conditions'].find(c => c.index === index);
+		if (found) {
+			found['logicOp'] = value;
+		}
 
 		this.setState({
 			constraints 
+		});
+	}
+
+	handleConstraintInputChange({ entity, field, index }, value) {
+		const constraints = {...this.state.constraints};
+
+		const found = constraints[entity][field]['conditions'].find(c => c.index === index);
+		if (found) {
+			found['value'] = value;
+		}
+
+		this.setState({
+			constraints 
+		});
+	}
+
+	handleConstraintAddition({ entity, field, index }) {
+		const constraints = {...this.state.constraints};
+
+		this.checkAndCreateConstraints(constraints, { entity, field});
+		this.setState({
+			constraints,
+		});
+	}
+
+	handleConstraintRemoval({ entity, field, index }) {
+		const constraints = {...this.state.constraints};
+
+		constraints[entity][field]['conditions'] = constraints[entity][field]['conditions'].filter(n => n.index !== index);
+		this.setState({
+			constraints,
 		});
 	}
 
@@ -239,10 +298,8 @@ export class Home extends React.Component<IHomeProps> {
 	}
 
 	handleConstraintSwitch({ entity, field }) {
-
 		// create object for entity, if not present
 		const constraints = {...this.state.constraints};
-		this.checkAndCreateConstraints(constraints, { entity, field });
 		
 		constraints[entity][field]['enabled'] = !constraints[entity][field]['enabled'];
 
@@ -259,9 +316,7 @@ export class Home extends React.Component<IHomeProps> {
 		});
 	}
 
-	render() {
-		const symmetricMetapath = this.getSymmetricMetapath();
-console.log(this.state.constraints);
+	getSchemaInfo() {
 		const elements = [
 			{ data: { id: 'P', label: 'Paper', attributes: [ { name: 'id', type: 'numeric' } , { name: 'year', type: 'numeric' } ] } },
 			{ data: { id: 'A', label: 'Author', attributes: [ { name: 'id', type: 'numeric' } , { name: 'name', type: 'string' } ] } },
@@ -281,7 +336,15 @@ console.log(this.state.constraints);
 		const layout = { 
 			name: 'cose',
 			animate: false,
-		};  
+		}; 
+
+		return { elements, style, layout };
+	}
+	render() {
+		const { elements, style, layout } = this.getSchemaInfo();
+		const symmetricMetapath = this.getSymmetricMetapath();
+
+console.log(this.state.constraints);
 
 		const constraintsPanel = <Row>
 		<Col md="12">
@@ -290,18 +353,21 @@ console.log(this.state.constraints);
 		<Col md="12">
 		<ListGroup>
 			{
-				_.uniq(this.state.metapath).map( (node: any) => {
-					const entity = node.data('label')
+				_.map(this.state.constraints, (entityConstraints, entity) => {
+
 					return <ConstraintItem 
-						key={entity}
+						key={ entity }
 						entity={ entity }
-						node={ node }
-						entityConstraints={this.state.constraints[entity] || null}
+						entityConstraints={ entityConstraints }
 						handleSwitch={this.handleConstraintSwitch.bind(this)}
 						handleDropdown={this.handleConstraintOpDropdown.bind(this)}
+						handleLogicDropdown={this.handleConstraintLogicOpDropdown.bind(this)}
 						handleInput={this.handleConstraintInputChange.bind(this)}
 						handleRemoveEntity={this.handleRemoveEntityConstraints.bind(this)}
-					/>
+						handleAddition={this.handleConstraintAddition.bind(this)}
+						handleRemoval={this.handleConstraintRemoval.bind(this)}
+
+					/>;
 				})
 			}
 		</ListGroup>

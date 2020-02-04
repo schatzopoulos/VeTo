@@ -6,6 +6,7 @@ import { faTrash } from '@fortawesome/free-solid-svg-icons/faTrash';
 import { faArrowLeft } from '@fortawesome/free-solid-svg-icons/faArrowLeft';
 import { faSave } from '@fortawesome/free-solid-svg-icons/faSave';
 import { faPlus } from '@fortawesome/free-solid-svg-icons/faPlus';
+import { faMinus } from '@fortawesome/free-solid-svg-icons/faMinus';
 import { faPencilAlt } from '@fortawesome/free-solid-svg-icons/faPencilAlt';
 import { faUser } from '@fortawesome/free-solid-svg-icons/faUser';
 import { faHdd } from '@fortawesome/free-solid-svg-icons/faHdd';
@@ -42,6 +43,7 @@ export const loadIcons = () => {
     faArrowLeft,
     faSave,
     faPlus,
+    faMinus,
     faPencilAlt,
     faUser,
     faTachometerAlt,
