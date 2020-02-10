@@ -124,6 +124,7 @@ function formatPayload(metapath, constraints) {
   });
   return payload;
 }
+
 export const rankingGetResults = id => ({
   type: ACTION_TYPES.GET_RESULTS,
   payload: axios.get(`${apiUrl}/get`, {

@@ -221,11 +221,6 @@ export class Home extends React.Component<IHomeProps> {
 		}
 	}
 
-	getSymmetricMetapath() {
-		const reversedPart = this.state.metapathStr.slice(0, -1).split("").reverse().join("");
-		return this.state.metapathStr + reversedPart;
-	}
-	
 	handleConstraintOpDropdown({ entity, field, index }, value) {
 		const constraints = {...this.state.constraints};
 		const found = constraints[entity][field]['conditions'].find(c => c.index === index);
@@ -285,7 +280,7 @@ export class Home extends React.Component<IHomeProps> {
 		e.preventDefault();
 
 		if (this.state.analysis === 'ranking') {
-			this.props.rankingRun(this.getSymmetricMetapath(), this.state.constraints);
+			this.props.rankingRun(this.state.metapathStr, this.state.constraints);
 		} else {
 			alert("This type of analysis will be implemented soon");
 		}
@@ -316,6 +311,53 @@ export class Home extends React.Component<IHomeProps> {
 		});
 	}
 
+	checkMetapath() {
+
+		const metapath = this.state.metapathStr;
+
+		if (metapath.length < 3)
+			return false;
+
+		const firstLetter = metapath.substr(0, 1);
+		const lastLetter = metapath.substr(metapath.length-1, 1);
+
+		if (firstLetter !== lastLetter)
+			return false;
+		
+		return true;
+	}
+
+	checkConstraints() {
+		
+		const constraints = {};
+		_.forOwn(this.state.constraints, (entityConstraint, entity) => {
+			const e = entity.substr(0, 1);
+			let entityConditions = [];
+		
+			_.forOwn(entityConstraint, ({ enabled, type, conditions }, field) => {
+				if (enabled) {
+					entityConditions = conditions
+					.filter(element => element.value)
+					.map(element => {
+						let value;
+						if (type === 'numeric') {
+							value = parseInt(element.value, 10);
+						} else {
+							value = `'${element.value}'`;
+						}
+						return `${element.logicOp || ''} ${field} ${element.operation} ${value}`;
+					});
+				}
+			
+				if (entityConditions.length > 0) {
+					constraints[e] = entityConditions.join(' ');
+				}
+			});
+		});
+		
+		return !_.isEmpty(constraints);
+	}
+
 	getSchemaInfo() {
 		const elements = [
 			{ data: { id: 'P', label: 'Paper', attributes: [ { name: 'id', type: 'numeric' } , { name: 'year', type: 'numeric' } ] } },
@@ -342,9 +384,8 @@ export class Home extends React.Component<IHomeProps> {
 	}
 	render() {
 		const { elements, style, layout } = this.getSchemaInfo();
-		const symmetricMetapath = this.getSymmetricMetapath();
 
-console.log(this.state.constraints);
+		// console.log(this.state.constraints);
 
 		const constraintsPanel = <Row>
 		<Col md="12">
@@ -373,14 +414,15 @@ console.log(this.state.constraints);
 		</ListGroup>
 		</Col>
 		</Row>;
-						
+
+		const validMetapath = this.checkMetapath();
+		const validConstraints = this.checkConstraints();
+
 		return (
 			<Container fluid>
 			<Row>
-				<Col md="12">
-					<h2>Welcome to SpOT</h2>
-				</Col>
 				<Col md="6">
+					<h4>Query Builder</h4>
 					<Card>
 						<CytoscapeComponent cy={ (cy) => { this.cy = cy } } elements={elements} style={style} layout={layout} zoomingEnabled={false} />
 					</Card>
@@ -394,20 +436,42 @@ console.log(this.state.constraints);
 									<Button color="danger" title="Delete last node" onClick={this.deleteLast.bind(this)} ><FontAwesomeIcon icon="arrow-left" /></Button>
 								</InputGroupAddon>
 							</InputGroup>
-							<div className="small-grey">
-								Symmetric Metapath: {(this.state.metapathStr.length > 1) ? symmetricMetapath: '-'}			
-							</div>
+							
 						</Col>
 
 						<Col md="6">
 							<h4>Analysis</h4>
 							<Input id="analysis-dropdown" type="select" value={this.state.analysis} onChange={this.handleAnalysisDropdown.bind(this)} >
-								<option value={"ranking"}>Ranking (HRank)</option>
+								<option value={"ranking"}>Ranking</option>
 								<option value={"associations"}>Metapath Associations</option>
 								<option value={"topk"}>Top-k Similarity</option>
 							</Input>
 						</Col>
 					</Row>
+					{
+						(!validMetapath || !validConstraints) &&
+						<Row>
+							<Col>
+								<div className="small-grey">
+									Note: 
+									<ul>
+										{
+											(!validMetapath) && 
+											<li>
+												Give symmetric metapath with at least 3 nodes e.g. APPA
+											</li>
+										}
+										{
+											(!validConstraints) &&
+											<li>
+												Give at least one constraint
+											</li>
+										}
+									</ul>
+								</div>
+							</Col>
+						</Row>
+					}
 				</Col>
 				<Col md="6">
 					{
@@ -416,7 +480,7 @@ console.log(this.state.constraints);
 				</Col>
 				<Col md='12'>
 					<br/>
-					<Button color="success" disabled={this.props.loading || (this.state.metapath.length < 2)} onClick={this.execute.bind(this)}>
+					<Button color="success" disabled={this.props.loading || !validMetapath || !validConstraints} onClick={this.execute.bind(this)}>
 						<FontAwesomeIcon icon="play" /> Run
 					</Button>
 				</Col>
@@ -427,14 +491,17 @@ console.log(this.state.constraints);
 						(this.props.loading) && <Progress animated color="info" value={this.props.progress}>{this.props.progressMsg}</Progress>
 					}
 					{
-						(this.props.docs) && 
-							<div>
+						(this.props.docs) && (
+							(this.props.docs.length > 0) 
+							? <div>
 								<h2>Results</h2>
 								<div className="small-grey">
 									{this.props.meta.page} of {this.props.meta.totalPages} pages. ({this.props.meta.totalRecords} results)
 								</div>
 								<RankingResultsPanel docs={this.props.docs}/>
 							</div>
+							: <div style={{ textAlign: "center" }}>No results found for the specified query</div>
+						)
 					}
 					</Container>
 				</Col>
