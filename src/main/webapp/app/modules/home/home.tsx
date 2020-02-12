@@ -26,7 +26,11 @@ import { IRootState } from 'app/shared/reducers';
 import CytoscapeComponent from 'react-cytoscapejs';
 import  _  from 'lodash';
 import { loadMoreDataWhenScrolled } from 'react-jhipster';
-import { rankingRun, rankingGetResults } from '../ranking/ranking.reducer';
+import { 
+	rankingRun, 
+	rankingGetResults, 
+	rankingGetMoreResults 
+} from '../ranking/ranking.reducer';
 import RankingResultsPanel from '../ranking/results/results'
 import ConstraintItem from '../constraints/constraint-item';
 import { __metadata } from 'tslib';
@@ -295,6 +299,9 @@ export class Home extends React.Component<IHomeProps> {
 			alert("This type of analysis will be implemented soon");
 		}
 	}
+	loadMoreResults() {
+		this.props.rankingGetMoreResults(this.props.uuid, this.props.meta.page + 1);
+	}
 
 	handleAnalysisDropdown(e) {
 		this.setState({
@@ -497,9 +504,14 @@ export class Home extends React.Component<IHomeProps> {
 							? <div>
 								<h2>Results</h2>
 								<div className="small-grey">
-									{this.props.meta.page} of {this.props.meta.totalPages} pages. ({this.props.meta.totalRecords} results)
+									Displaying {this.props.docs.length} out of {this.props.meta.totalRecords} results
 								</div>
-								<RankingResultsPanel docs={this.props.docs}/>
+								<br/>
+								<RankingResultsPanel 
+									docs={this.props.docs} 
+									hasMore={this.props.meta.links.hasNext} 
+									loadMore={this.loadMoreResults.bind(this)}
+								/>
 							</div>
 							: <div style={{ textAlign: "center" }}>No results found for the specified query</div>
 						)
@@ -522,7 +534,11 @@ const mapStateToProps = (storeState: IRootState) => ({
 	uuid: storeState.ranking.uuid,  
 });
 
-const mapDispatchToProps = { rankingRun, rankingGetResults };
+const mapDispatchToProps = { 
+	rankingRun, 
+	rankingGetResults, 
+	rankingGetMoreResults 
+};
 
 type StateProps = ReturnType<typeof mapStateToProps>;
 type DispatchProps = typeof mapDispatchToProps;

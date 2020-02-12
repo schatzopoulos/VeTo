@@ -10,7 +10,8 @@ const apiUrl = 'api/ranking';
 
 export const ACTION_TYPES = {
   SUBMIT: 'ranking/SUBMIT',
-  GET_RESULTS: 'ranking/GET_RESULTS'
+  GET_RESULTS: 'ranking/GET_RESULTS',
+  GET_MORE_RESULTS: 'rankong/GET_MORE_RESULTS'
 };
 
 const initialState = {
@@ -41,8 +42,11 @@ export default (state: RankingState = initialState, action): RankingState => {
       };
     case REQUEST(ACTION_TYPES.GET_RESULTS):
       return state;
+    case REQUEST(ACTION_TYPES.GET_MORE_RESULTS):
+      return state;
     case FAILURE(ACTION_TYPES.SUBMIT):
-    case FAILURE(ACTION_TYPES.GET_RESULTS): {
+    case FAILURE(ACTION_TYPES.GET_RESULTS):
+    case FAILURE(ACTION_TYPES.GET_MORE_RESULTS): {
       const errorMsg = 'An unexpected error occurred during ranking';
       return {
         ...state,
@@ -68,12 +72,10 @@ export default (state: RankingState = initialState, action): RankingState => {
       let loading = true;
       let docs = null;
       let meta = null;
-      let uuid = data.id;
       if (data.docs) {
         loading = false;
         docs = data.docs;
         meta = data._meta;
-        uuid = null;
       }
 
       return {
@@ -82,7 +84,23 @@ export default (state: RankingState = initialState, action): RankingState => {
         progress: data.progress,
         progressMsg: `${data.stage}: ${data.step}`,
         error: null,
-        uuid,
+        docs,
+        meta
+      };
+    }
+    case SUCCESS(ACTION_TYPES.GET_MORE_RESULTS): {
+      const data = action.payload.data;
+
+      let docs = null;
+      let meta = null;
+      if (data.docs) {
+        docs = [...state.docs, ...data.docs];
+        meta = data._meta;
+      }
+
+      return {
+        ...state,
+        error: null,
         docs,
         meta
       };
@@ -134,9 +152,19 @@ export const rankingGetResults = id => ({
   })
 });
 
+export const rankingGetMoreResults = (id, page) => ({
+  type: ACTION_TYPES.GET_MORE_RESULTS,
+  payload: axios.get(`${apiUrl}/get`, {
+    params: {
+      id,
+      page
+    }
+  })
+});
+
 export const rankingRun = (metapath, constraints) => {
   const payload = formatPayload(metapath, constraints);
-  console.log(payload);
+
   return {
     type: ACTION_TYPES.SUBMIT,
     payload: axios.post(`${apiUrl}/submit`, payload)
