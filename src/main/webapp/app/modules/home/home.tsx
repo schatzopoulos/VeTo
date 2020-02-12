@@ -184,9 +184,19 @@ export class Home extends React.Component<IHomeProps> {
 
 		const node = metapath[metapath.length-1];
 
+		// keep constraints for nodes that are in the metapath
+		const constraints = {};
+		_.forOwn(this.state.constraints, (entityConstraint, entity) => {
+			const e = entity.substr(0, 1);
+			if (metapathStr.includes(e)) {
+				constraints[entity] = entityConstraint;
+			}
+		});
+
 		this.setState({
 			metapath,
 			metapathStr,
+			constraints,
 		}, () => {
 			this.animateNeighbors(node);
 		});	
@@ -303,14 +313,6 @@ export class Home extends React.Component<IHomeProps> {
 		});
 	}
 
-	handleRemoveEntityConstraints(entity) {
-		const constraints = {...this.state.constraints};
-		delete constraints[entity];
-		this.setState({
-			constraints 
-		});
-	}
-
 	checkMetapath() {
 
 		const metapath = this.state.metapathStr;
@@ -404,7 +406,6 @@ export class Home extends React.Component<IHomeProps> {
 						handleDropdown={this.handleConstraintOpDropdown.bind(this)}
 						handleLogicDropdown={this.handleConstraintLogicOpDropdown.bind(this)}
 						handleInput={this.handleConstraintInputChange.bind(this)}
-						handleRemoveEntity={this.handleRemoveEntityConstraints.bind(this)}
 						handleAddition={this.handleConstraintAddition.bind(this)}
 						handleRemoval={this.handleConstraintRemoval.bind(this)}
 

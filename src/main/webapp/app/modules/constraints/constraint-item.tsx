@@ -18,7 +18,6 @@ export interface IConstraintItemProps {
 	handleDropdown: any,
 	handleLogicDropdown: any,
 	handleInput: any,
-	handleRemoveEntity: any,
 	handleAddition: any,
 	handleRemoval: any,
 }
@@ -28,10 +27,6 @@ export class ConstraintItem extends React.Component<IConstraintItemProps> {
     constructor(props) {
         super(props);
     }
-
-	componentWillUnmount() {
-		this.props.handleRemoveEntity(this.props.entity);
-	}
 
 	render() {
 		const entity = this.props.entity;
