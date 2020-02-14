@@ -112,8 +112,8 @@ export default (state: RankingState = initialState, action): RankingState => {
 
 // Actions
 
-function formatPayload(metapath, constraints) {
-  const payload = { metapath };
+function formatPayload(metapath, constraints, folder) {
+  const payload = { metapath, folder };
 
   payload['constraints'] = {};
   _.forOwn(constraints, (entityConstraint, entity) => {
@@ -162,8 +162,8 @@ export const rankingGetMoreResults = (id, page) => ({
   })
 });
 
-export const rankingRun = (metapath, constraints) => {
-  const payload = formatPayload(metapath, constraints);
+export const rankingRun = (metapath, constraints, folder) => {
+  const payload = formatPayload(metapath, constraints, folder);
 
   return {
     type: ACTION_TYPES.SUBMIT,

@@ -13,7 +13,7 @@ public class QueryConfigVM {
     @NotNull
     @Size(min = 1, max = 50)
     private String metapath;
-
+    private String folder;
 
     @NotNull
     private Document constraints;
@@ -34,12 +34,21 @@ public class QueryConfigVM {
         this.constraints = constraints;
     }
 
+    public String getFolder() {
+        return this.folder;
+    }
+
+    public void setFolder(String _folder) {
+        this.folder = _folder;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("RankingParamsVM {");
         sb.append("\tmetapath: " + this.metapath);
         sb.append("\tconstraint: " + this.constraints.toString());       
+        sb.append("\tfolder: " + this.folder);
         sb.append("}");
         return sb.toString();
     }

@@ -19,7 +19,7 @@ import athenarc.imsi.sdl.SpOtApp;
 /**
  * Test class for the RankingResource REST controller.
  *
- * @see RankingResource
+ * @see DatasetsResource
  */
 @SpringBootTest(classes = SpOtApp.class)
 public class RankingResourceIT {
@@ -30,7 +30,7 @@ public class RankingResourceIT {
     public void setUp() {
         MockitoAnnotations.initMocks(this);
 
-        RankingResource rankingResource = new RankingResource();
+        DatasetsResource rankingResource = new DatasetsResource();
         restMockMvc = MockMvcBuilders
             .standaloneSetup(rankingResource)
             .build();

@@ -3,21 +3,16 @@ import './home.scss';
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
-import { Card, 
+import { 
+	Card, 
 	Row, 
 	Col, 
 	InputGroup, 
 	InputGroupAddon, 
 	Input, 
 	Button, 
-	Label,
-	UncontrolledDropdown,
-	DropdownToggle,
-	DropdownMenu,
-	DropdownItem,
-	ListGroupItem,
+	Spinner,
 	ListGroup,
-	CustomInput,
 	Progress,
 	Container,
 } from 'reactstrap';
@@ -25,12 +20,12 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { IRootState } from 'app/shared/reducers';
 import CytoscapeComponent from 'react-cytoscapejs';
 import  _  from 'lodash';
-import { loadMoreDataWhenScrolled } from 'react-jhipster';
 import { 
 	rankingRun, 
 	rankingGetResults, 
 	rankingGetMoreResults 
 } from '../ranking/ranking.reducer';
+import { getDatasetSchemas } from '../datasets/datasets.reducer';
 import RankingResultsPanel from '../ranking/results/results'
 import ConstraintItem from '../constraints/constraint-item';
 import { __metadata } from 'tslib';
@@ -52,6 +47,7 @@ export class Home extends React.Component<IHomeProps> {
 		neighbors: undefined,
 		constraints: {},
 		analysis: "ranking",
+		dataset: "DBLP",
 	};
 	cy: any;
 	polling: any;
@@ -118,6 +114,11 @@ export class Home extends React.Component<IHomeProps> {
 		} else if (prevProps.loading && !this.props.loading) {
 			clearInterval(this.polling);
 		}
+
+		if (!prevProps.schemas && this.props.schemas) {
+			this.initCy();
+		}
+
 	}
 
 	componentWillUnmount() {
@@ -125,7 +126,15 @@ export class Home extends React.Component<IHomeProps> {
 	}
 
 	componentDidMount() {
+		if (!this.props.schemas) {
+			this.props.getDatasetSchemas();
+		}		
 		
+		if (this.cy) { 
+			this.initCy();
+		}
+	}
+	initCy() {
 		// center align graph 
 		this.cy.center();
 
@@ -294,7 +303,11 @@ export class Home extends React.Component<IHomeProps> {
 		e.preventDefault();
 
 		if (this.state.analysis === 'ranking') {
-			this.props.rankingRun(this.state.metapathStr, this.state.constraints);
+			this.props.rankingRun(
+				this.state.metapathStr, 
+				this.state.constraints, 
+				this.props.schemas[this.state.dataset]['folder']
+			);
 		} else {
 			alert("This type of analysis will be implemented soon");
 		}
@@ -367,18 +380,7 @@ export class Home extends React.Component<IHomeProps> {
 		return !_.isEmpty(constraints);
 	}
 
-	getSchemaInfo() {
-		const elements = [
-			{ data: { id: 'P', label: 'Paper', attributes: [ { name: 'id', type: 'numeric' } , { name: 'year', type: 'numeric' } ] } },
-			{ data: { id: 'A', label: 'Author', attributes: [ { name: 'id', type: 'numeric' } , { name: 'name', type: 'string' } ] } },
-			{ data: { id: 'V', label: 'Venue', attributes: [ { name: 'id', type: 'numeric' } , { name: 'name', type: 'string' } ] } },
-			{ data: { id: 'T', label: 'Topic', attributes: [ { name: 'id', type: 'numeric' } , { name: 'name', type: 'string' } ] } },
-			{ data: { source: 'P', target: 'P'} },
-			{ data: { source: 'A', target: 'P', label: 'Edge from Node1 to Node2' } },
-			{ data: { source: 'T', target: 'P', label: 'Edge from Node1 to Node2' } },
-			{ data: { source: 'V', target: 'P', label: 'Edge from Node1 to Node2' } }
-		];
-
+	getSchema() {
 		const style = { 
 			width: '100%', 
 			height: '200px',
@@ -387,14 +389,72 @@ export class Home extends React.Component<IHomeProps> {
 		const layout = { 
 			name: 'cose',
 			animate: false,
-		}; 
+		};
 
-		return { elements, style, layout };
+		let elements;
+		if (this.props.schemas) { 
+			elements = this.props.schemas[this.state.dataset]['elements'];
+		}
+
+		let schema;
+		if (elements) {
+			schema = <CytoscapeComponent cy={ (cy) => { this.cy = cy } } elements={elements} style={style} layout={layout} zoomingEnabled={false} />;
+		} else {
+			schema = <Spinner style={{ width: '200px', height: '200px', marginLeft: 'auto', marginRight: 'auto' }} type="grow" color="info" />;
+		}
+
+		return schema;
+	}
+	changeSchema() {
+
+		const elements = this.props.schemas[this.state.dataset]['elements'];
+
+		this.cy.elements().remove(); 
+		this.cy.add(elements)
+		const newLayout = this.cy.layout({ 
+			name: 'cose',
+			animate: false,
+		});
+		newLayout.run();
+		this.cy.center();
+
+	}
+	resetSchemaColors() {
+		const nodes = this.cy.filter('node');
+
+		nodes.animate({
+			style: { 'border-width': '0px', 'background-color': 'grey' }
+		});
+	}
+	handleDatasetDropdown(e) {
+		e.preventDefault();
+
+		const newState = { ...this.state };
+		newState.metapath = [];
+		newState.metapathStr = '';
+		newState.neighbors = undefined;
+		newState.constraints = {};
+		newState.dataset = e.target.value;
+
+		this.setState(newState, () => {	
+			this.changeSchema();
+			this.resetSchemaColors();
+		});
+	}
+	getDatasetOptions() {
+		let options = [];
+		if (this.props.schemas) {
+			options = _.map(this.props.schemas, (value, key) => {
+				return <option key={key} value={key}>{key}</option>;
+			});
+		}
+		return options;
 	}
 	render() {
-		const { elements, style, layout } = this.getSchemaInfo();
+		console.log(this.props);
 
-		// console.log(this.state.constraints);
+		const datasetOptions = this.getDatasetOptions();
+		const schema = this.getSchema();
 
 		const constraintsPanel = <Row>
 		<Col md="12">
@@ -425,15 +485,25 @@ export class Home extends React.Component<IHomeProps> {
 
 		const validMetapath = this.checkMetapath();
 		const validConstraints = this.checkConstraints();
-
+console.log(this.props.schemas);
 		return (
 			<Container fluid>
 			<Row>
 				<Col md="6">
 					<h4>Query Builder</h4>
-					<Card>
-						<CytoscapeComponent cy={ (cy) => { this.cy = cy } } elements={elements} style={style} layout={layout} zoomingEnabled={false} />
+					<Card className="mx-auto">		
+						{ schema }
 					</Card>
+					<br/>
+					<Row>
+						<Col md="12">
+							<h4>Dataset</h4>
+						<Input value={this.state.dataset} type="select" name="dataset" id="dataset" onChange={this.handleDatasetDropdown.bind(this)}>
+							{ datasetOptions }
+						</Input>
+					</Col>
+					
+					</Row>
 					<br/>
 					<Row>
 						<Col md="6">
@@ -451,7 +521,6 @@ export class Home extends React.Component<IHomeProps> {
 							<h4>Analysis</h4>
 							<Input id="analysis-dropdown" type="select" value={this.state.analysis} onChange={this.handleAnalysisDropdown.bind(this)} >
 								<option value={"ranking"}>Ranking</option>
-								<option value={"associations"}>Metapath Associations</option>
 								<option value={"topk"}>Top-k Similarity</option>
 							</Input>
 						</Col>
@@ -532,12 +601,14 @@ const mapStateToProps = (storeState: IRootState) => ({
 	docs: storeState.ranking.docs,
 	meta: storeState.ranking.meta,
 	uuid: storeState.ranking.uuid,  
+	schemas: storeState.datasets.schemas,
 });
 
 const mapDispatchToProps = { 
 	rankingRun, 
 	rankingGetResults, 
-	rankingGetMoreResults 
+	rankingGetMoreResults,
+	getDatasetSchemas,
 };
 
 type StateProps = ReturnType<typeof mapStateToProps>;

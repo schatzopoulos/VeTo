@@ -42,6 +42,10 @@ spring:
     password:
   thymeleaf:
     cache: true
+  servlet:
+    multipart:
+      max-file-size: 1000MB
+      max-request-size: 1000MB
 
 # ===================================================================
 # To enable TLS in production, generate a certificate using:

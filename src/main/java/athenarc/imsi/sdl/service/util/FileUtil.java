@@ -2,9 +2,11 @@ package athenarc.imsi.sdl.service.util;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.LineNumberReader;
 import java.io.PrintWriter;
@@ -53,10 +55,10 @@ public final class FileUtil {
         return lastLine;
     }
 
-    public static String writeConfig(String outputDir, String metapath, Document constraints) throws IOException {
+    public static String writeConfig(String outputDir, String metapath, Document constraints, String folder) throws IOException {
         Document config = new Document();
-        config.put("indir", Constants.DBLP_NODES_DIR);
-        config.put("irdir", Constants.DBLP_RELARTIONS_DIR);
+        config.put("indir", Constants.DATA_DIR + folder + "/nodes/");
+        config.put("irdir", Constants.DATA_DIR + folder + "/relations/");
         config.put("algorithm", "DynP");
         config.put("hin_out", outputDir + "/" + Constants.HIN_OUT);
         config.put("ranking_out", outputDir + "/" + Constants.RANKING_TEMP);
@@ -97,5 +99,34 @@ public final class FileUtil {
         return totalPages;
     }
 
+    public static int unzip(String zipFile) throws java.io.IOException, InterruptedException {
+
+        ProcessBuilder pb = new ProcessBuilder();
+        pb.command("unzip", "-n", zipFile, "-d", Constants.DATA_DIR);
+        Process process = pb.start();
+        return process.waitFor();
+    }
+
+    public static boolean remove(String filename) {
+        File file = new File(filename); 
+        return file.delete();
+    }
     
+    public static String[] findSubdirectories(String rootDir) {
+        return new File(rootDir).list(new FilenameFilter() {
+            @Override
+            public boolean accept(File current, String name) {
+              return new File(current, name).isDirectory();
+            }
+        });
+    }
+
+    public static String readSchema(String filename) throws FileNotFoundException, IOException {
+        File file = new File(filename);
+        FileInputStream fis = new FileInputStream(file);
+        byte[] data = new byte[(int) file.length()];
+        fis.read(data);
+        fis.close();
+        return new String(data, "UTF-8");
+    }
 }

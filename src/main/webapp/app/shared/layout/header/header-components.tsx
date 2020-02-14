@@ -28,3 +28,12 @@ export const Home = props => (
     </NavLink>
   </NavItem>
 );
+
+export const Upload = props => (
+  <NavItem>
+    <NavLink tag={Link} to="/upload" className="d-flex align-items-center">
+      <FontAwesomeIcon icon="upload" />
+      <span>Upload</span>
+    </NavLink>
+  </NavItem>
+);
