@@ -90,7 +90,7 @@ public class RankingResource {
                 response.append("id", id);
 
                 String[] tokens = lastLine.split("\t");
-                if (tokens.length > 0) {
+                if (tokens.length > 1) {
                     response.append("stage", tokens[0])
                     .append("step", tokens[2])
                     .append("progress", rankingService.getProgress(tokens[0], Integer.parseInt(tokens[1])));
