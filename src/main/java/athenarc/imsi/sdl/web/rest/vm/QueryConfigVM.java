@@ -13,6 +13,8 @@ public class QueryConfigVM {
     @NotNull
     @Size(min = 1, max = 50)
     private String metapath;
+
+    @NotNull
     private String folder;
 
     @NotNull

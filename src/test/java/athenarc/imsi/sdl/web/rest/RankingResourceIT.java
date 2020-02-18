@@ -30,7 +30,7 @@ public class RankingResourceIT {
     public void setUp() {
         MockitoAnnotations.initMocks(this);
 
-        DatasetsResource rankingResource = new DatasetsResource();
+        RankingResource rankingResource = new RankingResource();
         restMockMvc = MockMvcBuilders
             .standaloneSetup(rankingResource)
             .build();
