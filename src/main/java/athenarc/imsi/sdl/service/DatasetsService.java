@@ -34,7 +34,7 @@ public class DatasetsService {
 
         for(String dir : datasetDirs) {
             String schemaFile = Constants.DATA_DIR + dir + "/schema.json";
-            System.out.println(FileUtil.readSchema(schemaFile));
+            // System.out.println(FileUtil.readSchema(schemaFile));
             Document schema = Document.parse(FileUtil.readSchema(schemaFile));
             schema.append("folder", dir);
             response.append(schema.get("name").toString(), schema);

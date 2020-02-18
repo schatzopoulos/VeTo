@@ -157,7 +157,7 @@ export class Home extends React.Component<IHomeProps> {
 			// set metapath
 			const metapath = [...this.state.metapath];	// copy array
 			metapath.push(node);
-			const metapathStr = metapath.map(n => n.data('id')).join('');
+			const metapathStr = metapath.map(n => n.data('label').substr(0,1)).join('');
 
 			// set constraints 
 			const constraints = {...this.state.constraints};
@@ -193,7 +193,7 @@ export class Home extends React.Component<IHomeProps> {
 
 		const metapath = [...this.state.metapath];	// copy array
 		metapath.pop();
-		const metapathStr = metapath.map(n => n.data('id')).join('');
+		const metapathStr = metapath.map(n => n.data('label').substr(0,1)).join('');
 
 		const node = metapath[metapath.length-1];
 
@@ -451,8 +451,6 @@ export class Home extends React.Component<IHomeProps> {
 		return options;
 	}
 	render() {
-		console.log(this.props);
-
 		const datasetOptions = this.getDatasetOptions();
 		const schema = this.getSchema();
 
@@ -485,7 +483,7 @@ export class Home extends React.Component<IHomeProps> {
 
 		const validMetapath = this.checkMetapath();
 		const validConstraints = this.checkConstraints();
-console.log(this.props.schemas);
+
 		return (
 			<Container fluid>
 			<Row>
