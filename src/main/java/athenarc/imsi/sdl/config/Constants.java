@@ -19,7 +19,7 @@ public final class Constants {
     public static final String CONFIG_FILE = "config.json";
 
     public static final String DATA_DIR = "/dataX/scinem_data/";
-    public static final String RANKING_WORKFLOW_DIR = "/opt/SciNeM-workflows/ranking";
+    public static final String WORKFLOW_DIR = "/opt/SciNeM-workflows/";
     public static final int MAX_THREADS = 10;
 
     public static final int PAGE_SIZE = 50;
