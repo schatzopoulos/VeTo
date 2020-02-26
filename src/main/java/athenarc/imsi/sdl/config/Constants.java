@@ -18,8 +18,8 @@ public final class Constants {
     public static final String FINAL_OUT = "RESULT.csv";
     public static final String CONFIG_FILE = "config.json";
 
-    public static final String DATA_DIR = "/opt/workflows/data/";
-    public static final String WORKFLOWS_DIR = "/opt/workflows";
+    public static final String DATA_DIR = "/dataX/scinem_data/";
+    public static final String RANKING_WORKFLOW_DIR = "/opt/SciNeM-workflows/ranking";
     public static final int MAX_THREADS = 10;
 
     public static final int PAGE_SIZE = 50;

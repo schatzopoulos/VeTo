@@ -39,7 +39,7 @@ public class RankingService {
 
         // prepare ranking script arguments
         ProcessBuilder pb = new ProcessBuilder();
-        pb.command("/bin/bash", Constants.WORKFLOWS_DIR + "/ranking.sh", config);
+        pb.command("/bin/bash", Constants.RANKING_WORKFLOW_DIR + "/ranking.sh", config);
         
         // redirect ouput to logfile
         File out = new File(outputLog);
