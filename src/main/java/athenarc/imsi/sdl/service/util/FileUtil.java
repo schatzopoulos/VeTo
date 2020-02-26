@@ -38,7 +38,7 @@ public final class FileUtil {
     }
 
     public static String getRankingFIle(String type, String uuid) {
-        return Constants.BASE_PATH + "/" + type + "/" + uuid + "/" + Constants.RANKING_OUT;
+        return Constants.BASE_PATH + "/" + type + "/" + uuid + "/" + Constants.FINAL_OUT;
     }
 
     public static String getLastLine(String logfile) throws IOException {
@@ -61,8 +61,8 @@ public final class FileUtil {
         config.put("irdir", Constants.DATA_DIR + folder + "/relations/");
         config.put("algorithm", "DynP");
         config.put("hin_out", outputDir + "/" + Constants.HIN_OUT);
-        config.put("ranking_out", outputDir + "/" + Constants.RANKING_TEMP);
-        config.put("final_out", outputDir + "/" + Constants.RANKING_OUT);
+        config.put("analysis_out", outputDir + "/" + Constants.ANALYSIS_OUT);
+        config.put("final_out", outputDir + "/" + Constants.FINAL_OUT);
         config.put("pr_alpha", 0.5);
         config.put("pr_tol", 0.00000000001);
 

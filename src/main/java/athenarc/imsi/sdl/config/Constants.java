@@ -14,15 +14,15 @@ public final class Constants {
     
     public static final String BASE_PATH = "/tmp";
     public static final String HIN_OUT = "HIN.csv";
-    public static final String RANKING_TEMP = "RANKING_TEMP.csv";
-    public static final String RANKING_OUT = "RANKING.csv";
+    public static final String ANALYSIS_OUT = "ANALYSIS.csv";
+    public static final String FINAL_OUT = "RESULT.csv";
     public static final String CONFIG_FILE = "config.json";
 
     public static final String DATA_DIR = "/opt/workflows/data/";
     public static final String WORKFLOWS_DIR = "/opt/workflows";
     public static final int MAX_THREADS = 10;
 
-    public static final int PAGE_SIZE = 20;
+    public static final int PAGE_SIZE = 50;
 
     private Constants() {
     }
