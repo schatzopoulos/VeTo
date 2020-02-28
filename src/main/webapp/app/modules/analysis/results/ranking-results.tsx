@@ -29,7 +29,6 @@ export class RankingResultsPanel extends React.Component<IRankingResultsProps> {
 
 		const rows = this.props.docs.map( (row) => {
 			return <tr key={row.id}>
-			<th scope="row">{row.id}</th>
 			<td>{row.name}</td>
 			<td>{row.score}</td>
 		  </tr>
@@ -40,8 +39,7 @@ export class RankingResultsPanel extends React.Component<IRankingResultsProps> {
 				<Table size="sm">
 					<thead>
 						<tr>
-							<th>#</th>
-							<th>Name</th>
+							<th>Entity</th>
 							<th>Score</th>
 						</tr>
 					</thead>

@@ -41,8 +41,8 @@ export class SimResultsPanel extends React.Component<ISimResultsProps> {
 				<Table size="sm">
 					<thead>
 						<tr>
-							<th>Node 1</th>
-							<th>Node 2</th>
+							<th>Entity 1</th>
+							<th>Entity 2</th>
                             <th>Similarity</th>
 						</tr>
 					</thead>

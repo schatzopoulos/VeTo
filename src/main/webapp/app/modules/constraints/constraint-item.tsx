@@ -39,6 +39,7 @@ export class ConstraintItem extends React.Component<IConstraintItemProps> {
 
 					_.map(this.props.entityConstraints, (fieldConstraints, field) => {
 						const enabled = fieldConstraints['enabled'];
+						if (field === 'id') return '';
 						
 						return _.map(fieldConstraints['conditions'], (condition, index: number) => {
 

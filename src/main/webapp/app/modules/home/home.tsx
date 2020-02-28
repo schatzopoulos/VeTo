@@ -471,7 +471,7 @@ export class Home extends React.Component<IHomeProps> {
 
 		const constraintsPanel = <Row>
 		<Col md="12">
-			<h4>Constraints</h4>
+			<h4>4. Select constraints</h4>
 		</Col>
 		<Col md="12">
 		<ListGroup>
@@ -504,24 +504,25 @@ export class Home extends React.Component<IHomeProps> {
 			<Container fluid>
 			<Row>
 				<Col md="6">
-					<h4>Query Builder</h4>
+					<Row>
+						<Col md="12">
+							<h4>1. Select dataset</h4>
+							<Input value={this.state.dataset} type="select" name="dataset" id="dataset" onChange={this.handleDatasetDropdown.bind(this)}>
+								{ datasetOptions }
+							</Input>
+						</Col>
+					</Row>
+					<br/>
+
+					<h4>2. Select meta-path</h4>
 					<Card className="mx-auto">		
 						{ schema }
 					</Card>
-					<br/>
-					<Row>
-						<Col md="12">
-							<h4>Dataset</h4>
-						<Input value={this.state.dataset} type="select" name="dataset" id="dataset" onChange={this.handleDatasetDropdown.bind(this)}>
-							{ datasetOptions }
-						</Input>
-					</Col>
-					
-					</Row>
+
 					<br/>
 					<Row>
 						<Col md="6">
-							<h4>Metapath</h4>
+							<h4>Current meta-path</h4>
 							<InputGroup>
 								<Input placeholder="Select nodes on the graph to define the metapath" value={this.state.metapathStr} disabled={true}/>
 								<InputGroupAddon addonType="append">
@@ -532,7 +533,7 @@ export class Home extends React.Component<IHomeProps> {
 						</Col>
 
 						<Col md="6">
-							<h4>Analysis</h4>
+							<h4>3. Select analysis type</h4>
 							<Input id="analysis-dropdown" type="select" value={this.state.analysis} onChange={this.handleAnalysisDropdown.bind(this)} >
 								<option value={"ranking"}>Ranking</option>
 								<option value={"simjoin"}>Similarity Join</option>
