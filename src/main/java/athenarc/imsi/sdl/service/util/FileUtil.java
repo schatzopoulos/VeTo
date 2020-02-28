@@ -37,7 +37,7 @@ public final class FileUtil {
         return Constants.BASE_PATH + "/" + type + "/" + uuid + "/log.out";
     }
 
-    public static String getRankingFIle(String type, String uuid) {
+    public static String getOutputFile(String type, String uuid) {
         return Constants.BASE_PATH + "/" + type + "/" + uuid + "/" + Constants.FINAL_OUT;
     }
 
@@ -55,7 +55,9 @@ public final class FileUtil {
         return lastLine;
     }
 
-    public static String writeConfig(String outputDir, String metapath, Document constraints, String folder) throws IOException {
+    public static String writeConfig(String analysisType, 
+        String outputDir, String metapath, Document constraints, int k, int t, int w, int minValues, String folder) throws IOException {
+
         Document config = new Document();
         config.put("indir", Constants.DATA_DIR + folder + "/nodes/");
         config.put("irdir", Constants.DATA_DIR + folder + "/relations/");
@@ -63,8 +65,15 @@ public final class FileUtil {
         config.put("hin_out", outputDir + "/" + Constants.HIN_OUT);
         config.put("analysis_out", outputDir + "/" + Constants.ANALYSIS_OUT);
         config.put("final_out", outputDir + "/" + Constants.FINAL_OUT);
-        config.put("pr_alpha", 0.5);
-        config.put("pr_tol", 0.00000000001);
+        if (analysisType == "ranking") {
+            config.put("pr_alpha", 0.5);
+            config.put("pr_tol", 0.00000000001);
+        } else if (analysisType == "simjoin") {
+            config.put("k", k);
+            config.put("t", t);
+            config.put("w", w);
+            config.put("min_values", minValues);
+        }
 
         Document query = new Document();
         query.put("metapath", metapath);

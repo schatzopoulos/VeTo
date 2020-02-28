@@ -54,8 +54,6 @@ export default (state: DatasetsState = initialState, action): DatasetsState => {
     }
     case SUCCESS(ACTION_TYPES.GET_SCHEMAS): {
       const schemas = action.payload.data;
-      console.log('edw ');
-      console.log(schemas);
 
       return {
         ...state,

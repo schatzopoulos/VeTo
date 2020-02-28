@@ -16,12 +16,49 @@ public class QueryConfigVM {
 
     @NotNull
     private String folder;
-
+    
     @NotNull
     private Document constraints;
 
+    private int k;
+    private int t;
+    private int w;
+    private int minValues;
+
     public String getMetapath() {
         return metapath;
+    }
+
+    public int getK() {
+        return this.k;
+    }
+
+    public void setK(int k) {
+        this.k = k;
+    }
+
+    public int getT() {
+        return this.t;
+    }
+
+    public void setT(int t) {
+        this.t = t;
+    }
+
+    public int getW() {
+        return this.w;
+    }
+
+    public void setW(int w) {
+        this.w = w;
+    }
+
+    public int getMinValues() {
+        return this.minValues;
+    }
+
+    public void setMinValues(int minValues) {
+        this.minValues = minValues;
     }
 
     public void setMetapath(String metapath) {

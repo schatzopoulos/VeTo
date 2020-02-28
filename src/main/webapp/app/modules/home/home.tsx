@@ -21,12 +21,13 @@ import { IRootState } from 'app/shared/reducers';
 import CytoscapeComponent from 'react-cytoscapejs';
 import  _  from 'lodash';
 import { 
-	rankingRun, 
-	rankingGetResults, 
-	rankingGetMoreResults 
-} from '../ranking/ranking.reducer';
+	rankingRun,
+	simjoinRun,
+	getResults, 
+	getMoreResults 
+} from '../analysis/analysis.reducer';
 import { getDatasetSchemas } from '../datasets/datasets.reducer';
-import RankingResultsPanel from '../ranking/results/results'
+import ResultsPanel from '../analysis/results/results';
 import ConstraintItem from '../constraints/constraint-item';
 import { __metadata } from 'tslib';
 
@@ -102,7 +103,7 @@ export class Home extends React.Component<IHomeProps> {
 
 	pollForResults() {
 		this.polling = setInterval( () => {
-			this.props.rankingGetResults(this.props.uuid);
+			this.props.getResults(this.props.analysis, this.props.uuid);
 		}, 1000);
 	}
 
@@ -308,12 +309,18 @@ export class Home extends React.Component<IHomeProps> {
 				this.state.constraints, 
 				this.props.schemas[this.state.dataset]['folder']
 			);
+		} else if (this.state.analysis === "simjoin") {
+			this.props.simjoinRun(
+				this.state.metapathStr, 
+				this.state.constraints, 
+				this.props.schemas[this.state.dataset]['folder']
+			);
 		} else {
 			alert("This type of analysis will be implemented soon");
 		}
 	}
 	loadMoreResults() {
-		this.props.rankingGetMoreResults(this.props.uuid, this.props.meta.page + 1);
+		this.props.getMoreResults(this.props.analysis, this.props.uuid, this.props.meta.page + 1);
 	}
 
 	handleAnalysisDropdown(e) {
@@ -333,10 +340,16 @@ export class Home extends React.Component<IHomeProps> {
 		});
 	}
 
-	checkMetapath() {
-
+	checkMetapathLength() {
 		const metapath = this.state.metapathStr;
 
+		return (metapath.length >= 3);
+	}
+	checkSymmetricMetapath() {
+		if (this.state.analysis === 'simjoin' || this.state.analysis === 'simsearch')
+			return true;
+		
+		const metapath = this.state.metapathStr;		
 		if (metapath.length < 3)
 			return false;
 
@@ -350,7 +363,9 @@ export class Home extends React.Component<IHomeProps> {
 	}
 
 	checkConstraints() {
-		
+		if (this.state.analysis === 'simjoin' || this.state.analysis === 'simsearch')
+			return true;
+
 		const constraints = {};
 		_.forOwn(this.state.constraints, (entityConstraint, entity) => {
 			const e = entity.substr(0, 1);
@@ -481,7 +496,8 @@ export class Home extends React.Component<IHomeProps> {
 		</Col>
 		</Row>;
 
-		const validMetapath = this.checkMetapath();
+		const validMetapathLength = this.checkMetapathLength();
+		const validMetapath = this.checkSymmetricMetapath();
 		const validConstraints = this.checkConstraints();
 
 		return (
@@ -519,21 +535,27 @@ export class Home extends React.Component<IHomeProps> {
 							<h4>Analysis</h4>
 							<Input id="analysis-dropdown" type="select" value={this.state.analysis} onChange={this.handleAnalysisDropdown.bind(this)} >
 								<option value={"ranking"}>Ranking</option>
-								<option value={"topk"}>Top-k Similarity</option>
+								<option value={"simjoin"}>Similarity Join</option>
 							</Input>
 						</Col>
 					</Row>
 					{
-						(!validMetapath || !validConstraints) &&
+						(!validMetapathLength || !validMetapath || !validConstraints) &&
 						<Row>
 							<Col>
 								<div className="small-grey">
 									Note: 
 									<ul>
 										{
+											(!validMetapathLength) &&
+											<li>
+												Metapath should containt at least 3 nodes
+											</li>
+										}
+										{
 											(!validMetapath) && 
 											<li>
-												Give symmetric metapath with at least 3 nodes e.g. APPA
+												Give symmetric metapath  e.g. APPA
 											</li>
 										}
 										{
@@ -565,24 +587,12 @@ export class Home extends React.Component<IHomeProps> {
 					{
 						(this.props.loading) && <Progress animated color="info" value={this.props.progress}>{this.props.progressMsg}</Progress>
 					}
-					{
-						(this.props.docs) && (
-							(this.props.docs.length > 0) 
-							? <div>
-								<h2>Results</h2>
-								<div className="small-grey">
-									Displaying {this.props.docs.length} out of {this.props.meta.totalRecords} results
-								</div>
-								<br/>
-								<RankingResultsPanel 
-									docs={this.props.docs} 
-									hasMore={this.props.meta.links.hasNext} 
-									loadMore={this.loadMoreResults.bind(this)}
-								/>
-							</div>
-							: <div style={{ textAlign: "center" }}>No results found for the specified query</div>
-						)
-					}
+					<ResultsPanel 
+						docs={this.props.docs}
+						meta={this.props.meta}
+						analysis={this.state.analysis}
+						loadMore={this.loadMoreResults.bind(this)}
+					/>
 					</Container>
 				</Col>
 			</Row>
@@ -592,20 +602,22 @@ export class Home extends React.Component<IHomeProps> {
 };
 
 const mapStateToProps = (storeState: IRootState) => ({  
-	loading: storeState.ranking.loading,
-	progress: storeState.ranking.progress,
-	progressMsg: storeState.ranking.progressMsg,
-	error: storeState.ranking.error,
-	docs: storeState.ranking.docs,
-	meta: storeState.ranking.meta,
-	uuid: storeState.ranking.uuid,  
+	loading: storeState.analysis.loading,
+	progress: storeState.analysis.progress,
+	progressMsg: storeState.analysis.progressMsg,
+	error: storeState.analysis.error,
+	docs: storeState.analysis.docs,
+	meta: storeState.analysis.meta,
+	uuid: storeState.analysis.uuid,  
+	analysis: storeState.analysis.analysis,
 	schemas: storeState.datasets.schemas,
 });
 
 const mapDispatchToProps = { 
 	rankingRun, 
-	rankingGetResults, 
-	rankingGetMoreResults,
+	simjoinRun,
+	getResults,
+	getMoreResults,
 	getDatasetSchemas,
 };
 

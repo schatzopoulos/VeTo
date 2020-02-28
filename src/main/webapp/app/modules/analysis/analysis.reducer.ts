@@ -1,17 +1,16 @@
 import axios from 'axios';
 
 import { REQUEST, SUCCESS, FAILURE } from 'app/shared/reducers/action-type.util';
-import { getSession, displayAuthError } from 'app/shared/reducers/authentication';
-import { isNullOrUndefined } from 'util';
 import _ from 'lodash';
-import { loadMoreDataWhenScrolled } from 'react-jhipster';
-import { format } from 'path';
-const apiUrl = 'api/ranking';
+const rankingAPIUrl = 'api/ranking';
+const simjoinAPIUrl = 'api/simjoin';
 
 export const ACTION_TYPES = {
-  SUBMIT: 'ranking/SUBMIT',
-  GET_RESULTS: 'ranking/GET_RESULTS',
-  GET_MORE_RESULTS: 'rankong/GET_MORE_RESULTS'
+  RANKING_SUBMIT: 'ranking/SUBMIT',
+  SIMJOIN_SUBMIT: 'simjoin/SUBMIT',
+
+  GET_RESULTS: 'analysis/GET_RESULTS',
+  GET_MORE_RESULTS: 'analysis/GET_MORE_RESULTS'
 };
 
 const initialState = {
@@ -20,16 +19,18 @@ const initialState = {
   progressMsg: null as string,
   error: null as string,
   uuid: null as string,
+  analysis: null as string,
   docs: null as any,
   meta: null as any
 };
 
-export type RankingState = Readonly<typeof initialState>;
+export type AnalysisState = Readonly<typeof initialState>;
 
 // Reducer
-export default (state: RankingState = initialState, action): RankingState => {
+export default (state: AnalysisState = initialState, action): AnalysisState => {
   switch (action.type) {
-    case REQUEST(ACTION_TYPES.SUBMIT):
+    case REQUEST(ACTION_TYPES.RANKING_SUBMIT):
+    case REQUEST(ACTION_TYPES.SIMJOIN_SUBMIT):
       return {
         ...state,
         loading: true,
@@ -37,6 +38,7 @@ export default (state: RankingState = initialState, action): RankingState => {
         progressMsg: null,
         error: null,
         uuid: null,
+        analysis: null,
         docs: null,
         meta: null
       };
@@ -44,7 +46,7 @@ export default (state: RankingState = initialState, action): RankingState => {
       return state;
     case REQUEST(ACTION_TYPES.GET_MORE_RESULTS):
       return state;
-    case FAILURE(ACTION_TYPES.SUBMIT):
+    case FAILURE(ACTION_TYPES.RANKING_SUBMIT):
     case FAILURE(ACTION_TYPES.GET_RESULTS):
     case FAILURE(ACTION_TYPES.GET_MORE_RESULTS): {
       const errorMsg = 'An unexpected error occurred during ranking';
@@ -55,15 +57,25 @@ export default (state: RankingState = initialState, action): RankingState => {
         progressMsg: null,
         error: errorMsg,
         uuid: null,
+        analysis: null,
         docs: null,
         meta: null
       };
     }
-    case SUCCESS(ACTION_TYPES.SUBMIT): {
+    case SUCCESS(ACTION_TYPES.RANKING_SUBMIT): {
       return {
         ...state,
         error: null,
-        uuid: action.payload.data.id
+        uuid: action.payload.data.id,
+        analysis: 'ranking'
+      };
+    }
+    case SUCCESS(ACTION_TYPES.SIMJOIN_SUBMIT): {
+      return {
+        ...state,
+        error: null,
+        uuid: action.payload.data.id,
+        analysis: 'simjoin'
       };
     }
     case SUCCESS(ACTION_TYPES.GET_RESULTS): {
@@ -143,30 +155,63 @@ function formatPayload(metapath, constraints, folder) {
   return payload;
 }
 
-export const rankingGetResults = id => ({
-  type: ACTION_TYPES.GET_RESULTS,
-  payload: axios.get(`${apiUrl}/get`, {
-    params: {
-      id
-    }
-  })
-});
+function getAPIUrl(analysisType) {
+  let url;
+  if (analysisType === 'ranking') {
+    url = rankingAPIUrl;
+  } else if (analysisType === 'simjoin') {
+    url = simjoinAPIUrl;
+  }
+  return url;
+}
 
-export const rankingGetMoreResults = (id, page) => ({
-  type: ACTION_TYPES.GET_MORE_RESULTS,
-  payload: axios.get(`${apiUrl}/get`, {
-    params: {
-      id,
-      page
-    }
-  })
-});
+export const getResults = (analysis, id) => {
+  const url = getAPIUrl(analysis);
+
+  return {
+    type: ACTION_TYPES.GET_RESULTS,
+    payload: axios.get(`${url}/get`, {
+      params: {
+        id
+      }
+    })
+  };
+};
+
+export const getMoreResults = (analysis, id, page) => {
+  const url = getAPIUrl(analysis);
+
+  return {
+    type: ACTION_TYPES.GET_MORE_RESULTS,
+    payload: axios.get(`${url}/get`, {
+      params: {
+        id,
+        page
+      }
+    })
+  };
+};
 
 export const rankingRun = (metapath, constraints, folder) => {
   const payload = formatPayload(metapath, constraints, folder);
 
   return {
-    type: ACTION_TYPES.SUBMIT,
-    payload: axios.post(`${apiUrl}/submit`, payload)
+    type: ACTION_TYPES.RANKING_SUBMIT,
+    payload: axios.post(`${rankingAPIUrl}/submit`, payload)
+  };
+};
+
+export const simjoinRun = (metapath, constraints, folder) => {
+  const payload = formatPayload(metapath, constraints, folder);
+
+  // similarity-join specific values
+  payload['k'] = 100;
+  payload['t'] = 1;
+  payload['w'] = 0;
+  payload['minValues'] = 5;
+
+  return {
+    type: ACTION_TYPES.SIMJOIN_SUBMIT,
+    payload: axios.post(`${simjoinAPIUrl}/submit`, payload)
   };
 };

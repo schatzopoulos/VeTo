@@ -23,23 +23,23 @@ import org.springframework.stereotype.Service;
 import athenarc.imsi.sdl.config.Constants;
 import athenarc.imsi.sdl.service.util.FileUtil;
 @Service
-public class RankingService {
+public class SimJoinService {
 
-    private final Logger log = LoggerFactory.getLogger(RankingService.class);
+    private final Logger log = LoggerFactory.getLogger(SimJoinService.class);
 
     @Async
-    public void submit(String id, String metapath, Document constraints, String folder) 
+    public void submit(String id, String metapath, int k, int t, int w, int minValues, String folder) 
         throws java.io.IOException, InterruptedException {
         
         // create folder to store results
-        String outputDir = FileUtil.createDir("ranking", id);
-        String outputLog = FileUtil.getLogfile("ranking", id);
+        String outputDir = FileUtil.createDir("simjoin", id);
+        String outputLog = FileUtil.getLogfile("simjoin", id);
         
-        String config = FileUtil.writeConfig("ranking", outputDir, metapath, constraints, -1, -1, -1, -1, folder);
+        String config = FileUtil.writeConfig("simjoin", outputDir, metapath, null, k, t, w, minValues, folder);
 
         // prepare ranking script arguments
         ProcessBuilder pb = new ProcessBuilder();
-        pb.command("/bin/bash", Constants.WORKFLOW_DIR + "ranking/ranking.sh", config);
+        pb.command("/bin/bash", Constants.WORKFLOW_DIR + "simjoin/simjoin.sh", config);
         
         // redirect ouput to logfile
         File out = new File(outputLog);
@@ -55,7 +55,7 @@ public class RankingService {
         printWriter.print("Exit Code\t" + exitCode);
         printWriter.close();
 
-        log.debug("Ranking task for id: " + id + " exited with code: " + exitCode);
+        log.debug("SimJoin task for id: " + id + " exited with code: " + exitCode);
     }
 
     private static void getMeta(Document meta, int totalRecords, int totalPages, int page) {
@@ -70,17 +70,17 @@ public class RankingService {
         meta.append("links", links);
     }
 
-    public List<Document> getResults(String rankingFile, Integer page, Document meta) throws IOException{
+    public List<Document> getResults(String analysisFile, Integer page, Document meta) throws IOException{
         if (page == null) 
             page = 1;
         
         List<Document> docs = new ArrayList<>();
-        int totalRecords = FileUtil.countLines(rankingFile);
+        int totalRecords = FileUtil.countLines(analysisFile);
         int totalPages = FileUtil.totalPages(totalRecords);
         final int firstRecordNumber = (page - 1) * Constants.PAGE_SIZE + 1;
 
         int count = 0;
-        Reader reader = Files.newBufferedReader(Paths.get(rankingFile));
+        Reader reader = Files.newBufferedReader(Paths.get(analysisFile));
         CSVReader csvReader =  new CSVReaderBuilder(reader)
             .withCSVParser(new CSVParserBuilder().withSeparator('\t').build())
             .withSkipLines(firstRecordNumber-1)
@@ -89,18 +89,19 @@ public class RankingService {
         String[] attributes;
         while (count < Constants.PAGE_SIZE && ((attributes = csvReader.readNext()) != null)) {
             
-            String[] tokens = attributes[0].split("\\|");
+            String[] srcTokens = attributes[0].split("\\|");
+            String[] destTokens = attributes[1].split("\\|");
 
             // print information to output here
             Document doc = new Document()
-                .append("id", Integer.parseInt(tokens[0]))
-                .append("name", tokens[1])
-                .append("score", Float.parseFloat(attributes[1]));
+                .append("src", new Document().append("id", Integer.parseInt(srcTokens[0])).append("name", srcTokens[1]))
+                .append("dest", new Document().append("id", Integer.parseInt(destTokens[0])).append("name", destTokens[1]))
+                .append("score", Float.parseFloat(attributes[2]));
             docs.add(doc);
             count++;
         }
 
-        RankingService.getMeta(meta, totalRecords, totalPages, page);
+        SimJoinService.getMeta(meta, totalRecords, totalPages, page);
 
         return docs;
     }

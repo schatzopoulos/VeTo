@@ -80,6 +80,9 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             .antMatchers("/api/ranking/submit").permitAll()
             .antMatchers("/api/ranking/get").permitAll()
             
+            .antMatchers("/api/simjoin/submit").permitAll()
+            .antMatchers("/api/simjoin/get").permitAll()
+
             .antMatchers("/api/datasets/upload").permitAll()
             .antMatchers("/api/datasets/schemas").permitAll()
 

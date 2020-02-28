@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import athenarc.imsi.sdl.service.RankingService;
+import athenarc.imsi.sdl.service.SimJoinService;
 import athenarc.imsi.sdl.service.util.FileUtil;
 import athenarc.imsi.sdl.web.rest.vm.QueryConfigVM;
 
@@ -24,13 +24,13 @@ import athenarc.imsi.sdl.web.rest.vm.QueryConfigVM;
  * RankingResource controller
  */
 @RestController
-@RequestMapping("/api/ranking")
-public class RankingResource {
+@RequestMapping("/api/simjoin")
+public class SimJoinResource {
 
-    private final Logger log = LoggerFactory.getLogger(RankingResource.class);
+    private final Logger log = LoggerFactory.getLogger(SimJoinResource.class);
     
     @Autowired
-    private final RankingService rankingService = new RankingService();
+    private final SimJoinService simjoinService = new SimJoinService();
     
     /**
     * POST submit
@@ -38,15 +38,15 @@ public class RankingResource {
     @PostMapping("/submit")
     public Document submit(@Valid @RequestBody QueryConfigVM config) {
         String id = UUID.randomUUID().toString();
-        log.debug("Ranking task submitted with id: " + id);
+        log.debug("SimJoin task submitted with id: " + id);
 
         try {
 
             // run async method from service
-            rankingService.submit(id, config.getMetapath(), config.getConstraints(), config.getFolder());        
+            simjoinService.submit(id, config.getMetapath(), config.getK(), config.getT(), config.getW(), config.getMinValues(), config.getFolder());        
 
         } catch (java.io.IOException | InterruptedException e) {
-            throw new RuntimeException("Error running ranking task: " + id);
+            throw new RuntimeException("Error running simjoin task: " + id);
         }
 		return new Document("id", id);
     }
@@ -56,9 +56,9 @@ public class RankingResource {
     */
     @GetMapping("/get")
     public Document status(String id,  Integer page) {
-        log.debug("ranking/status : {}", id, page);
+        log.debug("simjoin/status : {}", id, page);
 
-        String logfile = FileUtil.getLogfile("ranking", id);
+        String logfile = FileUtil.getLogfile("simjoin", id);
         try {
             String lastLine = FileUtil.getLastLine(logfile);
             int index = lastLine.indexOf("Exit Code");
@@ -68,14 +68,14 @@ public class RankingResource {
 
                 // error occurred in ranking script
                 if (exitCode != 0) {
-                    throw new RuntimeException("Error in ranking task: " + id);
+                    throw new RuntimeException("Error in simjoin task: " + id);
                 }
 
-                String rankingFile = FileUtil.getOutputFile("ranking", id);
+                String rankingFile = FileUtil.getOutputFile("simjoin", id);
                 
                 try {
                     Document meta = new Document();
-                    List<Document> docs = rankingService.getResults(rankingFile, page, meta);
+                    List<Document> docs = simjoinService.getResults(rankingFile, page, meta);
 
                     response.append("id", id)
                         .append("progress", 100)
@@ -93,7 +93,7 @@ public class RankingResource {
                 if (tokens.length > 1) {
                     response.append("stage", tokens[0])
                     .append("step", tokens[2])
-                    .append("progress", rankingService.getProgress(tokens[0], Integer.parseInt(tokens[1])));
+                    .append("progress", simjoinService.getProgress(tokens[0], Integer.parseInt(tokens[1])));
                 
                 // in case logfile is still empty
                 } else {
