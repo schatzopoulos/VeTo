@@ -1,6 +1,7 @@
 package athenarc.imsi.sdl.web.rest;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.bson.Document;
 import org.slf4j.Logger;
@@ -68,5 +69,21 @@ public class DatasetsResource {
         }
 
         return response;
+    }
+
+    /**
+    * GET status
+    */
+    @GetMapping("/autocomplete")
+    public List<Document> autocomplete(@RequestParam(value = "folder") String folder, 
+        @RequestParam(value = "entity") String entity, 
+        @RequestParam(value = "field") String field,
+        @RequestParam(value = "term") String term) {
+
+        try {
+            return datasetsService.autocomplete(folder, entity.substring(0, 1), field, term.toLowerCase());
+        } catch (IOException e) {
+            throw new RuntimeException("Error reading schema for datasets");
+        }
     }
 }

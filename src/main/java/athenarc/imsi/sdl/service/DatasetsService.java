@@ -1,10 +1,14 @@
 package athenarc.imsi.sdl.service;
 
+import java.io.BufferedReader;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.bson.Document;
 import org.slf4j.Logger;
@@ -41,5 +45,41 @@ public class DatasetsService {
             schema.remove("name");
         }
         return response;
+    }
+
+    public List<Document> autocomplete(String folder, String entity, String field, String term) throws IOException {
+        List<Document> docs = new ArrayList<>();
+        BufferedReader reader;
+        String filename = Constants.DATA_DIR + folder + "/nodes/" + entity + ".csv";
+        reader = new BufferedReader(new FileReader(filename));
+        
+        // read header line and find column of specified field
+        String line = reader.readLine();
+
+        String [] columnNames = line.split("\t");
+        int i;
+        for (i=0; i<columnNames.length; i++) {
+            if (columnNames[i].startsWith(field))
+                break;
+        }
+
+        // loop in lines until find 5 results to return
+        while ( ( line = reader.readLine() ) != null) {
+            String [] attrs = line.split("\t");
+
+            if (attrs[i].toLowerCase().contains(term)) {
+                Document doc = new Document();
+                doc.append("id", Integer.parseInt(attrs[0]));
+                doc.append("name", attrs[i]);
+                docs.add(doc);
+                if (docs.size() == 5) {
+                    break;
+                }
+            }
+
+        }
+        reader.close();
+		
+        return docs;
     }
 }
