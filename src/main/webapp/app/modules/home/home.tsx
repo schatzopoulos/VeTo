@@ -473,28 +473,32 @@ export class Home extends React.Component<IHomeProps> {
 
 		const constraintsPanel = <Row>
 		<Col md="12">
-			<h4>4. Select constraints</h4>
+			<h4>3. Select constraints</h4>
 		</Col>
 		<Col md="12">
-		<ListGroup>
 			{
-				_.map(this.state.constraints, (entityConstraints, entity) => {
+				 					<ListGroup>
+					{
+						(this.state.metapath.length > 0) ?
+						_.map(this.state.constraints, (entityConstraints, entity) => {
 
-					return <ConstraintItem 
-						key={ entity }
-						entity={ entity }
-						entityConstraints={ entityConstraints }
-						handleSwitch={this.handleConstraintSwitch.bind(this)}
-						handleDropdown={this.handleConstraintOpDropdown.bind(this)}
-						handleLogicDropdown={this.handleConstraintLogicOpDropdown.bind(this)}
-						handleInput={this.handleConstraintInputChange.bind(this)}
-						handleAddition={this.handleConstraintAddition.bind(this)}
-						handleRemoval={this.handleConstraintRemoval.bind(this)}
+							return <ConstraintItem 
+								key={ entity }
+								entity={ entity }
+								entityConstraints={ entityConstraints }
+								handleSwitch={this.handleConstraintSwitch.bind(this)}
+								handleDropdown={this.handleConstraintOpDropdown.bind(this)}
+								handleLogicDropdown={this.handleConstraintLogicOpDropdown.bind(this)}
+								handleInput={this.handleConstraintInputChange.bind(this)}
+								handleAddition={this.handleConstraintAddition.bind(this)}
+								handleRemoval={this.handleConstraintRemoval.bind(this)}
 
-					/>;
-				})
+							/>;
+						})
+						: 'No constraints can be applied'
+					}
+					</ListGroup>
 			}
-		</ListGroup>
 		</Col>
 		</Row>;
 
@@ -538,17 +542,17 @@ export class Home extends React.Component<IHomeProps> {
 					
 				</Col>
 				<Col md="6">
-					<h4>3. Select analysis type</h4>
+					
+					{
+						constraintsPanel		
+					}
+
+					<br/>
+					<h4>4. Select analysis type</h4>
 					<Input id="analysis-dropdown" type="select" value={this.state.analysis} onChange={this.handleAnalysisDropdown.bind(this)} >
 						<option value={"ranking"}>Ranking</option>
 						<option value={"simjoin"}>Similarity Join</option>
 					</Input>
-					<br/>
-					
-					{
-						(this.state.metapath.length > 0) && constraintsPanel		
-					}
-
 					<br/>
 					<Col md={{ size: 4, offset: 8 }}>
 						<Button block color="success" disabled={this.props.loading || !validMetapath || !validConstraints} onClick={this.execute.bind(this)}>
