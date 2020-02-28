@@ -4,7 +4,6 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
 import { 
-	Card, 
 	Row, 
 	Col, 
 	InputGroup, 
@@ -15,6 +14,9 @@ import {
 	ListGroup,
 	Progress,
 	Container,
+	Card, 
+	CardHeader, 
+	CardBody,
 } from 'reactstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { IRootState } from 'app/shared/reducers';
@@ -514,15 +516,15 @@ export class Home extends React.Component<IHomeProps> {
 					</Row>
 					<br/>
 
-					<h4>2. Select meta-path</h4>
+					<h4>2. Select metapath</h4>
 					<Card className="mx-auto">		
 						{ schema }
 					</Card>
 
 					<br/>
 					<Row>
-						<Col md="6">
-							<h4>Current meta-path</h4>
+						<Col md={{ size: 8, offset: 2}} style={{'text-align': 'center'}}>
+							<h5>Current metapath</h5>
 							<InputGroup>
 								<Input placeholder="Select nodes on the graph to define the metapath" value={this.state.metapathStr} disabled={true}/>
 								<InputGroupAddon addonType="append">
@@ -532,56 +534,63 @@ export class Home extends React.Component<IHomeProps> {
 							
 						</Col>
 
-						<Col md="6">
-							<h4>3. Select analysis type</h4>
-							<Input id="analysis-dropdown" type="select" value={this.state.analysis} onChange={this.handleAnalysisDropdown.bind(this)} >
-								<option value={"ranking"}>Ranking</option>
-								<option value={"simjoin"}>Similarity Join</option>
-							</Input>
-						</Col>
 					</Row>
+					
+				</Col>
+				<Col md="6">
+					<h4>3. Select analysis type</h4>
+					<Input id="analysis-dropdown" type="select" value={this.state.analysis} onChange={this.handleAnalysisDropdown.bind(this)} >
+						<option value={"ranking"}>Ranking</option>
+						<option value={"simjoin"}>Similarity Join</option>
+					</Input>
+					<br/>
+					
 					{
-						(!validMetapathLength || !validMetapath || !validConstraints) &&
-						<Row>
-							<Col>
-								<div className="small-grey">
-									Note: 
+						(this.state.metapath.length > 0) && constraintsPanel		
+					}
+
+					<br/>
+					<Col md={{ size: 4, offset: 8 }}>
+						<Button block color="success" disabled={this.props.loading || !validMetapath || !validConstraints} onClick={this.execute.bind(this)}>
+							<FontAwesomeIcon icon="play" /> Execute analysis
+						</Button>
+					</Col>
+				</Col>
+				
+				{
+					(!validMetapathLength || !validMetapath || !validConstraints) &&
+					<Col md={{size: 4, offset: 4}}>
+						<br/>
+						<Row className="small-grey">
+							<Card>
+								<CardBody>
+									<b>Please note that:</b>
 									<ul>
 										{
 											(!validMetapathLength) &&
 											<li>
-												Metapath should containt at least 3 nodes
+												The metapath should containt at least 3 nodes.
 											</li>
 										}
 										{
 											(!validMetapath) && 
 											<li>
-												Give symmetric metapath  e.g. APPA
+												The metapath should be symmetric  e.g. APPA
 											</li>
 										}
 										{
 											(!validConstraints) &&
 											<li>
-												Give at least one constraint
+												You should give at least one constraint.
 											</li>
 										}
 									</ul>
-								</div>
-							</Col>
+								</CardBody>
+							</Card>
 						</Row>
-					}
-				</Col>
-				<Col md="6">
-					{
-						(this.state.metapath.length > 0) && constraintsPanel		
-					}
-				</Col>
-				<Col md='12'>
-					<br/>
-					<Button color="success" disabled={this.props.loading || !validMetapath || !validConstraints} onClick={this.execute.bind(this)}>
-						<FontAwesomeIcon icon="play" /> Run
-					</Button>
-				</Col>
+					</Col>
+				}
+
 				<Col md='12'>
 					<Container>
 					<br/>
@@ -591,7 +600,7 @@ export class Home extends React.Component<IHomeProps> {
 					<ResultsPanel 
 						docs={this.props.docs}
 						meta={this.props.meta}
-						analysis={this.state.analysis}
+						analysis={this.props.analysis}
 						loadMore={this.loadMoreResults.bind(this)}
 					/>
 					</Container>
