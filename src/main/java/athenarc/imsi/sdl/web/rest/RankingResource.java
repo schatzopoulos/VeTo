@@ -43,7 +43,7 @@ public class RankingResource {
         try {
 
             // run async method from service
-            rankingService.submit(id, config.getMetapath(), config.getConstraints(), config.getFolder());        
+            rankingService.submit(id, config.getMetapath(), config.getConstraints(), config.getFolder(), config.getSelectField());        
 
         } catch (java.io.IOException | InterruptedException e) {
             throw new RuntimeException("Error running ranking task: " + id);

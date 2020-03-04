@@ -28,14 +28,14 @@ public class SimJoinService {
     private final Logger log = LoggerFactory.getLogger(SimJoinService.class);
 
     @Async
-    public void submit(String id, String metapath, int k, int t, int w, int minValues, String folder) 
+    public void submit(String id, String metapath, int k, int t, int w, int minValues, String folder, String selectField) 
         throws java.io.IOException, InterruptedException {
         
         // create folder to store results
         String outputDir = FileUtil.createDir("simjoin", id);
         String outputLog = FileUtil.getLogfile("simjoin", id);
         
-        String config = FileUtil.writeConfig("simjoin", outputDir, metapath, null, k, t, w, minValues, folder);
+        String config = FileUtil.writeConfig("simjoin", outputDir, metapath, null, k, t, w, minValues, folder, selectField);
 
         // prepare ranking script arguments
         ProcessBuilder pb = new ProcessBuilder();

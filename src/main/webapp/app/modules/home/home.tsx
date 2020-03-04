@@ -51,6 +51,7 @@ export class Home extends React.Component<IHomeProps> {
 		constraints: {},
 		analysis: "ranking",
 		dataset: "DBLP",
+		selectField: '',
 	};
 	cy: any;
 	polling: any;
@@ -178,11 +179,17 @@ export class Home extends React.Component<IHomeProps> {
 				}
 			});
 
-			this.setState({
-				metapath, 
-				metapathStr,
-				constraints,
-			}, () => {
+			const newState = { ... this.state };
+			newState.metapath = metapath;
+			newState.metapathStr = metapathStr;
+			newState.constraints = constraints;
+
+			// select first attribute from the options
+			if (this.state.selectField === '') {
+				newState.selectField = node.data('attributes')[0].name
+			}
+
+			this.setState(newState, () => {
 				this.animateNeighbors(node);
 			});
 			
@@ -208,12 +215,18 @@ export class Home extends React.Component<IHomeProps> {
 				constraints[entity] = entityConstraint;
 			}
 		});
+		
+		const newState = { ... this.state };
+		newState.metapath = metapath; 
+		newState.metapathStr = metapathStr;
+		newState.constraints = constraints;
 
-		this.setState({
-			metapath,
-			metapathStr,
-			constraints,
-		}, () => {
+		// clear select field when metapath is deleted
+		if (metapath.length === 0) {
+			newState.selectField = '';
+		}
+
+		this.setState(newState, () => {
 			this.animateNeighbors(node);
 		});	
 	}
@@ -259,6 +272,23 @@ export class Home extends React.Component<IHomeProps> {
 		});
 	}
 
+	getSelectFieldOptions() {
+		if (this.state.metapath.length === 0) {
+			return { selectField: '', selectFieldOptions: [] };
+		}
+
+		const selectFieldOptions = [];
+		const firstNode = this.state.metapath[0];
+
+		const selectField = firstNode.data('label');
+		_.forOwn(firstNode.data('attributes'), (value, key) => {
+			selectFieldOptions.push(
+				<option key={key} value={value.name}>{value.name} (:{value.type})</option>
+			);
+		});
+
+		return { selectField, selectFieldOptions };
+	}
 	handleConstraintLogicOpDropdown({ entity, field, index }, value) {
 		const constraints = {...this.state.constraints};
 		const found = constraints[entity][field]['conditions'].find(c => c.index === index);
@@ -304,22 +334,23 @@ export class Home extends React.Component<IHomeProps> {
 
 	execute(e) {
 		e.preventDefault();
+		let analysis = null;
 
-		if (this.state.analysis === 'ranking') {
-			this.props.rankingRun(
-				this.state.metapathStr, 
-				this.state.constraints, 
-				this.props.schemas[this.state.dataset]['folder']
-			);
-		} else if (this.state.analysis === "simjoin") {
-			this.props.simjoinRun(
-				this.state.metapathStr, 
-				this.state.constraints, 
-				this.props.schemas[this.state.dataset]['folder']
-			);
-		} else {
-			alert("This type of analysis will be implemented soon");
+		switch(this.state.analysis) {
+			case 'ranking': 
+				analysis = this.props.rankingRun; break;
+			case 'simjoin':
+				analysis = this.props.simjoinRun; break;
+			default:
+				alert("This type of analysis will be implemented soon");
 		}
+
+		analysis(
+			this.state.metapathStr, 
+			this.state.constraints, 
+			this.props.schemas[this.state.dataset]['folder'],
+			this.state.selectField,
+		);
 	}
 	loadMoreResults() {
 		this.props.getMoreResults(this.props.analysis, this.props.uuid, this.props.meta.page + 1);
@@ -451,6 +482,7 @@ export class Home extends React.Component<IHomeProps> {
 		newState.metapathStr = '';
 		newState.neighbors = undefined;
 		newState.constraints = {};
+		newState.selectField = '';
 		newState.dataset = e.target.value;
 
 		this.setState(newState, () => {	
@@ -467,6 +499,13 @@ export class Home extends React.Component<IHomeProps> {
 		}
 		return options;
 	}
+	handleSelectFieldChange(e) {
+		e.preventDefault();
+
+		const newState = { ...this.state };
+		newState.selectField = e.target.value;
+		this.setState(newState);
+	}
 	render() {
 		const datasetOptions = this.getDatasetOptions();
 		const schema = this.getSchema();
@@ -477,7 +516,7 @@ export class Home extends React.Component<IHomeProps> {
 		</Col>
 		<Col md="12">
 			{
-				 					<ListGroup>
+				<ListGroup>
 					{
 						(this.state.metapath.length > 0) ?
 						_.map(this.state.constraints, (entityConstraints, entity) => {
@@ -505,6 +544,7 @@ export class Home extends React.Component<IHomeProps> {
 		const validMetapathLength = this.checkMetapathLength();
 		const validMetapath = this.checkSymmetricMetapath();
 		const validConstraints = this.checkConstraints();
+		const { selectField, selectFieldOptions }: any = this.getSelectFieldOptions();
 
 		return (
 			<Container fluid>
@@ -527,7 +567,7 @@ export class Home extends React.Component<IHomeProps> {
 
 					<br/>
 					<Row>
-						<Col md={{ size: 8, offset: 2}} style={{'text-align': 'center'}}>
+						<Col md='6' style={{'textAlign': 'center'}}>
 							<h5>Current metapath</h5>
 							<InputGroup>
 								<Input placeholder="Select nodes on the graph to define the metapath" value={this.state.metapathStr} disabled={true}/>
@@ -535,6 +575,13 @@ export class Home extends React.Component<IHomeProps> {
 									<Button color="danger" title="Delete last node" onClick={this.deleteLast.bind(this)} ><FontAwesomeIcon icon="arrow-left" /></Button>
 								</InputGroupAddon>
 							</InputGroup>
+							
+						</Col>
+						<Col md='6' style={{'textAlign': 'center'}}>
+							<h5>Select key attribute { (selectField) && <span> for entity { selectField }</span>}</h5>
+							<Input id="select-field-dropdown" type="select" value={this.state.selectField} onChange={this.handleSelectFieldChange.bind(this)} disabled={this.state.metapath.length === 0}>
+								{ selectFieldOptions }
+							</Input>
 							
 						</Col>
 

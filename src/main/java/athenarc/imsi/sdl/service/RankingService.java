@@ -28,14 +28,14 @@ public class RankingService {
     private final Logger log = LoggerFactory.getLogger(RankingService.class);
 
     @Async
-    public void submit(String id, String metapath, Document constraints, String folder) 
+    public void submit(String id, String metapath, Document constraints, String folder, String selectField) 
         throws java.io.IOException, InterruptedException {
         
         // create folder to store results
         String outputDir = FileUtil.createDir("ranking", id);
         String outputLog = FileUtil.getLogfile("ranking", id);
         
-        String config = FileUtil.writeConfig("ranking", outputDir, metapath, constraints, -1, -1, -1, -1, folder);
+        String config = FileUtil.writeConfig("ranking", outputDir, metapath, constraints, -1, -1, -1, -1, folder, selectField);
 
         // prepare ranking script arguments
         ProcessBuilder pb = new ProcessBuilder();

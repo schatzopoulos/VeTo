@@ -20,6 +20,9 @@ public class QueryConfigVM {
     @NotNull
     private Document constraints;
 
+    @NotNull
+    private String selectField;
+
     private int k;
     private int t;
     private int w;
@@ -79,6 +82,14 @@ public class QueryConfigVM {
 
     public void setFolder(String _folder) {
         this.folder = _folder;
+    }
+
+    public String getSelectField() {
+        return this.selectField;
+    }
+
+    public void setSelectField(String selectField) {
+        this.selectField = selectField;
     }
 
     @Override

@@ -56,7 +56,7 @@ public final class FileUtil {
     }
 
     public static String writeConfig(String analysisType, 
-        String outputDir, String metapath, Document constraints, int k, int t, int w, int minValues, String folder) throws IOException {
+        String outputDir, String metapath, Document constraints, int k, int t, int w, int minValues, String folder, String selectField) throws IOException {
 
         Document config = new Document();
         config.put("indir", Constants.DATA_DIR + folder + "/nodes/");
@@ -65,6 +65,8 @@ public final class FileUtil {
         config.put("hin_out", outputDir + "/" + Constants.HIN_OUT);
         config.put("analysis_out", outputDir + "/" + Constants.ANALYSIS_OUT);
         config.put("final_out", outputDir + "/" + Constants.FINAL_OUT);
+        config.put("select_field", selectField);
+        
         if (analysisType == "ranking") {
             config.put("pr_alpha", 0.5);
             config.put("pr_tol", 0.00000000001);

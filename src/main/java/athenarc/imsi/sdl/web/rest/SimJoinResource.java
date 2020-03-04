@@ -43,7 +43,7 @@ public class SimJoinResource {
         try {
 
             // run async method from service
-            simjoinService.submit(id, config.getMetapath(), config.getK(), config.getT(), config.getW(), config.getMinValues(), config.getFolder());        
+            simjoinService.submit(id, config.getMetapath(), config.getK(), config.getT(), config.getW(), config.getMinValues(), config.getFolder(), config.getSelectField());        
 
         } catch (java.io.IOException | InterruptedException e) {
             throw new RuntimeException("Error running simjoin task: " + id);

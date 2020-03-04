@@ -124,8 +124,8 @@ export default (state: AnalysisState = initialState, action): AnalysisState => {
 
 // Actions
 
-function formatPayload(metapath, constraints, folder) {
-  const payload = { metapath, folder };
+function formatPayload(metapath, constraints, folder, selectField) {
+  const payload = { metapath, folder, selectField };
 
   payload['constraints'] = {};
   _.forOwn(constraints, (entityConstraint, entity) => {
@@ -192,8 +192,8 @@ export const getMoreResults = (analysis, id, page) => {
   };
 };
 
-export const rankingRun = (metapath, constraints, folder) => {
-  const payload = formatPayload(metapath, constraints, folder);
+export const rankingRun = (metapath, constraints, folder, selectField) => {
+  const payload = formatPayload(metapath, constraints, folder, selectField);
 
   return {
     type: ACTION_TYPES.RANKING_SUBMIT,
@@ -201,8 +201,8 @@ export const rankingRun = (metapath, constraints, folder) => {
   };
 };
 
-export const simjoinRun = (metapath, constraints, folder) => {
-  const payload = formatPayload(metapath, constraints, folder);
+export const simjoinRun = (metapath, constraints, folder, selectField) => {
+  const payload = formatPayload(metapath, constraints, folder, selectField);
 
   // similarity-join specific values
   payload['k'] = 100;
