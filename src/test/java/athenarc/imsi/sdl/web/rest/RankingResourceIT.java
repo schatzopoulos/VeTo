@@ -43,7 +43,7 @@ public class RankingResourceIT {
     public void testSubmit() throws Exception {
         restMockMvc.perform(post("/api/ranking/submit")
         .contentType(MediaType.APPLICATION_JSON)
-        .content("{ \"metapath\": \"APA\", \"constraints\": { \"P\": \"year > 2015\" }, \"folder\": \"DBLP\" }"))    
+        .content("{ \"metapath\": \"APA\", \"constraints\": { \"P\": \"year > 2015\" }, \"folder\": \"DBLP\", \"selectField\": \"name\" }"))    
         .andExpect(status().isOk());
     }
 
@@ -54,7 +54,7 @@ public class RankingResourceIT {
     public void testStatus() throws Exception {
         MvcResult result = restMockMvc.perform(post("/api/ranking/submit")
         .contentType(MediaType.APPLICATION_JSON)
-        .content("{ \"metapath\": \"APA\", \"constraints\": { \"P\": \"year > 2015\" }, \"folder\": \"DBLP\" }")) 
+        .content("{ \"metapath\": \"APA\", \"constraints\": { \"P\": \"year > 2015\" }, \"folder\": \"DBLP\", \"selectField\": \"name\" }")) 
         .andExpect(status().isOk()).andReturn();
         String content = result.getResponse().getContentAsString();
         Document response = Document.parse(content);
