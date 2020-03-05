@@ -4,3 +4,6 @@
 [submodule "libs/HMiner"]
 	path = libs/HMiner
 	url = https://github.com/smartdatalake/HMiner
+[submodule "libs/SciNeM-workflows"]
+	path = libs/SciNeM-workflows
+	url = https://github.com/schatzopoulos/SciNeM-workflows.git
