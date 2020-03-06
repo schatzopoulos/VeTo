@@ -139,6 +139,51 @@ export class Home extends React.Component<IHomeProps> {
 			this.initCy();
 		}
 	}
+	tapNode(e) {
+			
+		const node = e.target;
+
+		if (!this.validMove(node)) {
+			alert("This selection is not allowed, please select on of the nodes denoted with green color");
+			return;
+		}
+
+		// set metapath
+		const metapath = [...this.state.metapath];	// copy array
+		metapath.push(node);
+		const metapathStr = metapath.map(n => n.data('label').substr(0,1)).join('');
+
+		// set constraints 
+		const constraints = {...this.state.constraints};
+		// const attrs = node.data('attributes').filter(n => (n.name !== 'id'));
+		_.forOwn(node.data('attributes'), (value) => {
+			const entity = node.data('label');
+			const field = value.name;
+
+			// create constraints for node, if not already present
+			if ( !(entity in constraints) || !(field in constraints[entity])) {
+				this.checkAndCreateConstraints(constraints, { 
+					entity, 
+					field, 
+				}, value.type);
+			}
+		});
+
+		const newState = { ... this.state };
+		newState.metapath = metapath;
+		newState.metapathStr = metapathStr;
+		newState.constraints = constraints;
+
+		// select first attribute from the options
+		if (this.state.selectField === '') {
+			newState.selectField = node.data('attributes')[0].name
+		}
+
+		this.setState(newState, () => {
+			this.animateNeighbors(node);
+		});
+		
+	}
 	initCy() {
 		// center align graph 
 		this.cy.center();
@@ -150,51 +195,7 @@ export class Home extends React.Component<IHomeProps> {
 		}); 
 
 		// change state and animate on node click
-		this.cy.on('tap', 'node', (e) => {
-			
-			const node = e.target;
-
-			if (!this.validMove(node)) {
-				alert("This selection is not allowed, please select on of the nodes denoted with green color");
-				return;
-			}
-
-			// set metapath
-			const metapath = [...this.state.metapath];	// copy array
-			metapath.push(node);
-			const metapathStr = metapath.map(n => n.data('label').substr(0,1)).join('');
-
-			// set constraints 
-			const constraints = {...this.state.constraints};
-			// const attrs = node.data('attributes').filter(n => (n.name !== 'id'));
-			_.forOwn(node.data('attributes'), (value) => {
-				const entity = node.data('label');
-				const field = value.name;
-
-				// create constraints for node, if not already present
-				if ( !(entity in constraints) || !(field in constraints[entity])) {
-					this.checkAndCreateConstraints(constraints, { 
-						entity, 
-						field, 
-					}, value.type);
-				}
-			});
-
-			const newState = { ... this.state };
-			newState.metapath = metapath;
-			newState.metapathStr = metapathStr;
-			newState.constraints = constraints;
-
-			// select first attribute from the options
-			if (this.state.selectField === '') {
-				newState.selectField = node.data('attributes')[0].name
-			}
-
-			this.setState(newState, () => {
-				this.animateNeighbors(node);
-			});
-			
-		});
+		this.cy.on('tap', 'node', (e) => this.tapNode(e) );
 	}
 	
 	/**
@@ -334,7 +335,6 @@ export class Home extends React.Component<IHomeProps> {
 	}
 
 	execute(e) {
-		e.preventDefault();
 		let analysis = null;
 
 		switch(this.state.analysis) {
@@ -355,6 +355,46 @@ export class Home extends React.Component<IHomeProps> {
 			this.state.selectField,
 			this.state.targetEntity,
 		);
+	}
+	runExample(e) {
+
+		console.log(this.state.analysis);
+		const newState = { ... this.state };
+
+		const nodes = this.cy.filter('node');
+		console.log(nodes);
+
+		switch(this.state.analysis) {
+			case 'ranking': {
+				const node = nodes.select('label=MiRNA');
+
+				console.log(node);
+
+				newState.dataset = 'Bio';
+				newState.metapathStr = "MGDGM";
+				newState.selectField = "name";
+				newState.constraints = {"Disease":{"name":{"nextIndex":1,"enabled":true,"type":"string","conditions":[{"index":0,"value":"Adenocarcinoma","operation":"="}]}}};
+				break;
+			}
+			case 'simjoin':
+				newState.dataset = 'DBLP';
+				newState.metapathStr = "VPTPV";
+				newState.selectField = "name";
+				break;
+			case 'simsearch':
+				newState.dataset = 'DBLP';
+				newState.metapathStr = "VPAPV";
+				newState.selectField = "name";
+				newState.targetEntity = 360;
+				break;
+			default:
+				alert("This type of analysis will be implemented soon");
+		}
+
+		this.setState(newState, () => {
+			this.changeSchema(); 
+			this.execute(e);
+		});
 	}
 	loadMoreResults() {
 		this.props.getMoreResults(this.props.analysis, this.props.uuid, this.props.meta.page + 1);
@@ -546,9 +586,8 @@ export class Home extends React.Component<IHomeProps> {
 			{
 				<ListGroup>
 					{
-						(this.state.metapath.length > 0) ?
+						(this.state.metapathStr.length > 0) ?
 						_.map(this.state.constraints, (entityConstraints, entity) => {
-
 							return <ConstraintItem 
 								key={ entity }
 								entity={ entity }
@@ -640,9 +679,18 @@ export class Home extends React.Component<IHomeProps> {
 					}
 					<br/>
 					<Col md={{ size: 4, offset: 8 }}>
-						<Button block color="success" disabled={this.props.loading || !validMetapath || !validConstraints} onClick={this.execute.bind(this)}>
-							<FontAwesomeIcon icon="play" /> Execute analysis
-						</Button>
+						<Row>
+							{/* <Col md="6">
+								<Button block color="success" outline onClick={this.runExample.bind(this)}>
+									<FontAwesomeIcon icon="play" /> Execute example
+								</Button>
+							</Col> */}
+							<Col md="12">
+								<Button block color="success" disabled={this.props.loading || !validMetapath || !validConstraints} onClick={this.execute.bind(this)}>
+									<FontAwesomeIcon icon="play" /> Execute analysis
+								</Button>
+							</Col>
+						</Row>
 					</Col>
 				</Col>
 				
