@@ -35,7 +35,7 @@ public class RankingService {
         String outputDir = FileUtil.createDir("ranking", id);
         String outputLog = FileUtil.getLogfile("ranking", id);
         
-        String config = FileUtil.writeConfig("ranking", outputDir, metapath, constraints, -1, -1, -1, -1, folder, selectField);
+        String config = FileUtil.writeConfig("ranking", outputDir, metapath, constraints, -1, -1, -1, -1, folder, selectField, -1);
 
         // prepare ranking script arguments
         ProcessBuilder pb = new ProcessBuilder();

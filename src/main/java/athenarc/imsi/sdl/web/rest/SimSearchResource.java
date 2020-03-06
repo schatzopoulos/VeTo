@@ -24,13 +24,13 @@ import athenarc.imsi.sdl.web.rest.vm.QueryConfigVM;
  * RankingResource controller
  */
 @RestController
-@RequestMapping("/api/simjoin")
-public class SimJoinResource {
+@RequestMapping("/api/simsearch")
+public class SimSearchResource {
 
-    private final Logger log = LoggerFactory.getLogger(SimJoinResource.class);
+    private final Logger log = LoggerFactory.getLogger(SimSearchResource.class);
     
     @Autowired
-    private final SimilarityService similairityService = new SimilarityService();
+    private final SimilarityService similarityService = new SimilarityService();
     
     /**
     * POST submit
@@ -38,15 +38,15 @@ public class SimJoinResource {
     @PostMapping("/submit")
     public Document submit(@Valid @RequestBody QueryConfigVM config) {
         String id = UUID.randomUUID().toString();
-        log.debug("SimJoin task submitted with id: " + id);
+        log.debug("SimSearch task submitted with id: " + id);
 
         try {
 
             // run async method from service
-            similairityService.submit(id, "simjoin", config.getMetapath(), config.getK(), config.getT(), config.getW(), config.getMinValues(), config.getFolder(), config.getSelectField(), config.getTargetId());        
+            similarityService.submit(id, "simsearch", config.getMetapath(), config.getK(), config.getT(), config.getW(), config.getMinValues(), config.getFolder(), config.getSelectField(), config.getTargetId());        
 
         } catch (java.io.IOException | InterruptedException e) {
-            throw new RuntimeException("Error running simjoin task: " + id);
+            throw new RuntimeException("Error running simsearch task: " + id);
         }
 		return new Document("id", id);
     }
@@ -56,9 +56,9 @@ public class SimJoinResource {
     */
     @GetMapping("/get")
     public Document status(String id,  Integer page) {
-        log.debug("simjoin/status : {}", id, page);
+        log.debug("simsearch/status : {}", id, page);
 
-        String logfile = FileUtil.getLogfile("simjoin", id);
+        String logfile = FileUtil.getLogfile("simsearch", id);
         try {
             String lastLine = FileUtil.getLastLine(logfile);
             int index = lastLine.indexOf("Exit Code");
@@ -68,14 +68,14 @@ public class SimJoinResource {
 
                 // error occurred in ranking script
                 if (exitCode != 0) {
-                    throw new RuntimeException("Error in simjoin task: " + id);
+                    throw new RuntimeException("Error in simsearch task: " + id);
                 }
 
-                String rankingFile = FileUtil.getOutputFile("simjoin", id);
+                String rankingFile = FileUtil.getOutputFile("simsearch", id);
                 
                 try {
                     Document meta = new Document();
-                    List<Document> docs = similairityService.getResults(rankingFile, page, meta);
+                    List<Document> docs = similarityService.getResults(rankingFile, page, meta);
 
                     response.append("id", id)
                         .append("progress", 100)
@@ -93,7 +93,7 @@ public class SimJoinResource {
                 if (tokens.length > 1) {
                     response.append("stage", tokens[0])
                     .append("step", tokens[2])
-                    .append("progress", similairityService.getProgress(tokens[0], Integer.parseInt(tokens[1])));
+                    .append("progress", similarityService.getProgress(tokens[0], Integer.parseInt(tokens[1])));
                 
                 // in case logfile is still empty
                 } else {

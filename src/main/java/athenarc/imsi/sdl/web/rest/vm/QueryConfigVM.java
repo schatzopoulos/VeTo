@@ -27,6 +27,7 @@ public class QueryConfigVM {
     private int t;
     private int w;
     private int minValues;
+    private int targetId;
 
     public String getMetapath() {
         return metapath;
@@ -90,6 +91,14 @@ public class QueryConfigVM {
 
     public void setSelectField(String selectField) {
         this.selectField = selectField;
+    }
+
+    public int getTargetId() {
+        return this.targetId;
+    }
+
+    public void setTargetId(int targetId) {
+        this.targetId = targetId;
     }
 
     @Override

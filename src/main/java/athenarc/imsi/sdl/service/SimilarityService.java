@@ -23,23 +23,23 @@ import org.springframework.stereotype.Service;
 import athenarc.imsi.sdl.config.Constants;
 import athenarc.imsi.sdl.service.util.FileUtil;
 @Service
-public class SimJoinService {
+public class SimilarityService {
 
-    private final Logger log = LoggerFactory.getLogger(SimJoinService.class);
+    private final Logger log = LoggerFactory.getLogger(SimilarityService.class);
 
     @Async
-    public void submit(String id, String metapath, int k, int t, int w, int minValues, String folder, String selectField) 
+    public void submit(String id, String operation, String metapath, int k, int t, int w, int minValues, String folder, String selectField, int targetId) 
         throws java.io.IOException, InterruptedException {
         
         // create folder to store results
-        String outputDir = FileUtil.createDir("simjoin", id);
-        String outputLog = FileUtil.getLogfile("simjoin", id);
+        String outputDir = FileUtil.createDir(operation, id);
+        String outputLog = FileUtil.getLogfile(operation, id);
         
-        String config = FileUtil.writeConfig("simjoin", outputDir, metapath, null, k, t, w, minValues, folder, selectField);
+        String config = FileUtil.writeConfig(operation, outputDir, metapath, null, k, t, w, minValues, folder, selectField, -1);
 
         // prepare ranking script arguments
         ProcessBuilder pb = new ProcessBuilder();
-        pb.command("/bin/bash", Constants.WORKFLOW_DIR + "simjoin/simjoin.sh", config);
+        pb.command("/bin/bash", Constants.WORKFLOW_DIR + "similarity/entity_similarity.sh", config);
         
         // redirect ouput to logfile
         File out = new File(outputLog);
@@ -101,7 +101,7 @@ public class SimJoinService {
             count++;
         }
 
-        SimJoinService.getMeta(meta, totalRecords, totalPages, page);
+        SimilarityService.getMeta(meta, totalRecords, totalPages, page);
 
         return docs;
     }
