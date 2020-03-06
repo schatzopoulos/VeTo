@@ -15,7 +15,6 @@ import {
 	Progress,
 	Container,
 	Card, 
-	CardHeader, 
 	CardBody,
 } from 'reactstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -25,6 +24,7 @@ import  _  from 'lodash';
 import { 
 	rankingRun,
 	simjoinRun,
+	simsearchRun,
 	getResults, 
 	getMoreResults 
 } from '../analysis/analysis.reducer';
@@ -52,6 +52,7 @@ export class Home extends React.Component<IHomeProps> {
 		analysis: "ranking",
 		dataset: "DBLP",
 		selectField: '',
+		targetEntity: '',
 	};
 	cy: any;
 	polling: any;
@@ -341,6 +342,8 @@ export class Home extends React.Component<IHomeProps> {
 				analysis = this.props.rankingRun; break;
 			case 'simjoin':
 				analysis = this.props.simjoinRun; break;
+			case 'simsearch':
+				analysis = this.props.simsearchRun; break;
 			default:
 				alert("This type of analysis will be implemented soon");
 		}
@@ -350,6 +353,7 @@ export class Home extends React.Component<IHomeProps> {
 			this.state.constraints, 
 			this.props.schemas[this.state.dataset]['folder'],
 			this.state.selectField,
+			this.state.targetEntity,
 		);
 	}
 	loadMoreResults() {
@@ -359,6 +363,7 @@ export class Home extends React.Component<IHomeProps> {
 	handleAnalysisDropdown(e) {
 		this.setState({
 			analysis: e.target.value,
+			targetEntity: '',
 		});
 	}
 
@@ -506,6 +511,11 @@ export class Home extends React.Component<IHomeProps> {
 		newState.selectField = e.target.value;
 		this.setState(newState);
 	}
+	handleTargetEntity(e) {
+		this.setState({
+			targetEntity: e.target.value,
+		});
+	}
 	render() {
 		const datasetOptions = this.getDatasetOptions();
 		const schema = this.getSchema();
@@ -544,8 +554,9 @@ export class Home extends React.Component<IHomeProps> {
 		const validMetapathLength = this.checkMetapathLength();
 		const validMetapath = this.checkSymmetricMetapath();
 		const validConstraints = this.checkConstraints();
+		const validTargetEntity = this.state.targetEntity !== '';
 		const { selectField, selectFieldOptions }: any = this.getSelectFieldOptions();
-
+console.log("edw: " + this.props.analysis);
 		return (
 			<Container fluid>
 			<Row>
@@ -599,7 +610,16 @@ export class Home extends React.Component<IHomeProps> {
 					<Input id="analysis-dropdown" type="select" value={this.state.analysis} onChange={this.handleAnalysisDropdown.bind(this)} >
 						<option value={"ranking"}>Ranking</option>
 						<option value={"simjoin"}>Similarity Join</option>
+						<option value={"simsearch"}>Similarity Search</option>
 					</Input>
+					{
+						(this.state.analysis === "simsearch") &&
+							<div>
+								<br/>
+								<h4>5. Select target entity</h4>
+								<Input value={this.state.targetEntity} onChange={this.handleTargetEntity.bind(this)}/>
+							</div>
+					}
 					<br/>
 					<Col md={{ size: 4, offset: 8 }}>
 						<Button block color="success" disabled={this.props.loading || !validMetapath || !validConstraints} onClick={this.execute.bind(this)}>
@@ -626,13 +646,19 @@ export class Home extends React.Component<IHomeProps> {
 										{
 											(!validMetapath) && 
 											<li>
-												The metapath should be symmetric  e.g. APPA
+												The metapath should be symmetric  e.g. APVPA
 											</li>
 										}
 										{
 											(!validConstraints) &&
 											<li>
 												You should give at least one constraint.
+											</li>
+										}
+										{
+											(this.state.analysis === 'simsearch' && !validTargetEntity) &&
+											<li>
+												You should specify target entity for search.
 											</li>
 										}
 									</ul>
@@ -677,6 +703,7 @@ const mapStateToProps = (storeState: IRootState) => ({
 const mapDispatchToProps = { 
 	rankingRun, 
 	simjoinRun,
+	simsearchRun,
 	getResults,
 	getMoreResults,
 	getDatasetSchemas,

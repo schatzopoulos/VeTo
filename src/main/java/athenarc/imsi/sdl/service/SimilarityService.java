@@ -35,7 +35,7 @@ public class SimilarityService {
         String outputDir = FileUtil.createDir(operation, id);
         String outputLog = FileUtil.getLogfile(operation, id);
         
-        String config = FileUtil.writeConfig(operation, outputDir, metapath, null, k, t, w, minValues, folder, selectField, -1);
+        String config = FileUtil.writeConfig(operation, outputDir, metapath, null, k, t, w, minValues, folder, selectField, targetId);
 
         // prepare ranking script arguments
         ProcessBuilder pb = new ProcessBuilder();

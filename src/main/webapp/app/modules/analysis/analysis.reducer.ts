@@ -4,10 +4,12 @@ import { REQUEST, SUCCESS, FAILURE } from 'app/shared/reducers/action-type.util'
 import _ from 'lodash';
 const rankingAPIUrl = 'api/ranking';
 const simjoinAPIUrl = 'api/simjoin';
+const simsearchAPIUrl = 'api/simsearch';
 
 export const ACTION_TYPES = {
   RANKING_SUBMIT: 'ranking/SUBMIT',
   SIMJOIN_SUBMIT: 'simjoin/SUBMIT',
+  SIMSEARCH_SUBMIT: 'simsearch/SUBMIT',
 
   GET_RESULTS: 'analysis/GET_RESULTS',
   GET_MORE_RESULTS: 'analysis/GET_MORE_RESULTS'
@@ -31,6 +33,7 @@ export default (state: AnalysisState = initialState, action): AnalysisState => {
   switch (action.type) {
     case REQUEST(ACTION_TYPES.RANKING_SUBMIT):
     case REQUEST(ACTION_TYPES.SIMJOIN_SUBMIT):
+    case REQUEST(ACTION_TYPES.SIMSEARCH_SUBMIT):
       return {
         ...state,
         loading: true,
@@ -70,7 +73,17 @@ export default (state: AnalysisState = initialState, action): AnalysisState => {
         analysis: 'ranking'
       };
     }
+    case SUCCESS(ACTION_TYPES.SIMSEARCH_SUBMIT): {
+      console.log('edw search');
+      return {
+        ...state,
+        error: null,
+        uuid: action.payload.data.id,
+        analysis: 'simsearch'
+      };
+    }
     case SUCCESS(ACTION_TYPES.SIMJOIN_SUBMIT): {
+      console.log('edw join');
       return {
         ...state,
         error: null,
@@ -161,11 +174,14 @@ function getAPIUrl(analysisType) {
     url = rankingAPIUrl;
   } else if (analysisType === 'simjoin') {
     url = simjoinAPIUrl;
+  } else if (analysisType === 'simsearch') {
+    url = simsearchAPIUrl;
   }
   return url;
 }
 
 export const getResults = (analysis, id) => {
+  console.log(analysis);
   const url = getAPIUrl(analysis);
 
   return {
@@ -213,5 +229,21 @@ export const simjoinRun = (metapath, constraints, folder, selectField) => {
   return {
     type: ACTION_TYPES.SIMJOIN_SUBMIT,
     payload: axios.post(`${simjoinAPIUrl}/submit`, payload)
+  };
+};
+
+export const simsearchRun = (metapath, constraints, folder, selectField, targetEntity) => {
+  const payload = formatPayload(metapath, constraints, folder, selectField);
+
+  // similarity-searcg specific values
+  payload['targetId'] = targetEntity;
+  payload['k'] = 100;
+  payload['t'] = 1;
+  payload['w'] = 10;
+  payload['minValues'] = 5;
+
+  return {
+    type: ACTION_TYPES.SIMSEARCH_SUBMIT,
+    payload: axios.post(`${simsearchAPIUrl}/submit`, payload)
   };
 };
