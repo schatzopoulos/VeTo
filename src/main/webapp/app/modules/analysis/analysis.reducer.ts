@@ -74,7 +74,6 @@ export default (state: AnalysisState = initialState, action): AnalysisState => {
       };
     }
     case SUCCESS(ACTION_TYPES.SIMSEARCH_SUBMIT): {
-      console.log('edw search');
       return {
         ...state,
         error: null,
@@ -83,7 +82,6 @@ export default (state: AnalysisState = initialState, action): AnalysisState => {
       };
     }
     case SUCCESS(ACTION_TYPES.SIMJOIN_SUBMIT): {
-      console.log('edw join');
       return {
         ...state,
         error: null,
@@ -181,7 +179,6 @@ function getAPIUrl(analysisType) {
 }
 
 export const getResults = (analysis, id) => {
-  console.log(analysis);
   const url = getAPIUrl(analysis);
 
   return {

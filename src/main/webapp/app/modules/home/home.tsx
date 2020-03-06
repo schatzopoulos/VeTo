@@ -349,7 +349,7 @@ export class Home extends React.Component<IHomeProps> {
 		}
 
 		analysis(
-			this.state.metapathStr, 
+			(this.state.analysis === 'ranking') ? this.state.metapathStr : this.getJoinPath(), 
 			this.state.constraints, 
 			this.props.schemas[this.state.dataset]['folder'],
 			this.state.selectField,
@@ -383,21 +383,39 @@ export class Home extends React.Component<IHomeProps> {
 
 		return (metapath.length >= 3);
 	}
+	getJoinPath() {
+		const metapath = this.state.metapathStr;	
+		const midPos = Math.ceil(metapath.length / 2);
+		return metapath.substr(0, midPos);
+	}
+	reverseString(str) {
+		const splitString = str.split("");
+		const reverseArray = splitString.reverse();
+		const joinArray = reverseArray.join("");
+		return joinArray;
+	}
 	checkSymmetricMetapath() {
-		if (this.state.analysis === 'simjoin' || this.state.analysis === 'simsearch')
-			return true;
 		
-		const metapath = this.state.metapathStr;		
-		if (metapath.length < 3)
+		const metapath = this.state.metapathStr;	
+
+		if (metapath.length < 3 || metapath.length % 2 === 0)
 			return false;
 
-		const firstLetter = metapath.substr(0, 1);
-		const lastLetter = metapath.substr(metapath.length-1, 1);
+		// CHECKS MATCHING FIRST AND LAST CHARACTER
+		// const firstLetter = metapath.substr(0, 1);
+		// const lastLetter = metapath.substr(metapath.length-1, 1);
 
-		if (firstLetter !== lastLetter)
-			return false;
+		// if (firstLetter !== lastLetter)
+		// 	return false;
 		
-		return true;
+		const midPos = Math.ceil(metapath.length / 2);
+
+		const firstHalf = metapath.substr(0, midPos-1);
+		const lastHalf = metapath.substr(midPos, metapath.length-1);
+		// console.log("first " + firstHalf);
+		// console.log("last " + lastHalf);
+		
+		return ( firstHalf === this.reverseString(lastHalf) );
 	}
 
 	checkConstraints() {
@@ -556,7 +574,7 @@ export class Home extends React.Component<IHomeProps> {
 		const validConstraints = this.checkConstraints();
 		const validTargetEntity = this.state.targetEntity !== '';
 		const { selectField, selectFieldOptions }: any = this.getSelectFieldOptions();
-console.log("edw: " + this.props.analysis);
+
 		return (
 			<Container fluid>
 			<Row>
@@ -640,7 +658,7 @@ console.log("edw: " + this.props.analysis);
 										{
 											(!validMetapathLength) &&
 											<li>
-												The metapath should containt at least 3 nodes.
+												The metapath should containt at least 3 entities.
 											</li>
 										}
 										{
@@ -652,7 +670,7 @@ console.log("edw: " + this.props.analysis);
 										{
 											(!validConstraints) &&
 											<li>
-												You should give at least one constraint.
+												You should provide at least one constraint.
 											</li>
 										}
 										{

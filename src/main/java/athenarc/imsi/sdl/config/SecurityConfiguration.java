@@ -83,6 +83,9 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             .antMatchers("/api/simjoin/submit").permitAll()
             .antMatchers("/api/simjoin/get").permitAll()
 
+            .antMatchers("/api/simsearch/submit").permitAll()
+            .antMatchers("/api/simsearch/get").permitAll()
+
             .antMatchers("/api/datasets/upload").permitAll()
             .antMatchers("/api/datasets/schemas").permitAll()
 
