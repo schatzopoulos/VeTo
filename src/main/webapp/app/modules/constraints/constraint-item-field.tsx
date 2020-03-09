@@ -10,8 +10,11 @@ import {
     Button,
 } from 'reactstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import AutocompleteInput from '../datasets/autocomplete-input';
+import _ from 'lodash';
 
 export interface IConstraintItemFieldProps {
+    datasetFolder: string,
     data: any,
     entity: string,
     field: string,
@@ -65,12 +68,26 @@ export class ConstraintItemField extends React.Component<IConstraintItemFieldPro
     }
 
     handleInput(e) {
+        
+        let value = '';
+
+        // autocomplete input
+        if (Array.isArray(e) && !_.isEmpty(e)) {
+            [value] = e;
+            value = value['name'];
+        } 
+
+        // input for numeric fields
+        if (!Array.isArray(e)) {
+            value = e.target.value;
+        }
+
         this.props.handleInput({
             entity: this.props.entity,
             field: this.props.field,
             index: this.props.data.index,
         }, 
-        e.target.value);
+        value);
     }
 
     handleAddition(e) {
@@ -101,10 +118,28 @@ export class ConstraintItemField extends React.Component<IConstraintItemFieldPro
         const data = this.props.data;
         const index = data.index;
 
-        let inputField = <Input disabled={ !enabled } value={data.value || ''} bsSize="sm" onChange={this.handleInput}/>;
+        let inputField =  <AutocompleteInput 
+            id="targetEntityInput"
+            onChange={this.handleInput}								
+            entity={entity}
+            field={field}
+            folder={this.props.datasetFolder}
+            disabled={!enabled}
+            placeholder={''}
+            size="sm"
+        />
         if (type === 'numeric') {
             inputField = <Input disabled={ !enabled } value={data.value || ''} bsSize="sm" type='number' onChange={this.handleInput}/>;
         } 
+
+        let opOptions = [ <option key='1' value="=">=</option> ];
+        if (type === 'numeric') {
+            opOptions = opOptions.concat([
+            <option key='2' value=">">&gt;</option>,
+            <option key='3' value="<">&lt;</option>,
+            <option key='4' value=">=">&ge;</option>,
+            <option key='5' value="<=">&le;</option>]);
+        }
 
         return (
             <Row form key={`${entity}_${field}_${index}`}>
@@ -135,11 +170,7 @@ export class ConstraintItemField extends React.Component<IConstraintItemFieldPro
                 </Col>
                 <Col md='1'>
                     <Input disabled={ !enabled } value={data.operation} type="select" name="opDropdown" id={`${entity}_${field}_${index}`} bsSize="sm" onChange={this.handleDropdown}>
-                        <option value="=">=</option>
-                        <option value=">">&gt;</option>
-                        <option value="<">&lt;</option>
-                        <option value=">=">&ge;</option>
-                        <option value="<=">&le;</option>
+                        { opOptions }
                     </Input>
                 </Col>
                 <Col md='6'>

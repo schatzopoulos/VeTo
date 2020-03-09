@@ -10,7 +10,8 @@ import _ from 'lodash';
 
 export interface IConstraintItemProps {
 	entity: string;
-	// node: any,
+
+	datasetFolder: string,
 	entityConstraints: any,
 
 	// functions
@@ -46,6 +47,7 @@ export class ConstraintItem extends React.Component<IConstraintItemProps> {
 							return <ConstraintItemField 
 								key={ `${entity}_${field}_${index}` } 
 								data={ condition }
+								datasetFolder= { this.props.datasetFolder }
 								entity={ entity } 
 								field={ field } 
 								type={ fieldConstraints.type } 

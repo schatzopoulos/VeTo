@@ -32,6 +32,7 @@ import { getDatasetSchemas } from '../datasets/datasets.reducer';
 import ResultsPanel from '../analysis/results/results';
 import ConstraintItem from '../constraints/constraint-item';
 import { __metadata } from 'tslib';
+import AutocompleteInput from '../datasets/autocomplete-input';
 
 export interface IHomeProps extends StateProps, DispatchProps {
 	loading: boolean;
@@ -276,20 +277,20 @@ export class Home extends React.Component<IHomeProps> {
 
 	getSelectFieldOptions() {
 		if (this.state.metapath.length === 0) {
-			return { selectField: '', selectFieldOptions: [] };
+			return { selectedEntity: '', selectFieldOptions: [] };
 		}
 
 		const selectFieldOptions = [];
 		const firstNode = this.state.metapath[0];
 
-		const selectField = firstNode.data('label');
+		const selectedEntity = firstNode.data('label');
 		_.forOwn(firstNode.data('attributes'), (value, key) => {
 			selectFieldOptions.push(
 				<option key={key} value={value.name}>{value.name} (:{value.type})</option>
 			);
 		});
 
-		return { selectField, selectFieldOptions };
+		return { selectedEntity, selectFieldOptions };
 	}
 	handleConstraintLogicOpDropdown({ entity, field, index }, value) {
 		const constraints = {...this.state.constraints};
@@ -304,6 +305,7 @@ export class Home extends React.Component<IHomeProps> {
 	}
 
 	handleConstraintInputChange({ entity, field, index }, value) {
+		
 		const constraints = {...this.state.constraints};
 
 		const found = constraints[entity][field]['conditions'].find(c => c.index === index);
@@ -570,13 +572,27 @@ export class Home extends React.Component<IHomeProps> {
 		this.setState(newState);
 	}
 	handleTargetEntity(e) {
+
+		let selected;
+
+		if (_.isEmpty(e)) {
+			selected = '';
+		} else {
+			[selected] = e;
+			selected = selected.id;
+		}
+
 		this.setState({
-			targetEntity: e.target.value,
+			targetEntity: selected,
 		});
 	}
 	render() {
 		const datasetOptions = this.getDatasetOptions();
 		const schema = this.getSchema();
+		let datasetFolder = '';
+		if (this.props.schemas) {
+			datasetFolder = this.props.schemas[this.state.dataset]['folder'];
+		}
 
 		const constraintsPanel = <Row>
 		<Col md="12">
@@ -590,6 +606,7 @@ export class Home extends React.Component<IHomeProps> {
 						_.map(this.state.constraints, (entityConstraints, entity) => {
 							return <ConstraintItem 
 								key={ entity }
+								datasetFolder= { datasetFolder }
 								entity={ entity }
 								entityConstraints={ entityConstraints }
 								handleSwitch={this.handleConstraintSwitch.bind(this)}
@@ -611,9 +628,10 @@ export class Home extends React.Component<IHomeProps> {
 		const validMetapathLength = this.checkMetapathLength();
 		const validMetapath = this.checkSymmetricMetapath();
 		const validConstraints = this.checkConstraints();
-		const validTargetEntity = this.state.targetEntity !== '';
-		const { selectField, selectFieldOptions }: any = this.getSelectFieldOptions();
-
+		const validTargetEntity = (this.state.analysis !== 'simsearch') || (this.state.analysis === 'simsearch' && this.state.targetEntity !== '');
+		console.log(validTargetEntity);
+		const { selectedEntity, selectFieldOptions }: any = this.getSelectFieldOptions();
+		
 		return (
 			<Container fluid>
 			<Row>
@@ -646,7 +664,7 @@ export class Home extends React.Component<IHomeProps> {
 							
 						</Col>
 						<Col md='6' style={{'textAlign': 'center'}}>
-							<h5>Select key attribute { (selectField) && <span> for entity { selectField }</span>}</h5>
+							<h5>Select key attribute { (selectedEntity) && <span> for entity { selectedEntity }</span>}</h5>
 							<Input id="select-field-dropdown" type="select" value={this.state.selectField} onChange={this.handleSelectFieldChange.bind(this)} disabled={this.state.metapath.length === 0}>
 								{ selectFieldOptions }
 							</Input>
@@ -674,7 +692,15 @@ export class Home extends React.Component<IHomeProps> {
 							<div>
 								<br/>
 								<h4>5. Select target entity</h4>
-								<Input value={this.state.targetEntity} onChange={this.handleTargetEntity.bind(this)}/>
+								<AutocompleteInput 
+									id="targetEntityInput"
+									placeholder={ _.isEmpty(this.state.metapath) ? "Select metapath first" : `Search for ${selectedEntity} entities by ${this.state.selectField}`}
+									onChange={this.handleTargetEntity.bind(this)}								
+									entity={selectedEntity}
+									field={this.state.selectField}
+									folder={datasetFolder}
+									disabled={_.isEmpty(this.state.metapath)}
+								/>
 							</div>
 					}
 					<br/>
@@ -686,7 +712,7 @@ export class Home extends React.Component<IHomeProps> {
 								</Button>
 							</Col> */}
 							<Col md="12">
-								<Button block color="success" disabled={this.props.loading || !validMetapath || !validConstraints} onClick={this.execute.bind(this)}>
+								<Button block color="success" disabled={this.props.loading || !validMetapath || !validConstraints || !validTargetEntity} onClick={this.execute.bind(this)}>
 									<FontAwesomeIcon icon="play" /> Execute analysis
 								</Button>
 							</Col>
@@ -695,7 +721,7 @@ export class Home extends React.Component<IHomeProps> {
 				</Col>
 				
 				{
-					(!validMetapathLength || !validMetapath || !validConstraints) &&
+					(!validMetapathLength || !validMetapath || !validConstraints || !validTargetEntity) &&
 					<Col md={{size: 4, offset: 4}}>
 						<br/>
 						<Row className="small-grey">
@@ -722,7 +748,7 @@ export class Home extends React.Component<IHomeProps> {
 											</li>
 										}
 										{
-											(this.state.analysis === 'simsearch' && !validTargetEntity) &&
+											(!validTargetEntity) &&
 											<li>
 												You should specify target entity for search.
 											</li>

@@ -88,6 +88,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
             .antMatchers("/api/datasets/upload").permitAll()
             .antMatchers("/api/datasets/schemas").permitAll()
+            .antMatchers("/api/datasets/autocomplete").permitAll()
 
             .antMatchers("/api/authenticate").permitAll()
             .antMatchers("/api/register").permitAll()

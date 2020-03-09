@@ -28,14 +28,14 @@ public class SimilarityService {
     private final Logger log = LoggerFactory.getLogger(SimilarityService.class);
 
     @Async
-    public void submit(String id, String operation, String metapath, int k, int t, int w, int minValues, String folder, String selectField, int targetId) 
+    public void submit(String id, String operation, String metapath, Document constraints, int k, int t, int w, int minValues, String folder, String selectField, int targetId) 
         throws java.io.IOException, InterruptedException {
         
         // create folder to store results
         String outputDir = FileUtil.createDir(operation, id);
         String outputLog = FileUtil.getLogfile(operation, id);
         
-        String config = FileUtil.writeConfig(operation, outputDir, metapath, null, k, t, w, minValues, folder, selectField, targetId);
+        String config = FileUtil.writeConfig(operation, outputDir, metapath, constraints, k, t, w, minValues, folder, selectField, targetId);
 
         // prepare ranking script arguments
         ProcessBuilder pb = new ProcessBuilder();

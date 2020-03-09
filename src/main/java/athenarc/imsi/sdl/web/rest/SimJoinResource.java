@@ -43,7 +43,7 @@ public class SimJoinResource {
         try {
 
             // run async method from service
-            similairityService.submit(id, "simjoin", config.getMetapath(), config.getK(), config.getT(), config.getW(), config.getMinValues(), config.getFolder(), config.getSelectField(), config.getTargetId());        
+            similairityService.submit(id, "simjoin", config.getMetapath(), config.getConstraints(), config.getK(), config.getT(), config.getW(), config.getMinValues(), config.getFolder(), config.getSelectField(), config.getTargetId());        
 
         } catch (java.io.IOException | InterruptedException e) {
             throw new RuntimeException("Error running simjoin task: " + id);
