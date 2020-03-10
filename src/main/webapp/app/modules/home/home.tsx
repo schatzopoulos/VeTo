@@ -769,6 +769,7 @@ export class Home extends React.Component<IHomeProps> {
 						docs={this.props.docs}
 						meta={this.props.meta}
 						analysis={this.props.analysis}
+						analysisId={this.props.uuid}
 						loadMore={this.loadMoreResults.bind(this)}
 					/>
 					</Container>

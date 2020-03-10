@@ -8,11 +8,14 @@ import {
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import RankingResultsPanel from './ranking-results';
 import SimResultsPanel from './sim-results';
+import axios from 'axios';
+import FileSaver from 'file-saver';
 
 export interface IResultsPanelProps {
     docs: any,
     meta: any,
-	analysis: string,
+    analysis: string,
+    analysisId: string,
 	loadMore: any,
 }
 
@@ -21,7 +24,15 @@ export class ResultsPanel extends React.Component<IResultsPanelProps> {
 	constructor(props) {
         super(props);
 	}
-
+    downloadResults() {
+        axios.get('api/datasets/download', {
+            params: {
+                analysisType: this.props.analysis,
+                id: this.props.analysisId,
+            },
+            responseType: 'blob',
+        }).then( response => FileSaver.saveAs(response.data, "result.csv"));
+    }
 	render() {
         let resultPanel;
 
@@ -50,8 +61,7 @@ export class ResultsPanel extends React.Component<IResultsPanelProps> {
                     <h2>Results</h2>
                     </Col>
                     <Col md='2' style={{textAlign: 'right'}}>
-                        <Button color="info" outline><FontAwesomeIcon icon="download" /> Download</Button>
-
+                        <Button color="info" outline onClick={this.downloadResults.bind(this)}><FontAwesomeIcon icon="download" /> Download</Button>
                     </Col>
                 </Row>
                 

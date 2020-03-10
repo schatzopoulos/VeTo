@@ -15,6 +15,7 @@
     "axios": "0.19.0",
     "bootstrap": "4.3.1",
     "cytoscape": "^3.12.1",
+    "file-saver": "^2.0.2",
     "loaders.css": "0.1.2",
     "lodash": "^4.17.15",
     "moment": "2.24.0",
@@ -41,7 +42,9 @@
     "uuid": "3.3.2"
   },
   "devDependencies": {
+    "@openapitools/openapi-generator-cli": "0.0.14-4.0.2",
     "@types/enzyme": "3.9.1",
+    "@types/file-saver": "^2.0.1",
     "@types/jest": "24.0.11",
     "@types/lodash": "4.14.123",
     "@types/node": "10.14.3",
@@ -106,7 +109,6 @@
     "ts-jest": "24.0.0",
     "ts-loader": "5.3.3",
     "typescript": "3.3.4000",
-    "@openapitools/openapi-generator-cli": "0.0.14-4.0.2",
     "webpack": "4.28.4",
     "webpack-cli": "3.3.0",
     "webpack-dev-server": "3.2.1",

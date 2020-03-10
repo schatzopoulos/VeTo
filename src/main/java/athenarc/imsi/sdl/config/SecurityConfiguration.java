@@ -77,18 +77,11 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
         .and()
             .authorizeRequests()
-            .antMatchers("/api/ranking/submit").permitAll()
-            .antMatchers("/api/ranking/get").permitAll()
-            
-            .antMatchers("/api/simjoin/submit").permitAll()
-            .antMatchers("/api/simjoin/get").permitAll()
 
-            .antMatchers("/api/simsearch/submit").permitAll()
-            .antMatchers("/api/simsearch/get").permitAll()
-
-            .antMatchers("/api/datasets/upload").permitAll()
-            .antMatchers("/api/datasets/schemas").permitAll()
-            .antMatchers("/api/datasets/autocomplete").permitAll()
+            .antMatchers("/api/ranking/**").permitAll()
+            .antMatchers("/api/simjoin/**").permitAll()
+            .antMatchers("/api/simsearch/**").permitAll()
+            .antMatchers("/api/datasets/**").permitAll()
 
             .antMatchers("/api/authenticate").permitAll()
             .antMatchers("/api/register").permitAll()

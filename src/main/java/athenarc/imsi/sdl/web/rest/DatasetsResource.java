@@ -1,5 +1,8 @@
 package athenarc.imsi.sdl.web.rest;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
 
@@ -7,6 +10,11 @@ import org.bson.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -84,6 +92,33 @@ public class DatasetsResource {
             return datasetsService.autocomplete(folder, entity.substring(0, 1), field, term.toLowerCase());
         } catch (IOException e) {
             throw new RuntimeException("Error reading schema for datasets");
+        }
+    }
+
+    /**
+    * GET download result
+    */
+    @GetMapping(value = "/download", produces = "text/csv; charset=utf-8")
+    public ResponseEntity<Resource> download(String analysisType, String id) {
+
+        try {
+        String downloadFile = FileUtil.getOutputFile(analysisType, id);
+        File fd = new File(downloadFile);
+        InputStreamResource resource = new InputStreamResource(new FileInputStream(fd));
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Cache-Control", "no-cache, no-store, must-revalidate");
+        headers.add("Pragma", "no-cache");
+        headers.add("Expires", "0");
+
+        return ResponseEntity.ok()
+            .headers(headers)
+            .contentLength(fd.length())
+            .contentType(MediaType.parseMediaType("application/octet-stream"))
+            .body(resource);
+
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException("Error downloading result file");
         }
     }
 }
