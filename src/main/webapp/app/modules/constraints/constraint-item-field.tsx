@@ -163,10 +163,10 @@ export class ConstraintItemField extends React.Component<IConstraintItemFieldPro
                     {
                         (index !== 0) &&
                         <Input disabled={ !enabled } value={data.logicOp} type="select" name="andOrDropdown" id={`${ entity }_${ field }_${index}`} bsSize="sm" onChange={this.handleLogicDropdown}>
+                            <option value="or">or</option>
                             { (type === 'numeric') && 
                                 <option value="and">and</option>
                             }
-                            <option value="or">or</option>
                         </Input>
                     }        
                 </Col>

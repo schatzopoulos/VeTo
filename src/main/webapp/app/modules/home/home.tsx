@@ -177,7 +177,7 @@ export class Home extends React.Component<IHomeProps> {
 
 		// select first attribute from the options
 		if (this.state.selectField === '') {
-			newState.selectField = node.data('attributes')[0].name
+			newState.selectField = node.data('attributes').filter( (attr) => attr.name !== 'id')[0].name;
 		}
 
 		this.setState(newState, () => {
@@ -258,7 +258,7 @@ export class Home extends React.Component<IHomeProps> {
 				index,
 				value: null,
 				operation: '=',
-				logicOp: (index > 0) ? 'and' : undefined,
+				logicOp: (index > 0) ? 'or' : undefined,
 			});		
 		}
 	}
@@ -285,9 +285,11 @@ export class Home extends React.Component<IHomeProps> {
 
 		const selectedEntity = firstNode.data('label');
 		_.forOwn(firstNode.data('attributes'), (value, key) => {
-			selectFieldOptions.push(
-				<option key={key} value={value.name}>{value.name} (:{value.type})</option>
-			);
+			if (value.name !== 'id') {
+				selectFieldOptions.push(
+					<option key={key} value={value.name}>{value.name} (:{value.type})</option>
+				);
+			}
 		});
 
 		return { selectedEntity, selectFieldOptions };
