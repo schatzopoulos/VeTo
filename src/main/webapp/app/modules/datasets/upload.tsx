@@ -104,9 +104,57 @@ export class Upload extends React.Component<IUploadProps> {
 							</Alert>
 						</Col>
 					</Row>
-						
-
 				}
+<hr/>
+				<h4>Upload File Format</h4>
+				Uploading a HIN requires a single compressed (zip) file containing the following files:
+				<ul>
+					<li>
+						<h5>Schema file</h5>
+						A schema file that describes the entity types and the relationships between them.
+						This should follow the <a href="https://js.cytoscape.org/#notation/elements-json" target="_blank" rel="noopener noreferrer">Cytoscape&apos;s JSON Elements format</a>
+					</li>
+					<li>
+						<h5>Node attribute files</h5>
+						These files should be placed inside a folder called <code>nodes</code>
+						They are tab-separated files containing all node attributes. 
+						The first line is the header that contains all attribute names with <code>_n</code> and <code>_s</code> suffixes for numeric and alphanumeric attributes respectively. 
+						The first column is an incremental integer identifier starting from 0, denoted as <code>id_n</code> in the header. 
+						Node attribute files should be named with the first letter of the entity they are representing. 
+						For example, the file that contains the attributes for node type <code>Author</code> should be named <code>A.csv</code>. 
+						Below is an example of a file containing node attributes:<br/>				
+						<code>
+						id_n	name_s    surname_s<br/>
+						0	Makoto  Satoh<br/>
+						1	Ryo Muramatsu<br/>
+						...<br/>
+						</code>
+						
+					</li>
+					<li>
+						<h5>Relation files</h5>
+						These files should be placed inside a folder called <code>relations</code>
+						They are tab-separated files needed to construct the relations among nodes. 
+						These files (with <code>csv</code> file extension) contain two columns, the source and target numeric identidiers respectively.
+						They do not contain a header and they should be named according to the source and target node types. 
+						For example, the file with the relations between node types <code>Author</code> and <code>Paper</code> should be named <code>AP.csv</code>. 
+						Below are the first lines of a file containing relations:<br/>
+						<code>
+						0	1<br/>
+						0	2<br/>
+						0	3<br/>
+						0	5<br/>
+						1	0<br/>
+						...<br/>
+						</code>
+					</li>
+				</ul>
+
+				
+
+			A sample compressed file that contains all the required files for a subset of the DBLP dataset can be found <a href="/dataX/SciNeM-data/DBLP_sample.zip" target="_blank" rel="noopener noreferrer">here</a>.	
+				
+
 			</Container>
 		);
 	}
