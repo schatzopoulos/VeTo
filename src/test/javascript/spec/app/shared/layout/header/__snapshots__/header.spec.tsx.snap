@@ -122,9 +122,6 @@ exports[`Header Renders a Header component in prod profile with LoadingBar, Navb
         <Component
           showSwagger={false}
         />
-        <Component
-          isAuthenticated={true}
-        />
       </Nav>
     </Collapse>
   </Navbar>

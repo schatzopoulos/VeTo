@@ -629,7 +629,6 @@ export class Home extends React.Component<IHomeProps> {
 		const validMetapath = this.checkSymmetricMetapath();
 		const validConstraints = this.checkConstraints();
 		const validTargetEntity = (this.state.analysis !== 'simsearch') || (this.state.analysis === 'simsearch' && this.state.targetEntity !== '');
-		console.log(validTargetEntity);
 		const { selectedEntity, selectFieldOptions }: any = this.getSelectFieldOptions();
 		
 		return (

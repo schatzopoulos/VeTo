@@ -46,7 +46,7 @@ const Header = (props: IHeaderProps) => {
             <Upload />
             {props.isAuthenticated && <EntitiesMenu />}
             {props.isAuthenticated && props.isAdmin && <AdminMenu showSwagger={props.isSwaggerEnabled} />}
-            <AccountMenu isAuthenticated={props.isAuthenticated} />
+            {!props.isInProduction && <AccountMenu isAuthenticated={props.isAuthenticated} />}
           </Nav>
         </Collapse>
       </Navbar>

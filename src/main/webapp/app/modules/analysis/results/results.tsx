@@ -5,8 +5,10 @@ import {
 	Table,
 	Button,
 } from 'reactstrap';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import RankingResultsPanel from './ranking-results';
 import SimResultsPanel from './sim-results';
+
 export interface IResultsPanelProps {
     docs: any,
     meta: any,
@@ -43,7 +45,16 @@ export class ResultsPanel extends React.Component<IResultsPanelProps> {
                 />;
             }
             return (<div>
-                <h2>Results</h2>
+                <Row>
+                    <Col md='10'>
+                    <h2>Results</h2>
+                    </Col>
+                    <Col md='2' style={{textAlign: 'right'}}>
+                        <Button color="info" outline><FontAwesomeIcon icon="download" /> Download</Button>
+
+                    </Col>
+                </Row>
+                
                 <div className="small-grey">
                     Displaying {this.props.docs.length} out of {this.props.meta.totalRecords} results
                 </div>

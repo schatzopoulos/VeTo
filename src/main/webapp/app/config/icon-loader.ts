@@ -32,6 +32,7 @@ import { faRoad } from '@fortawesome/free-solid-svg-icons/faRoad';
 import { faCloud } from '@fortawesome/free-solid-svg-icons/faCloud';
 import { faPlay } from '@fortawesome/free-solid-svg-icons/faPlay';
 import { faUpload } from '@fortawesome/free-solid-svg-icons/faUpload';
+import { faDownload } from '@fortawesome/free-solid-svg-icons/faDownload';
 
 import { library } from '@fortawesome/fontawesome-svg-core';
 
@@ -70,6 +71,7 @@ export const loadIcons = () => {
     faSearch,
     faPlay,
     faAngleDoubleDown,
-    faUpload
+    faUpload,
+    faDownload
   );
 };
