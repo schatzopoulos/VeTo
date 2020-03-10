@@ -712,11 +712,9 @@ export class Home extends React.Component<IHomeProps> {
 									<FontAwesomeIcon icon="play" /> Execute example
 								</Button>
 							</Col> */}
-							<Col md="12">
-								<Button block color="success" disabled={this.props.loading || !validMetapath || !validConstraints || !validTargetEntity} onClick={this.execute.bind(this)}>
-									<FontAwesomeIcon icon="play" /> Execute analysis
-								</Button>
-							</Col>
+							<Button block color="success" disabled={this.props.loading || !validMetapath || !validConstraints || !validTargetEntity} onClick={this.execute.bind(this)}>
+								<FontAwesomeIcon icon="play" /> Execute analysis
+							</Button>
 						</Row>
 					</Col>
 				</Col>
