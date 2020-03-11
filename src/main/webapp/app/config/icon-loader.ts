@@ -33,6 +33,7 @@ import { faCloud } from '@fortawesome/free-solid-svg-icons/faCloud';
 import { faPlay } from '@fortawesome/free-solid-svg-icons/faPlay';
 import { faUpload } from '@fortawesome/free-solid-svg-icons/faUpload';
 import { faDownload } from '@fortawesome/free-solid-svg-icons/faDownload';
+import { faQuestionCircle } from '@fortawesome/free-solid-svg-icons/faQuestionCircle';
 
 import { library } from '@fortawesome/fontawesome-svg-core';
 
@@ -72,6 +73,7 @@ export const loadIcons = () => {
     faPlay,
     faAngleDoubleDown,
     faUpload,
-    faDownload
+    faDownload,
+    faQuestionCircle
   );
 };
