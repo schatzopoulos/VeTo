@@ -152,7 +152,7 @@ export class Upload extends React.Component<IUploadProps> {
 
 				
 
-			A sample compressed file that contains all the required files for a subset of the DBLP dataset can be found <a href="/dataX/SciNeM-data/DBLP_sample.zip" target="_blank" rel="noopener noreferrer">here</a>.	
+			A sample compressed file that contains all the required files for a subset of the DBLP dataset can be found <a href="http://andrea.imsi.athenarc.gr/DBLP_sample.zip" target="_blank" rel="noopener noreferrer">here</a>.	
 				
 
 			</Container>
