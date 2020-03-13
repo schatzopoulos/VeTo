@@ -667,7 +667,7 @@ export class Home extends React.Component<IHomeProps> {
 						{
 							(selectedEntity) &&
 							<Col md='6' style={{'textAlign': 'center'}}>
-								<h5>Key attribute for { selectedEntity } <FontAwesomeIcon style={{ color: '#17a2b8' }} icon="question-circle" title="Entities are presented with this attribute in the results"/></h5>
+								<h5>Identifier for { selectedEntity } <FontAwesomeIcon style={{ color: '#17a2b8' }} icon="question-circle" title="Entities are presented with this attribute in the results"/></h5>
 								<Input id="select-field-dropdown" type="select" value={this.state.selectField} onChange={this.handleSelectFieldChange.bind(this)} disabled={this.state.metapath.length === 0}>
 									{ selectFieldOptions }
 								</Input>
