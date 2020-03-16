@@ -2,6 +2,7 @@ import axios from 'axios';
 
 import { REQUEST, SUCCESS, FAILURE } from 'app/shared/reducers/action-type.util';
 import _ from 'lodash';
+import { min } from 'moment';
 const rankingAPIUrl = 'api/ranking';
 const simjoinAPIUrl = 'api/simjoin';
 const simsearchAPIUrl = 'api/simsearch';
@@ -205,7 +206,7 @@ export const getMoreResults = (analysis, id, page) => {
   };
 };
 
-export const rankingRun = (metapath, constraints, folder, selectField) => {
+export const rankingRun = (metapath, constraints, folder, selectField, w, minValues) => {
   const payload = formatPayload(metapath, constraints, folder, selectField);
 
   return {
@@ -214,14 +215,15 @@ export const rankingRun = (metapath, constraints, folder, selectField) => {
   };
 };
 
-export const simjoinRun = (metapath, constraints, folder, selectField) => {
+export const simjoinRun = (metapath, constraints, folder, selectField, targetEntity, w, minValues) => {
   const payload = formatPayload(metapath, constraints, folder, selectField);
-
+  console.warn(w);
+  console.warn(minValues);
   // similarity-join specific values
   payload['k'] = 100;
   payload['t'] = 1;
-  payload['w'] = 0;
-  payload['minValues'] = 5;
+  payload['w'] = w ? w : 0;
+  payload['minValues'] = minValues ? minValues : 5;
 
   return {
     type: ACTION_TYPES.SIMJOIN_SUBMIT,
@@ -229,15 +231,15 @@ export const simjoinRun = (metapath, constraints, folder, selectField) => {
   };
 };
 
-export const simsearchRun = (metapath, constraints, folder, selectField, targetEntity) => {
+export const simsearchRun = (metapath, constraints, folder, selectField, targetEntity, w, minValues) => {
   const payload = formatPayload(metapath, constraints, folder, selectField);
 
   // similarity-searcg specific values
   payload['targetId'] = targetEntity;
   payload['k'] = 100;
   payload['t'] = 1;
-  payload['w'] = 10;
-  payload['minValues'] = 5;
+  payload['w'] = w ? w : 10;
+  payload['minValues'] = minValues ? minValues : 5;
 
   return {
     type: ACTION_TYPES.SIMSEARCH_SUBMIT,

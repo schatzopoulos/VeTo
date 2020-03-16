@@ -16,7 +16,8 @@ export interface IResultsPanelProps {
     meta: any,
     analysis: string,
     analysisId: string,
-	loadMore: any,
+    loadMore: any,
+    rerun: any,
 }
 
 export class ResultsPanel extends React.Component<IResultsPanelProps> {
@@ -31,7 +32,10 @@ export class ResultsPanel extends React.Component<IResultsPanelProps> {
                 id: this.props.analysisId,
             },
             responseType: 'blob',
-        }).then( response => FileSaver.saveAs(response.data, "result.csv"));
+        }).then( response => FileSaver.saveAs(response.data, "results.csv"));
+    }
+    tryAgain() {
+        this.props.rerun(null, this.props.analysis);
     }
 	render() {
         let resultPanel;
@@ -39,7 +43,16 @@ export class ResultsPanel extends React.Component<IResultsPanelProps> {
         if (this.props.docs) {
 
             if (this.props.docs.length === 0) {
-                return <div style={{ textAlign: "center" }}>No results found for the specified query</div>;
+                return <div style={{ textAlign: "center" }}>No results found for the specified query!<br/> 
+                {
+                    (this.props.analysis === 'simjoin' || this.props.analysis === 'simsearch') &&
+                    <span>
+                        Please try again with more loose analysis parameters. <br/>
+                        <Button onClick={this.tryAgain.bind(this)} color='success' size='sm'><FontAwesomeIcon icon="play" />  Try again</Button>
+                    </span>
+                }
+                </div>;
+
             }
 
             if (this.props.analysis === 'ranking') {

@@ -27,7 +27,7 @@ export interface IAppProps extends StateProps, DispatchProps {}
 
 export const App = (props: IAppProps) => {
   useEffect(() => {
-    props.getSession();
+    // props.getSession();
     props.getProfile();
   }, []);
 

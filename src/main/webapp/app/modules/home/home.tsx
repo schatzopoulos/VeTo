@@ -33,6 +33,7 @@ import ResultsPanel from '../analysis/results/results';
 import ConstraintItem from '../constraints/constraint-item';
 import { __metadata } from 'tslib';
 import AutocompleteInput from '../datasets/autocomplete-input';
+import registerReducer from '../account/register/register.reducer';
 
 export interface IHomeProps extends StateProps, DispatchProps {
 	loading: boolean;
@@ -338,10 +339,12 @@ export class Home extends React.Component<IHomeProps> {
 		});
 	}
 
-	execute(e) {
+	execute(e, rerunAnalysis) {
+		
 		let analysis = null;
-
-		switch(this.state.analysis) {
+		const analysisType = (rerunAnalysis) ? rerunAnalysis : this.state.analysis;
+console.warn(rerunAnalysis);
+		switch(analysisType) {
 			case 'ranking': 
 				analysis = this.props.rankingRun; break;
 			case 'simjoin':
@@ -358,6 +361,8 @@ export class Home extends React.Component<IHomeProps> {
 			this.props.schemas[this.state.dataset]['folder'],
 			this.state.selectField,
 			this.state.targetEntity,
+			(rerunAnalysis) ? 15 : undefined,
+			(rerunAnalysis) ? 1 : undefined,
 		);
 	}
 	runExample(e) {
@@ -397,7 +402,7 @@ export class Home extends React.Component<IHomeProps> {
 
 		this.setState(newState, () => {
 			this.changeSchema(); 
-			this.execute(e);
+			this.execute(e, null);
 		});
 	}
 	loadMoreResults() {
@@ -698,7 +703,7 @@ export class Home extends React.Component<IHomeProps> {
 								<h4>5. Select target entity</h4>
 								<AutocompleteInput 
 									id="targetEntityInput"
-									placeholder={ _.isEmpty(this.state.metapath) ? "Select metapath first" : `Search for ${selectedEntity} entities by ${this.state.selectField}`}
+									placeholder={ _.isEmpty(this.state.metapath) ? "First, select a metapath" : `Search for ${selectedEntity} entities by ${this.state.selectField}`}
 									onChange={this.handleTargetEntity.bind(this)}								
 									entity={selectedEntity}
 									field={this.state.selectField}
@@ -727,7 +732,7 @@ export class Home extends React.Component<IHomeProps> {
 					<Col md={{size: 4, offset: 4}}>
 						<br/>
 						<Row className="small-grey">
-							<Card>
+							<Card block>
 								<CardBody>
 									<b>Please note that:</b>
 									<ul>
@@ -746,7 +751,7 @@ export class Home extends React.Component<IHomeProps> {
 										{
 											(!validConstraints) &&
 											<li>
-												You should provide at least one constraint.
+												You should provide at least one constraint for ranking.
 											</li>
 										}
 										{
@@ -774,6 +779,7 @@ export class Home extends React.Component<IHomeProps> {
 						analysis={this.props.analysis}
 						analysisId={this.props.uuid}
 						loadMore={this.loadMoreResults.bind(this)}
+						rerun={this.execute.bind(this)}
 					/>
 					</Container>
 				</Col>
