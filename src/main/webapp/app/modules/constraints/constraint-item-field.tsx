@@ -12,6 +12,7 @@ import {
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import AutocompleteInput from '../datasets/autocomplete-input';
 import _ from 'lodash';
+import { examples } from './constraint-examples';
 
 export interface IConstraintItemFieldProps {
     datasetFolder: string,
@@ -110,6 +111,13 @@ export class ConstraintItemField extends React.Component<IConstraintItemFieldPro
         });
     }
 
+    getExample(entity, field) {
+        let example = null;
+        if (Object.prototype.hasOwnProperty.call(examples, `${entity}.${field}`)) {
+            example = examples[`${entity}.${field}`];
+        }
+        return example;
+    }
 	render() {
         const entity = this.props.entity;
         const field = this.props.field;
@@ -140,6 +148,8 @@ export class ConstraintItemField extends React.Component<IConstraintItemFieldPro
             <option key='4' value=">=">&ge;</option>,
             <option key='5' value="<=">&le;</option>]);
         }
+        
+        const example = this.getExample(entity, field);
 
         return (
             <Row form key={`${entity}_${field}_${index}`}>
@@ -177,6 +187,9 @@ export class ConstraintItemField extends React.Component<IConstraintItemFieldPro
                 </Col>
                 <Col md='6'>
                     { inputField }
+                    {
+                        (example) && <span className='attribute-type'>e.g. { example }</span>
+                    }
                 </Col>
                 <Col md='1'>
                     {

@@ -343,7 +343,7 @@ export class Home extends React.Component<IHomeProps> {
 		
 		let analysis = null;
 		const analysisType = (rerunAnalysis) ? rerunAnalysis : this.state.analysis;
-console.warn(rerunAnalysis);
+
 		switch(analysisType) {
 			case 'ranking': 
 				analysis = this.props.rankingRun; break;
@@ -367,11 +367,9 @@ console.warn(rerunAnalysis);
 	}
 	runExample(e) {
 
-		console.log(this.state.analysis);
 		const newState = { ... this.state };
 
 		const nodes = this.cy.filter('node');
-		console.log(nodes);
 
 		switch(this.state.analysis) {
 			case 'ranking': {
@@ -594,6 +592,7 @@ console.warn(rerunAnalysis);
 		});
 	}
 	render() {
+
 		const datasetOptions = this.getDatasetOptions();
 		const schema = this.getSchema();
 		let datasetFolder = '';
@@ -667,7 +666,7 @@ console.warn(rerunAnalysis);
 									<Button color="danger" title="Delete last node" onClick={this.deleteLast.bind(this)} ><FontAwesomeIcon icon="arrow-left" /></Button>
 								</InputGroupAddon>
 							</InputGroup>
-							
+							<span className='attribute-type'>e.g. { this.state.dataset === 'DBLP' && "APVPA" }{ this.state.dataset === 'Bio' && "MGDGM" }</span>
 						</Col>
 						{
 							(selectedEntity) &&
