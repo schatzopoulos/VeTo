@@ -7,6 +7,7 @@ import  _  from 'lodash';
 import { __metadata } from 'tslib';
 import { AsyncTypeahead } from 'react-bootstrap-typeahead';
 import axios from 'axios';
+import 'react-bootstrap-typeahead/css/Typeahead.css';
 
 export interface IAutocompleteInputProps extends StateProps, DispatchProps {
     id: string,
