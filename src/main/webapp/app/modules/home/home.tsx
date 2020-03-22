@@ -52,7 +52,7 @@ export class Home extends React.Component<IHomeProps> {
 		neighbors: undefined,
 		constraints: {},
 		analysis: "ranking",
-		dataset: "DBLP",
+		dataset: "Bio",
 		selectField: '',
 		targetEntity: '',
 	};
