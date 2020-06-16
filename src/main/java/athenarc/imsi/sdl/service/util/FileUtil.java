@@ -69,7 +69,7 @@ public final class FileUtil {
         
         if (analysisType.equals("ranking")) {
             config.put("pr_alpha", 0.5);
-            config.put("pr_tol", 0.00000000001);
+            config.put("pr_tol", 0.000001);
         } else if (analysisType.equals("simjoin")) {
             config.put("operation", "join");
             config.put("k", k);

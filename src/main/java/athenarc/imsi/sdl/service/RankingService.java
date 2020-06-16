@@ -106,10 +106,10 @@ public class RankingService {
     }
 
     public double getProgress(String stage, int step) {
-        if (stage.equals("Associations Mining")) {
-            return (step / 7.0) * 50;
+        if (stage.equals("HIN Transformation")) {
+            return (step / 3.0) * 50;
         } else {
-            return (step / 5.0) * 50 + 50;
+            return (step / 4.0) * 50 + 50;
         }
     }
 }
