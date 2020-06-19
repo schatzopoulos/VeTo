@@ -23,24 +23,25 @@ import org.springframework.stereotype.Service;
 import athenarc.imsi.sdl.config.Constants;
 import athenarc.imsi.sdl.service.util.FileUtil;
 @Service
-public class RankingService {
+public class AnalysisService {
 
-    private final Logger log = LoggerFactory.getLogger(RankingService.class);
+    private final Logger log = LoggerFactory.getLogger(AnalysisService.class);
 
     @Async
-    public void submit(String id, String metapath, Document constraints, String folder, String selectField) 
+    public void submit(String id, String analysis, String metapath, Document constraints, String folder, String selectField) 
         throws java.io.IOException, InterruptedException {
         
         // create folder to store results
-        String outputDir = FileUtil.createDir("ranking", id);
-        String outputLog = FileUtil.getLogfile("ranking", id);
+        String outputDir = FileUtil.createDir(id);
+        String outputLog = FileUtil.getLogfile(id);
         
-        String config = FileUtil.writeConfig("ranking", outputDir, metapath, constraints, -1, -1, -1, -1, folder, selectField, -1);
+        String config = FileUtil.writeConfig(analysis, outputDir, metapath, constraints, -1, -1, -1, -1, folder, selectField, -1);
 
         // prepare ranking script arguments
         ProcessBuilder pb = new ProcessBuilder();
-        pb.command("/bin/bash", Constants.WORKFLOW_DIR + "ranking/ranking.sh", config);
-        
+
+        pb.command("/bin/bash", Constants.WORKFLOW_DIR + "analysis/analysis.sh", config);
+
         // redirect ouput to logfile
         File out = new File(outputLog);
         pb.redirectOutput(out);
@@ -55,10 +56,10 @@ public class RankingService {
         printWriter.print("Exit Code\t" + exitCode);
         printWriter.close();
 
-        log.debug("Ranking task for id: " + id + " exited with code: " + exitCode);
+        log.debug("Analysis task for id: " + id + " exited with code: " + exitCode);
     }
 
-    private static void getMeta(Document meta, int totalRecords, int totalPages, int page) {
+    private static void getMeta(Document meta, int totalRecords, int totalPages, int page, String[] headers) {
         meta.append("totalRecords", totalRecords);
         meta.append("page", page);
         meta.append("totalPages", totalPages);
@@ -68,39 +69,40 @@ public class RankingService {
         links.append("hasNext", (page < totalPages) ? true : false);
         links.append("hasPrev", (page > 1) ? true : false);
         meta.append("links", links);
+        meta.append("headers", headers);
     }
 
-    public List<Document> getResults(String rankingFile, Integer page, Document meta) throws IOException{
+    public List<Document> getResults(String analysisFile, Integer page, Document meta) throws IOException{
         if (page == null) 
             page = 1;
         
         List<Document> docs = new ArrayList<>();
-        int totalRecords = FileUtil.countLines(rankingFile);
+        int totalRecords = FileUtil.countLines(analysisFile);
         int totalPages = FileUtil.totalPages(totalRecords);
+        String[] headers = FileUtil.getHeaders(analysisFile);
         final int firstRecordNumber = (page - 1) * Constants.PAGE_SIZE + 1;
 
         int count = 0;
-        Reader reader = Files.newBufferedReader(Paths.get(rankingFile));
+        Reader reader = Files.newBufferedReader(Paths.get(analysisFile));
         CSVReader csvReader =  new CSVReaderBuilder(reader)
             .withCSVParser(new CSVParserBuilder().withSeparator('\t').build())
-            .withSkipLines(firstRecordNumber-1)
+            .withSkipLines(firstRecordNumber)
             .build();
 
         String[] attributes;
         while (count < Constants.PAGE_SIZE && ((attributes = csvReader.readNext()) != null)) {
-            
-            String[] tokens = attributes[0].split("\\|");
 
-            // print information to output here
-            Document doc = new Document()
-                .append("id", Integer.parseInt(tokens[0]))
-                .append("name", tokens[1])
-                .append("score", Float.parseFloat(attributes[1]));
+            // IMPORTANT: the order of the fields is indicated from the headers array in the metadata section
+            Document doc = new Document();
+            for (int i=0; i<attributes.length; i++) {
+                doc.append(headers[i], attributes[i]);
+            }
+
             docs.add(doc);
             count++;
         }
 
-        RankingService.getMeta(meta, totalRecords, totalPages, page);
+        AnalysisService.getMeta(meta, totalRecords, totalPages, page, headers);
 
         return docs;
     }

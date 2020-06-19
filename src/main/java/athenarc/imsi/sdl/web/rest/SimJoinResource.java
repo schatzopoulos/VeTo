@@ -58,7 +58,7 @@ public class SimJoinResource {
     public Document status(String id,  Integer page) {
         log.debug("simjoin/status : {}", id, page);
 
-        String logfile = FileUtil.getLogfile("simjoin", id);
+        String logfile = FileUtil.getLogfile(id);
         try {
             String lastLine = FileUtil.getLastLine(logfile);
             int index = lastLine.indexOf("Exit Code");
@@ -71,7 +71,7 @@ public class SimJoinResource {
                     throw new RuntimeException("Error in simjoin task: " + id);
                 }
 
-                String rankingFile = FileUtil.getOutputFile("simjoin", id);
+                String rankingFile = FileUtil.getOutputFile(id);
                 
                 try {
                     Document meta = new Document();
@@ -97,7 +97,7 @@ public class SimJoinResource {
                 
                 // in case logfile is still empty
                 } else {
-                    response.append("stage", "Associations Mining")
+                    response.append("stage", "HIN Transformation")
                     .append("step", "Initializing")
                     .append("progress", 0);                
                 }

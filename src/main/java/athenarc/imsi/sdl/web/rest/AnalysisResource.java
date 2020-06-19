@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import athenarc.imsi.sdl.service.RankingService;
+import athenarc.imsi.sdl.service.AnalysisService;
 import athenarc.imsi.sdl.service.util.FileUtil;
 import athenarc.imsi.sdl.web.rest.vm.QueryConfigVM;
 
@@ -24,13 +24,13 @@ import athenarc.imsi.sdl.web.rest.vm.QueryConfigVM;
  * RankingResource controller
  */
 @RestController
-@RequestMapping("/api/ranking")
-public class RankingResource {
+@RequestMapping("/api/analysis")
+public class AnalysisResource {
 
-    private final Logger log = LoggerFactory.getLogger(RankingResource.class);
+    private final Logger log = LoggerFactory.getLogger(AnalysisResource.class);
     
     @Autowired
-    private final RankingService rankingService = new RankingService();
+    private final AnalysisService analysisService = new AnalysisService();
     
     /**
     * POST submit
@@ -38,12 +38,12 @@ public class RankingResource {
     @PostMapping("/submit")
     public Document submit(@Valid @RequestBody QueryConfigVM config) {
         String id = UUID.randomUUID().toString();
-        log.debug("Ranking task submitted with id: " + id);
+        log.debug("Analysis task submitted with id: " + id);
 
         try {
 
             // run async method from service
-            rankingService.submit(id, config.getMetapath(), config.getConstraints(), config.getFolder(), config.getSelectField());        
+            analysisService.submit(id, config.getAnalysis(), config.getMetapath(), config.getConstraints(), config.getFolder(), config.getSelectField());        
 
         } catch (java.io.IOException | InterruptedException e) {
             throw new RuntimeException("Error running ranking task: " + id);
@@ -56,9 +56,9 @@ public class RankingResource {
     */
     @GetMapping("/get")
     public Document status(String id,  Integer page) {
-        log.debug("ranking/status : {}", id, page);
+        log.debug("analysis/status : {}", id, page);
 
-        String logfile = FileUtil.getLogfile("ranking", id);
+        String logfile = FileUtil.getLogfile(id);
         try {
             String lastLine = FileUtil.getLastLine(logfile);
             int index = lastLine.indexOf("Exit Code");
@@ -71,11 +71,11 @@ public class RankingResource {
                     throw new RuntimeException("Error in ranking task: " + id);
                 }
 
-                String rankingFile = FileUtil.getOutputFile("ranking", id);
+                String rankingFile = FileUtil.getOutputFile(id);
                 
                 try {
                     Document meta = new Document();
-                    List<Document> docs = rankingService.getResults(rankingFile, page, meta);
+                    List<Document> docs = analysisService.getResults(rankingFile, page, meta);
 
                     response.append("id", id)
                         .append("progress", 100)
@@ -93,11 +93,11 @@ public class RankingResource {
                 if (tokens.length > 1) {
                     response.append("stage", tokens[0])
                     .append("step", tokens[2])
-                    .append("progress", rankingService.getProgress(tokens[0], Integer.parseInt(tokens[1])));
+                    .append("progress", analysisService.getProgress(tokens[0], Integer.parseInt(tokens[1])));
                 
                 // in case logfile is still empty
                 } else {
-                    response.append("stage", "Associations Mining")
+                    response.append("stage", "HIN Transformation")
                     .append("step", "Initializing")
                     .append("progress", 0);                
                 }

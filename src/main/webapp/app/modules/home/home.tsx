@@ -16,13 +16,15 @@ import {
 	Container,
 	Card, 
 	CardBody,
+	CustomInput, 
+	
 } from 'reactstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { IRootState } from 'app/shared/reducers';
 import CytoscapeComponent from 'react-cytoscapejs';
 import  _  from 'lodash';
 import { 
-	rankingRun,
+	analysisRun,
 	simjoinRun,
 	simsearchRun,
 	getResults, 
@@ -51,8 +53,8 @@ export class Home extends React.Component<IHomeProps> {
 		metapathStr: '',
 		neighbors: undefined,
 		constraints: {},
-		analysis: "ranking",
-		dataset: "Bio",
+		analysis: ["ranking"],
+		dataset: "DBLP",
 		selectField: '',
 		targetEntity: '',
 	};
@@ -342,11 +344,12 @@ export class Home extends React.Component<IHomeProps> {
 	execute(e, rerunAnalysis) {
 		
 		let analysis = null;
-		const analysisType = (rerunAnalysis) ? rerunAnalysis : this.state.analysis;
-
+		const analysisType = (rerunAnalysis) ? rerunAnalysis : this.state.analysis.sort().join("-");
 		switch(analysisType) {
 			case 'ranking': 
-				analysis = this.props.rankingRun; break;
+			case 'community': 
+			case 'community-ranking': 
+				analysis = this.props.analysisRun; break;
 			case 'simjoin':
 				analysis = this.props.simjoinRun; break;
 			case 'simsearch':
@@ -356,7 +359,8 @@ export class Home extends React.Component<IHomeProps> {
 		}
 
 		analysis(
-			(this.state.analysis === 'ranking') ? this.state.metapathStr : this.getJoinPath(), 
+			analysisType,
+			(analysisType === 'simjoin' || analysisType === 'simsearch') ? this.getJoinPath() : this.state.metapathStr,
 			this.state.constraints, 
 			this.props.schemas[this.state.dataset]['folder'],
 			this.state.selectField,
@@ -413,6 +417,18 @@ export class Home extends React.Component<IHomeProps> {
 			targetEntity: '',
 		});
 	}
+	
+	onCheckboxBtnClick (selected)  {
+		const newState = { ...this.state };
+
+		const index = newState.analysis.indexOf(selected);
+		if (index < 0) {
+			newState.analysis.push(selected);
+		} else {
+			newState.analysis.splice(index, 1);
+		}
+		this.setState(newState);
+	  }
 
 	handleConstraintSwitch({ entity, field }) {
 		// create object for entity, if not present
@@ -634,6 +650,7 @@ export class Home extends React.Component<IHomeProps> {
 		const validMetapathLength = this.checkMetapathLength();
 		const validMetapath = this.checkSymmetricMetapath();
 		const validConstraints = this.checkConstraints();
+		const validAnalysisType = this.state.analysis.length !== 0;
 		const validTargetEntity = (this.state.analysis !== 'simsearch') || (this.state.analysis === 'simsearch' && this.state.targetEntity !== '');
 		const { selectedEntity, selectFieldOptions }: any = this.getSelectFieldOptions();
 		
@@ -666,7 +683,7 @@ export class Home extends React.Component<IHomeProps> {
 									<Button color="danger" title="Delete last node" onClick={this.deleteLast.bind(this)} ><FontAwesomeIcon icon="arrow-left" /></Button>
 								</InputGroupAddon>
 							</InputGroup>
-							<span className='attribute-type'>e.g. { this.state.dataset === 'DBLP' && "APVPA" }{ this.state.dataset === 'Bio' && "MGDGM" }</span>
+							<span className='attribute-type'>e.g. { this.state.dataset === 'DBLP' && "APA" }{ this.state.dataset === 'Bio' && "MGDGM" }</span>
 						</Col>
 						{
 							(selectedEntity) &&
@@ -690,11 +707,17 @@ export class Home extends React.Component<IHomeProps> {
 
 					<br/>
 					<h4>4. Select analysis type</h4>
-					<Input id="analysis-dropdown" type="select" value={this.state.analysis} onChange={this.handleAnalysisDropdown.bind(this)} >
+					<div>
+						<CustomInput type="switch" id="rankingSwith" onChange={() => this.onCheckboxBtnClick("ranking")} checked={this.state.analysis.includes("ranking")} label="Ranking" />
+						<CustomInput type="switch" id="cdSwitch" onChange={() => this.onCheckboxBtnClick("community")} checked={this.state.analysis.includes("community")} label="Community Detection" />
+					</div>
+
+					{/* <Input id="analysis-dropdown" type="select" value={this.state.analysis} onChange={this.handleAnalysisDropdown.bind(this)} >
 						<option value={"ranking"}>Ranking</option>
 						<option value={"simjoin"}>Similarity Join</option>
 						<option value={"simsearch"}>Similarity Search</option>
-					</Input>
+					</Input> */}
+					
 					{
 						(this.state.analysis === "simsearch") &&
 							<div>
@@ -727,7 +750,7 @@ export class Home extends React.Component<IHomeProps> {
 				</Col>
 				
 				{
-					(!validMetapathLength || !validMetapath || !validConstraints || !validTargetEntity) &&
+					(!validMetapathLength || !validMetapath || !validConstraints || !validTargetEntity || !validAnalysisType) &&
 					<Col md={{size: 4, offset: 4}}>
 						<br/>
 						<Row className="small-grey">
@@ -744,19 +767,25 @@ export class Home extends React.Component<IHomeProps> {
 										{
 											(!validMetapath) && 
 											<li>
-												The metapath should be symmetric  e.g. APVPA
+												The metapath should be symmetric  e.g. APA
 											</li>
 										}
 										{
 											(!validConstraints) &&
 											<li>
-												You should provide at least one constraint for ranking.
+												You should provide at least one constraint.
 											</li>
 										}
 										{
 											(!validTargetEntity) &&
 											<li>
 												You should specify target entity for search.
+											</li>
+										}
+										{
+											(!validAnalysisType) &&
+											<li>
+												You should select at least one type of analysis.
 											</li>
 										}
 									</ul>
@@ -801,7 +830,7 @@ const mapStateToProps = (storeState: IRootState) => ({
 });
 
 const mapDispatchToProps = { 
-	rankingRun, 
+	analysisRun,
 	simjoinRun,
 	simsearchRun,
 	getResults,

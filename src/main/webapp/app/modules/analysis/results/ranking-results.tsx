@@ -9,6 +9,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 export interface IRankingResultsProps {
 	docs: any,
+	headers: any,
 	hasMore: boolean,
 
 	loadMore: any,
@@ -30,7 +31,12 @@ export class RankingResultsPanel extends React.Component<IRankingResultsProps> {
 		const rows = this.props.docs.map( (row) => {
 			return <tr key={row.id}>
 			<td>{row.name}</td>
-			<td>{row.score}</td>
+			{
+				this.props.headers.map( (fieldName, index) => {
+					if (fieldName !== "id" && fieldName !== "name")
+						return <td key={index}>{row[fieldName]}</td>; 
+				})
+			}
 		  </tr>
 		});
 
@@ -40,7 +46,12 @@ export class RankingResultsPanel extends React.Component<IRankingResultsProps> {
 					<thead>
 						<tr>
 							<th>Entity</th>
-							<th>Score</th>
+							{
+								this.props.headers.map( (fieldName, index) => {
+									if (fieldName !== "id" && fieldName !== "name")
+										return <th key={index}>{fieldName}</th>;
+								})
+							}
 						</tr>
 					</thead>
 					<tbody>

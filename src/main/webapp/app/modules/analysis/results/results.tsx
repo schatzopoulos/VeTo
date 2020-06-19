@@ -55,19 +55,20 @@ export class ResultsPanel extends React.Component<IResultsPanelProps> {
 
             }
 
-            if (this.props.analysis === 'ranking') {
-                resultPanel = <RankingResultsPanel 
-                    docs={this.props.docs} 
-                    hasMore={this.props.meta.links.hasNext} 
-                    loadMore={this.props.loadMore.bind(this)}
-                />;
-            } else {
-                resultPanel = <SimResultsPanel 
-                    docs={this.props.docs} 
-                    hasMore={this.props.meta.links.hasNext} 
-                    loadMore={this.props.loadMore.bind(this)}
-                />;
-            }
+            // if (this.props.analysis === 'ranking') {
+            resultPanel = <RankingResultsPanel 
+                docs={this.props.docs} 
+                headers={this.props.meta.headers}
+                hasMore={this.props.meta.links.hasNext} 
+                loadMore={this.props.loadMore.bind(this)}
+            />;
+            // } else {
+            //     resultPanel = <SimResultsPanel 
+            //         docs={this.props.docs} 
+            //         hasMore={this.props.meta.links.hasNext} 
+            //         loadMore={this.props.loadMore.bind(this)}
+            //     />;
+            // }
             return (<div>
                 <Row>
                     <Col md='10'>

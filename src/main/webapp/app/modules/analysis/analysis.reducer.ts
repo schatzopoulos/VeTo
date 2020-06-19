@@ -3,7 +3,7 @@ import axios from 'axios';
 import { REQUEST, SUCCESS, FAILURE } from 'app/shared/reducers/action-type.util';
 import _ from 'lodash';
 import { min } from 'moment';
-const rankingAPIUrl = 'api/ranking';
+const analysisAPIUrl = 'api/analysis';
 const simjoinAPIUrl = 'api/simjoin';
 const simsearchAPIUrl = 'api/simsearch';
 
@@ -136,8 +136,8 @@ export default (state: AnalysisState = initialState, action): AnalysisState => {
 
 // Actions
 
-function formatPayload(metapath, constraints, folder, selectField) {
-  const payload = { metapath, folder, selectField };
+function formatPayload(analysis, metapath, constraints, folder, selectField) {
+  const payload = { analysis, metapath, folder, selectField };
 
   payload['constraints'] = {};
   _.forOwn(constraints, (entityConstraint, entity) => {
@@ -170,7 +170,7 @@ function formatPayload(metapath, constraints, folder, selectField) {
 function getAPIUrl(analysisType) {
   let url;
   if (analysisType === 'ranking') {
-    url = rankingAPIUrl;
+    url = analysisAPIUrl;
   } else if (analysisType === 'simjoin') {
     url = simjoinAPIUrl;
   } else if (analysisType === 'simsearch') {
@@ -206,17 +206,17 @@ export const getMoreResults = (analysis, id, page) => {
   };
 };
 
-export const rankingRun = (metapath, constraints, folder, selectField, w, minValues) => {
-  const payload = formatPayload(metapath, constraints, folder, selectField);
+export const analysisRun = (analysis, metapath, constraints, folder, selectField, w, minValues) => {
+  const payload = formatPayload(analysis, metapath, constraints, folder, selectField);
 
   return {
     type: ACTION_TYPES.RANKING_SUBMIT,
-    payload: axios.post(`${rankingAPIUrl}/submit`, payload)
+    payload: axios.post(`${analysisAPIUrl}/submit`, payload)
   };
 };
 
 export const simjoinRun = (metapath, constraints, folder, selectField, targetEntity, w, minValues) => {
-  const payload = formatPayload(metapath, constraints, folder, selectField);
+  const payload = formatPayload('simjoin', metapath, constraints, folder, selectField);
   console.warn(w);
   console.warn(minValues);
   // similarity-join specific values
@@ -232,7 +232,7 @@ export const simjoinRun = (metapath, constraints, folder, selectField, targetEnt
 };
 
 export const simsearchRun = (metapath, constraints, folder, selectField, targetEntity, w, minValues) => {
-  const payload = formatPayload(metapath, constraints, folder, selectField);
+  const payload = formatPayload('simsearch', metapath, constraints, folder, selectField);
 
   // similarity-searcg specific values
   payload['targetId'] = targetEntity;

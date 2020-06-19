@@ -12,9 +12,12 @@ public final class Constants {
     public static final String DEFAULT_LANGUAGE = "en";
     public static final String ANONYMOUS_USER = "anonymoususer";
     
-    public static final String BASE_PATH = "/tmp";
-    public static final String HIN_OUT = "HIN.csv";
+    public static final String BASE_PATH = "/dataX/SciNeM-results";
+    public static final String HIN_OUT = "HIN";
     public static final String ANALYSIS_OUT = "ANALYSIS.csv";
+    public static final String RANKING_OUT = "RANKING";
+    public static final String COMMUNITY_DETECTION_OUT = "COMMUNITIES";
+
     public static final String FINAL_OUT = "RESULT.csv";
     public static final String CONFIG_FILE = "config.json";
 

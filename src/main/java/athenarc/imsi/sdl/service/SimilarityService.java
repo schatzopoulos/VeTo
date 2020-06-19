@@ -32,8 +32,8 @@ public class SimilarityService {
         throws java.io.IOException, InterruptedException {
         
         // create folder to store results
-        String outputDir = FileUtil.createDir(operation, id);
-        String outputLog = FileUtil.getLogfile(operation, id);
+        String outputDir = FileUtil.createDir(id);
+        String outputLog = FileUtil.getLogfile(id);
         
         String config = FileUtil.writeConfig(operation, outputDir, metapath, constraints, k, t, w, minValues, folder, selectField, targetId);
 
@@ -107,8 +107,8 @@ public class SimilarityService {
     }
 
     public double getProgress(String stage, int step) {
-        if (stage.equals("Associations Mining")) {
-            return (step / 7.0) * 50;
+        if (stage.equals("HIN Transformation")) {
+            return (step / 3.0) * 50;
         } else {
             return (step / 5.0) * 50 + 50;
         }

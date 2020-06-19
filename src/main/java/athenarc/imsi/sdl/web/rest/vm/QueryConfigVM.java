@@ -22,6 +22,9 @@ public class QueryConfigVM {
 
     @NotNull
     private String selectField;
+    
+    @NotNull
+    private String analysis;
 
     private int k;
     private int t;
@@ -99,6 +102,14 @@ public class QueryConfigVM {
 
     public void setTargetId(int targetId) {
         this.targetId = targetId;
+    }
+
+    public String getAnalysis() {
+        return this.analysis;
+    }
+
+    public void setAnalysis(String analysis) {
+        this.analysis = analysis;
     }
 
     @Override

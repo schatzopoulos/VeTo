@@ -58,7 +58,7 @@ public class SimSearchResource {
     public Document status(String id,  Integer page) {
         log.debug("simsearch/status : {}", id, page);
 
-        String logfile = FileUtil.getLogfile("simsearch", id);
+        String logfile = FileUtil.getLogfile(id);
         try {
             String lastLine = FileUtil.getLastLine(logfile);
             int index = lastLine.indexOf("Exit Code");
@@ -71,7 +71,7 @@ public class SimSearchResource {
                     throw new RuntimeException("Error in simsearch task: " + id);
                 }
 
-                String rankingFile = FileUtil.getOutputFile("simsearch", id);
+                String rankingFile = FileUtil.getOutputFile(id);
                 
                 try {
                     Document meta = new Document();
@@ -97,7 +97,7 @@ public class SimSearchResource {
                 
                 // in case logfile is still empty
                 } else {
-                    response.append("stage", "Associations Mining")
+                    response.append("stage", "HIN Transformation")
                     .append("step", "Initializing")
                     .append("progress", 0);                
                 }

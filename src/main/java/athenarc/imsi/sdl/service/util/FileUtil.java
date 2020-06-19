@@ -24,8 +24,8 @@ public final class FileUtil {
     private FileUtil() {
     }
 
-    public static String createDir(String type, String uuid) {
-        String dirname = Constants.BASE_PATH + "/" + type + "/" + uuid;
+    public static String createDir(String uuid) {
+        String dirname = Constants.BASE_PATH + "/" + uuid;
         File dir = new File(dirname);
         if (!dir.exists()) {
             dir.mkdirs();
@@ -33,12 +33,12 @@ public final class FileUtil {
         return dirname;
     }
 
-    public static String getLogfile(String type, String uuid) {
-        return Constants.BASE_PATH + "/" + type + "/" + uuid + "/log.out";
+    public static String getLogfile(String uuid) {
+        return Constants.BASE_PATH + "/" + uuid + "/log.out";
     }
 
-    public static String getOutputFile(String type, String uuid) {
-        return Constants.BASE_PATH + "/" + type + "/" + uuid + "/" + Constants.FINAL_OUT;
+    public static String getOutputFile(String uuid) {
+        return Constants.BASE_PATH + "/" + uuid + "/" + Constants.FINAL_OUT;
     }
 
     public static String getLastLine(String logfile) throws IOException {
@@ -61,13 +61,14 @@ public final class FileUtil {
         Document config = new Document();
         config.put("indir", Constants.DATA_DIR + folder + "/nodes/");
         config.put("irdir", Constants.DATA_DIR + folder + "/relations/");
-        config.put("algorithm", "DynP");
         config.put("hin_out", outputDir + "/" + Constants.HIN_OUT);
-        config.put("analysis_out", outputDir + "/" + Constants.ANALYSIS_OUT);
         config.put("final_out", outputDir + "/" + Constants.FINAL_OUT);
         config.put("select_field", selectField);
-        
-        if (analysisType.equals("ranking")) {
+        config.put("ranking_out", outputDir + "/" + Constants.RANKING_OUT);
+        config.put("communities_out", outputDir + "/" + Constants.COMMUNITY_DETECTION_OUT);
+
+        if (analysisType.equals("ranking") || analysisType.equals("community") ||  analysisType.equals("community-ranking")) {
+            config.put("operation", analysisType);
             config.put("pr_alpha", 0.5);
             config.put("pr_tol", 0.000001);
         } else if (analysisType.equals("simjoin")) {
@@ -100,14 +101,21 @@ public final class FileUtil {
 
         return configFile;
     }
-
+    public static String[] getHeaders(String filename) throws FileNotFoundException, IOException {
+        BufferedReader bf = new BufferedReader(new FileReader(filename));
+        String firstLine = bf.readLine();
+        String[] headers =  firstLine.split("\t");
+        bf.close();
+        return headers;
+    }
+    
     public static int countLines(String filename) throws FileNotFoundException, IOException {
         FileReader input = new FileReader(filename);
         LineNumberReader count = new LineNumberReader(input);
         while (count.skip(Long.MAX_VALUE) > 0) { }
         int result = count.getLineNumber();
         count.close();
-        return result;
+        return result-1;    //remove header
     }
 
     public static int totalPages(int totalRecords) {

@@ -22,7 +22,7 @@ import athenarc.imsi.sdl.SpOtApp;
  * @see DatasetsResource
  */
 @SpringBootTest(classes = SpOtApp.class)
-public class RankingResourceIT {
+public class AnalysisResourceIT {
 
     private MockMvc restMockMvc;
 
@@ -30,7 +30,7 @@ public class RankingResourceIT {
     public void setUp() {
         MockitoAnnotations.initMocks(this);
 
-        RankingResource rankingResource = new RankingResource();
+        AnalysisResource rankingResource = new AnalysisResource();
         restMockMvc = MockMvcBuilders
             .standaloneSetup(rankingResource)
             .build();
@@ -41,9 +41,9 @@ public class RankingResourceIT {
      */
     @Test
     public void testSubmit() throws Exception {
-        restMockMvc.perform(post("/api/ranking/submit")
+        restMockMvc.perform(post("/api/analysis/submit")
         .contentType(MediaType.APPLICATION_JSON)
-        .content("{ \"metapath\": \"APA\", \"constraints\": { \"P\": \"year > 2015\" }, \"folder\": \"DBLP\", \"selectField\": \"name\" }"))    
+        .content("{ \"analysis\": \"ranking\", \"metapath\": \"APA\", \"constraints\": { \"P\": \"year > 2015\" }, \"folder\": \"DBLP\", \"selectField\": \"name\" }"))    
         .andExpect(status().isOk());
     }
 
@@ -52,15 +52,15 @@ public class RankingResourceIT {
      */
     @Test
     public void testStatus() throws Exception {
-        MvcResult result = restMockMvc.perform(post("/api/ranking/submit")
+        MvcResult result = restMockMvc.perform(post("/api/analysis/submit")
         .contentType(MediaType.APPLICATION_JSON)
-        .content("{ \"metapath\": \"APA\", \"constraints\": { \"P\": \"year > 2015\" }, \"folder\": \"DBLP\", \"selectField\": \"name\" }")) 
+        .content("{  \"analysis\": \"ranking\", \"metapath\": \"APA\", \"constraints\": { \"P\": \"year > 2015\" }, \"folder\": \"DBLP\", \"selectField\": \"name\" }")) 
         .andExpect(status().isOk()).andReturn();
         String content = result.getResponse().getContentAsString();
         Document response = Document.parse(content);
         String uuid = response.getString("id");
 
-        MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders.get("/api/ranking/get");
+        MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders.get("/api/analysis/get");
         requestBuilder.param("id", uuid);
 
         restMockMvc.perform(requestBuilder).andExpect(status().isOk());
