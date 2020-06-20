@@ -33,6 +33,12 @@ public final class FileUtil {
         return dirname;
     }
 
+    public static Boolean dirExists(String uuid) {
+        String dirname = Constants.BASE_PATH + "/" + uuid;
+        File dir = new File(dirname);
+        return dir.exists();
+    }
+
     public static String getLogfile(String uuid) {
         return Constants.BASE_PATH + "/" + uuid + "/log.out";
     }

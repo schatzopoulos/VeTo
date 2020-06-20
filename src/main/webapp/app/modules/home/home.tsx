@@ -35,7 +35,6 @@ import ResultsPanel from '../analysis/results/results';
 import ConstraintItem from '../constraints/constraint-item';
 import { __metadata } from 'tslib';
 import AutocompleteInput from '../datasets/autocomplete-input';
-import registerReducer from '../account/register/register.reducer';
 
 export interface IHomeProps extends StateProps, DispatchProps {
 	loading: boolean;
@@ -797,6 +796,15 @@ export class Home extends React.Component<IHomeProps> {
 
 				<Col md='12'>
 					<Container>
+					<br/>
+					{
+						(this.props.loading) &&
+						<Row className="small-grey">
+							<Col>
+							The analysis may take some time, you can copy the following id to check its progress: {this.props.uuid}
+							</Col>
+						</Row>
+					}
 					<br/>
 					{
 						(this.props.loading) && <Progress animated color="info" value={this.props.progress}>{this.props.progressMsg}</Progress>

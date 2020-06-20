@@ -68,7 +68,7 @@ public class AnalysisResource {
 
                 // error occurred in ranking script
                 if (exitCode != 0) {
-                    throw new RuntimeException("Error in ranking task: " + id);
+                    throw new RuntimeException("Error in analysis task: " + id);
                 }
 
                 String rankingFile = FileUtil.getOutputFile(id);
@@ -108,4 +108,16 @@ public class AnalysisResource {
             throw new RuntimeException("Error reading status from logfile");
         }
     }
+
+     /**
+    * GET analysis exists
+    */
+    @GetMapping("/exists")
+    public Document exists(String id) {
+        log.debug("analysis/exists : {}", id);
+
+        Boolean exists = FileUtil.dirExists(id);
+        return new Document().append("id", id).append("exists", exists);
+    }
+
 }

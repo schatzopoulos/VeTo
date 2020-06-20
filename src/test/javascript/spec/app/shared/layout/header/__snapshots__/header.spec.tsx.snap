@@ -58,6 +58,7 @@ exports[`Header Renders a Header component in dev profile with LoadingBar, Navba
         <Component />
         <Component />
         <Component />
+        <Component />
         <Component
           showSwagger={true}
         />
@@ -116,6 +117,7 @@ exports[`Header Renders a Header component in prod profile with LoadingBar, Navb
         tag="ul"
         vertical={false}
       >
+        <Component />
         <Component />
         <Component />
         <Component />
