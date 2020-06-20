@@ -87,13 +87,16 @@ public class AnalysisResource {
                     throw new RuntimeException("Error results from file");
                 }
             } else {
+                String conf = FileUtil.readJsonFile(FileUtil.getConfFile(id));
+                String operation = (String)Document.parse(conf).get("operation");
+
                 response.append("id", id);
 
                 String[] tokens = lastLine.split("\t");
                 if (tokens.length > 1) {
                     response.append("stage", tokens[0])
                     .append("step", tokens[2])
-                    .append("progress", analysisService.getProgress(tokens[0], Integer.parseInt(tokens[1])));
+                    .append("progress", analysisService.getProgress(operation, tokens[0], Integer.parseInt(tokens[1])));
                 
                 // in case logfile is still empty
                 } else {

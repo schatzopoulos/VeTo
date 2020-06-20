@@ -42,6 +42,10 @@ public final class FileUtil {
     public static String getLogfile(String uuid) {
         return Constants.BASE_PATH + "/" + uuid + "/log.out";
     }
+    
+    public static String getConfFile(String uuid) {
+        return Constants.BASE_PATH + "/" + uuid + "/" + Constants.CONFIG_FILE;
+    }
 
     public static String getOutputFile(String uuid) {
         return Constants.BASE_PATH + "/" + uuid + "/" + Constants.FINAL_OUT;
@@ -154,7 +158,7 @@ public final class FileUtil {
         });
     }
 
-    public static String readSchema(String filename) throws FileNotFoundException, IOException {
+    public static String readJsonFile(String filename) throws FileNotFoundException, IOException {
         File file = new File(filename);
         FileInputStream fis = new FileInputStream(file);
         byte[] data = new byte[(int) file.length()];

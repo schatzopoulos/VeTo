@@ -107,11 +107,21 @@ public class AnalysisService {
         return docs;
     }
 
-    public double getProgress(String stage, int step) {
-        if (stage.equals("HIN Transformation")) {
-            return (step / 3.0) * 50;
+    public double getProgress(String operation, String stage, int step) {
+        if (operation.equals("community-ranking")) {
+            if (stage.equals("HIN Transformation")) {
+                return (step / 3.0) * 30;
+            } else if (stage.equals("Ranking")) {
+                return (step / 4.0) * 30 + 30;
+            } else {
+                return (step / 4.0) * 30 + 30;
+            }
         } else {
-            return (step / 4.0) * 50 + 50;
+            if (stage.equals("HIN Transformation")) {
+                return (step / 3.0) * 50;
+            } else {
+                return (step / 4.0) * 50 + 50;
+            }
         }
     }
 }
