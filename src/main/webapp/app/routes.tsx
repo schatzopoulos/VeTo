@@ -40,7 +40,7 @@ const Routes = () => (
       <PrivateRoute path="/account" component={Account} hasAnyAuthorities={[AUTHORITIES.ADMIN, AUTHORITIES.USER]} />
       <ErrorBoundaryRoute path="/" exact component={Home} />
       <ErrorBoundaryRoute path="/upload" exact component={Upload} />
-      <ErrorBoundaryRoute path="/jobs" exact component={Jobs} />
+      <ErrorBoundaryRoute path="/jobs/:jobId?" exact component={Jobs} />
 
       <PrivateRoute path="/" component={Entities} hasAnyAuthorities={[AUTHORITIES.USER]} />
       <ErrorBoundaryRoute component={PageNotFound} />

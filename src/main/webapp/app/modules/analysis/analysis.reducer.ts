@@ -53,7 +53,7 @@ export default (state: AnalysisState = initialState, action): AnalysisState => {
     case FAILURE(ACTION_TYPES.RANKING_SUBMIT):
     case FAILURE(ACTION_TYPES.GET_RESULTS):
     case FAILURE(ACTION_TYPES.GET_MORE_RESULTS): {
-      const errorMsg = 'An unexpected error occurred during ranking';
+      const errorMsg = 'An unexpected error occurred during the analysis';
       return {
         ...state,
         loading: false,

@@ -27,6 +27,7 @@ import {
 } from './jobs.reducer';
 import ResultsPanel from './results/results';
 import { __metadata } from 'tslib';
+import { timingSafeEqual } from 'crypto';
 
 export interface IHomeProps extends StateProps, DispatchProps {
 	loading: boolean;
@@ -50,9 +51,19 @@ export class Jobs extends React.Component<IHomeProps> {
 		}, 1000);
 	}
 
+	componentDidMount() {
+		console.warn(this.props);
+		if (this.props['match']['params']['jobId']) {
+			this.setState({
+				jobId: this.props['match']['params']['jobId']
+			}, () => {
+				this.props.getJob(this.state.jobId);
+			});
+		}
+	}
+
 	componentDidUpdate(prevProps) {
-		console.warn(this.props.loading);
-		console.warn(prevProps.loading);
+
 		// new uuid detected, start polling
 		if (this.props.loading && !prevProps.loading) {
 			this.pollForResults();
@@ -76,11 +87,9 @@ export class Jobs extends React.Component<IHomeProps> {
 
 	onChangeInput(e) {
 		const jobId = e.target.value;
-		console.warn(jobId);
 		this.setState({
 			jobId
 		});
-
 	}
 
 	render() {
@@ -94,7 +103,7 @@ export class Jobs extends React.Component<IHomeProps> {
 							<h4>Search for job</h4>
 							<Row>
 								<Col md='10'>
-									<Input name="job_id" id="job_id" placeholder="Please give a valid job id" onChange={this.onChangeInput.bind(this)} />
+									<Input name="job_id" id="job_id" placeholder="Please give a valid job id" onChange={this.onChangeInput.bind(this)} value={this.state.jobId} />
 								</Col>
 								<Col md='2'>
 									<Button color="success" disabled={this.props.loading || this.state.jobId === ''} onClick={this.execute.bind(this)}>

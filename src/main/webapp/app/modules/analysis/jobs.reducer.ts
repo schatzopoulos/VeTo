@@ -46,7 +46,7 @@ export default (state: JobState = initialState, action): JobState => {
       return state;
     case FAILURE(ACTION_TYPES.GET_RESULTS):
     case FAILURE(ACTION_TYPES.GET_MORE_RESULTS): {
-      const errorMsg = 'An unexpected error occurred during ranking';
+      const errorMsg = 'An unexpected error occurred during the analysis';
       return {
         ...state,
         loading: false,
