@@ -52,6 +52,7 @@ export class ConstraintItem extends React.Component<IConstraintItemProps> {
 								field={ field } 
 								type={ fieldConstraints.type } 
 								enabled={ enabled } 
+								lastFieldCondition={index === fieldConstraints['conditions'].length - 1}
 								handleSwitch={this.props.handleSwitch.bind(this)}
 								handleDropdown={this.props.handleDropdown.bind(this)}
 								handleLogicDropdown={this.props.handleLogicDropdown.bind(this)}

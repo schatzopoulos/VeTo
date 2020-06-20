@@ -35,6 +35,7 @@ import ResultsPanel from '../analysis/results/results';
 import ConstraintItem from '../constraints/constraint-item';
 import { __metadata } from 'tslib';
 import AutocompleteInput from '../datasets/autocomplete-input';
+import { NavLink } from 'reactstrap';
 
 export interface IHomeProps extends StateProps, DispatchProps {
 	loading: boolean;
@@ -610,6 +611,13 @@ export class Home extends React.Component<IHomeProps> {
 
 		const datasetOptions = this.getDatasetOptions();
 		const schema = this.getSchema();
+		const validMetapathLength = this.checkMetapathLength();
+		const validMetapath = this.checkSymmetricMetapath();
+		const validConstraints = this.checkConstraints();
+		const validAnalysisType = this.state.analysis.length !== 0;
+		const validTargetEntity = (this.state.analysis !== 'simsearch') || (this.state.analysis === 'simsearch' && this.state.targetEntity !== '');
+		const { selectedEntity, selectFieldOptions }: any = this.getSelectFieldOptions();
+		
 		let datasetFolder = '';
 		if (this.props.schemas) {
 			datasetFolder = this.props.schemas[this.state.dataset]['folder'];
@@ -617,7 +625,7 @@ export class Home extends React.Component<IHomeProps> {
 
 		const constraintsPanel = <Row>
 		<Col md="12">
-			<h4>3. Select constraints</h4>
+			<h4>Select constraints</h4>
 		</Col>
 		<Col md="12">
 			{
@@ -643,23 +651,37 @@ export class Home extends React.Component<IHomeProps> {
 					}
 					</ListGroup>
 			}
+			{
+				(!validConstraints && (this.state.metapathStr.length !== 0)) &&
+				<span className="attribute-type text-danger">
+					Please provide at least one constraint.
+				</span>
+			}
 		</Col>
 		</Row>;
+		const rankingLabel = <span>
+			Ranking <FontAwesomeIcon style={{ color: '#17a2b8' }} icon="question-circle" title="Ranking analysis is perfomed using PageRank."/>
+		</span>;
+		const communityLabel = <span>
+			Community Detection <FontAwesomeIcon style={{ color: '#17a2b8' }} icon="question-circle" title="Community Detection analysis is perfomed using Louvain Modularity method."/>
+		</span>;
 
-		const validMetapathLength = this.checkMetapathLength();
-		const validMetapath = this.checkSymmetricMetapath();
-		const validConstraints = this.checkConstraints();
-		const validAnalysisType = this.state.analysis.length !== 0;
-		const validTargetEntity = (this.state.analysis !== 'simsearch') || (this.state.analysis === 'simsearch' && this.state.targetEntity !== '');
-		const { selectedEntity, selectFieldOptions }: any = this.getSelectFieldOptions();
-		
 		return (
 			<Container fluid>
 			<Row>
 				<Col md="6">
 					<Row>
 						<Col md="12">
-							<h4>1. Select dataset</h4>
+							<Row>
+								<Col md='8'>
+									<h4>Select dataset</h4>		
+								</Col>
+								<Col md='4'>	
+									<Button outline color="info" tag={Link} to="/upload" className="float-right" size='sm'>
+										<FontAwesomeIcon icon="upload" /> Upload new
+									</Button>
+								</Col>
+							</Row>
 							<Input value={this.state.dataset} type="select" name="dataset" id="dataset" onChange={this.handleDatasetDropdown.bind(this)}>
 								{ datasetOptions }
 							</Input>
@@ -667,7 +689,7 @@ export class Home extends React.Component<IHomeProps> {
 					</Row>
 					<br/>
 
-					<h4>2. Select metapath</h4>
+					<h4>Select metapath</h4>
 					<Card className="mx-auto">		
 						{ schema }
 					</Card>
@@ -682,7 +704,10 @@ export class Home extends React.Component<IHomeProps> {
 									<Button color="danger" title="Delete last node" onClick={this.deleteLast.bind(this)} ><FontAwesomeIcon icon="arrow-left" /></Button>
 								</InputGroupAddon>
 							</InputGroup>
-							<span className='attribute-type'>e.g. { this.state.dataset === 'DBLP' && "APA" }{ this.state.dataset === 'Bio' && "MGDGM" }</span>
+							{
+								(!validMetapathLength || !validMetapath) &&
+									<span className="attribute-type text-danger">Please insert a symmetric metapath { (this.state.dataset === 'DBLP' || this.state.dataset === 'Bio') && "e.g."} { this.state.dataset === 'DBLP' && "APA" }{ this.state.dataset === 'Bio' && "MGDGM" }</span>
+							}		
 						</Col>
 						{
 							(selectedEntity) &&
@@ -705,10 +730,16 @@ export class Home extends React.Component<IHomeProps> {
 					}
 
 					<br/>
-					<h4>4. Select analysis type</h4>
+					<h4>Select analysis type</h4>
 					<div>
-						<CustomInput type="switch" id="rankingSwith" onChange={() => this.onCheckboxBtnClick("ranking")} checked={this.state.analysis.includes("ranking")} label="Ranking" />
-						<CustomInput type="switch" id="cdSwitch" onChange={() => this.onCheckboxBtnClick("community")} checked={this.state.analysis.includes("community")} label="Community Detection" />
+						<CustomInput type="switch" id="rankingSwith" onChange={() => this.onCheckboxBtnClick("ranking")} checked={this.state.analysis.includes("ranking")} label={rankingLabel} />
+						<CustomInput type="switch" id="cdSwitch" onChange={() => this.onCheckboxBtnClick("community")} checked={this.state.analysis.includes("community")} label={communityLabel} />
+						{
+							(!validAnalysisType) &&
+								<span className="attribute-type text-danger">
+									Please select at least one type of analysis.
+								</span>
+						}
 					</div>
 
 					{/* <Input id="analysis-dropdown" type="select" value={this.state.analysis} onChange={this.handleAnalysisDropdown.bind(this)} >
@@ -721,7 +752,7 @@ export class Home extends React.Component<IHomeProps> {
 						(this.state.analysis === "simsearch") &&
 							<div>
 								<br/>
-								<h4>5. Select target entity</h4>
+								<h4>Select target entity</h4>
 								<AutocompleteInput 
 									id="targetEntityInput"
 									placeholder={ _.isEmpty(this.state.metapath) ? "First, select a metapath" : `Search for ${selectedEntity} entities by ${this.state.selectField}`}
@@ -748,51 +779,6 @@ export class Home extends React.Component<IHomeProps> {
 					</Col>
 				</Col>
 				
-				{
-					(!validMetapathLength || !validMetapath || !validConstraints || !validTargetEntity || !validAnalysisType) &&
-					<Col md={{size: 4, offset: 4}}>
-						<br/>
-						<Row className="small-grey">
-							<Card block>
-								<CardBody>
-									<b>Please note that:</b>
-									<ul>
-										{
-											(!validMetapathLength) &&
-											<li>
-												The metapath should containt at least 3 entities.
-											</li>
-										}
-										{
-											(!validMetapath) && 
-											<li>
-												The metapath should be symmetric  e.g. APA
-											</li>
-										}
-										{
-											(!validConstraints) &&
-											<li>
-												You should provide at least one constraint.
-											</li>
-										}
-										{
-											(!validTargetEntity) &&
-											<li>
-												You should specify target entity for search.
-											</li>
-										}
-										{
-											(!validAnalysisType) &&
-											<li>
-												You should select at least one type of analysis.
-											</li>
-										}
-									</ul>
-								</CardBody>
-							</Card>
-						</Row>
-					</Col>
-				}
 
 				<Col md='12'>
 					<Container>

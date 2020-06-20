@@ -21,6 +21,7 @@ export interface IConstraintItemFieldProps {
     field: string,
     type: string,
     enabled: boolean,
+    lastFieldCondition: boolean,
 
     // functions
     handleSwitch: any,
@@ -188,7 +189,7 @@ export class ConstraintItemField extends React.Component<IConstraintItemFieldPro
                 <Col md='6'>
                     { inputField }
                     {
-                        (example) && <span className='attribute-type'>e.g. { example }</span>
+                        (example && this.props.lastFieldCondition) && <span className='attribute-type'>e.g. { example }</span>
                     }
                 </Col>
                 <Col md='1'>
