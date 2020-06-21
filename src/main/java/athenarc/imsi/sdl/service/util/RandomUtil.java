@@ -1,8 +1,11 @@
 package athenarc.imsi.sdl.service.util;
 
-import org.apache.commons.lang3.RandomStringUtils;
-
 import java.security.SecureRandom;
+import java.util.ArrayList;
+import java.util.Map;
+
+import org.apache.commons.lang3.RandomStringUtils;
+import org.bson.Document;
 
 /**
  * Utility class for generating random Strings.
@@ -50,5 +53,29 @@ public final class RandomUtil {
      */
     public static String generateResetKey() {
         return generateRandomAlphanumericString();
+    }
+
+    public static String getAnalysisDescription(Document config) {
+        String description = "Executing ";
+
+        ArrayList<String> ops = new ArrayList<>();
+        if (((String)config.get("operation")).contains("ranking")) {
+            ops.add("Ranking");
+        }
+        if (((String)config.get("operation")).contains("community")) {
+            ops.add("Community Detection");
+        }
+        description += String.join(", ", ops);
+
+        Document query = (Document)config.get("query");
+        description += " with metapath " + (String)query.get("metapath");
+        
+        ArrayList<String> constraints = new ArrayList<>();
+        for (final Map.Entry<String, Object> entry : ((Document)query.get("constraints")).entrySet()) {
+            constraints.add(entry.getKey() + ": " + ((String)entry.getValue()));
+        }
+        description += " and constraint(s) " + String.join(", ", constraints);
+
+        return description;
     }
 }

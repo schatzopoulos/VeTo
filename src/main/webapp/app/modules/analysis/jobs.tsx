@@ -52,7 +52,6 @@ export class Jobs extends React.Component<IHomeProps> {
 	}
 
 	componentDidMount() {
-		console.warn(this.props);
 		if (this.props['match']['params']['jobId']) {
 			this.setState({
 				jobId: this.props['match']['params']['jobId']
@@ -129,6 +128,14 @@ export class Jobs extends React.Component<IHomeProps> {
 						}
 					<br/>
 					{
+						(this.props.loading) &&
+						<Row className="small-grey text-center">
+							<Col>
+								{this.props.description}
+							</Col>
+						</Row>
+					}
+					{
 						(this.props.loading) && <Progress animated color="info" value={this.props.progress}>{this.props.progressMsg}</Progress>
 					}
 					<ResultsPanel 
@@ -151,6 +158,7 @@ const mapStateToProps = (storeState: IRootState) => ({
 	loading: storeState.jobs.loading,
 	progress: storeState.jobs.progress,
 	progressMsg: storeState.jobs.progressMsg,
+	description: storeState.jobs.description,
 	error: storeState.jobs.error,
 	docs: storeState.jobs.docs,
 	meta: storeState.jobs.meta,

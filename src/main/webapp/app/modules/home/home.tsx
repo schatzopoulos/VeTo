@@ -665,6 +665,12 @@ export class Home extends React.Component<IHomeProps> {
 		const communityLabel = <span>
 			Community Detection <FontAwesomeIcon style={{ color: '#17a2b8' }} icon="question-circle" title="Community Detection analysis is perfomed using Louvain Modularity method."/>
 		</span>;
+		const simJoinLabel = <span>
+			Similarity Join <FontAwesomeIcon style={{ color: '#17a2b8' }} icon="question-circle" title="Similarity Join is perfomed using JoinSim."/>
+		</span>;
+		const simSearchLabel = <span>
+			Similarity Search <FontAwesomeIcon style={{ color: '#17a2b8' }} icon="question-circle" title="Similarity Search is perfomed using PathSim."/>
+		</span>;
 
 		return (
 			<Container fluid>
@@ -734,6 +740,9 @@ export class Home extends React.Component<IHomeProps> {
 					<div>
 						<CustomInput type="switch" id="rankingSwith" onChange={() => this.onCheckboxBtnClick("ranking")} checked={this.state.analysis.includes("ranking")} label={rankingLabel} />
 						<CustomInput type="switch" id="cdSwitch" onChange={() => this.onCheckboxBtnClick("community")} checked={this.state.analysis.includes("community")} label={communityLabel} />
+						{/* <CustomInput type="switch" id="simJoinSwitch" onChange={() => this.onCheckboxBtnClick("simjoin")} checked={this.state.analysis.includes("simjoin")} label={simJoinLabel} />
+						<CustomInput type="switch" id="simSearchSwitch" onChange={() => this.onCheckboxBtnClick("simsearch")} checked={this.state.analysis.includes("simsearch")} label={simSearchLabel} /> */}
+					
 						{
 							(!validAnalysisType) &&
 								<span className="attribute-type text-danger">
@@ -785,13 +794,13 @@ export class Home extends React.Component<IHomeProps> {
 					<br/>
 					{
 						(this.props.loading) &&
-						<Row className="small-grey">
+						<Row className="small-grey text-center">
 							<Col>
-							The analysis may take some time, you can copy the following id to check its progress: {this.props.uuid}
+							The analysis may take some time, you can check its progress in the following <Link to={`/jobs/${this.props.uuid}`} target="_blank">link</Link>.<br/>
+							{this.props.description}
 							</Col>
 						</Row>
 					}
-					<br/>
 					{
 						(this.props.loading) && <Progress animated color="info" value={this.props.progress}>{this.props.progressMsg}</Progress>
 					}
@@ -815,6 +824,7 @@ const mapStateToProps = (storeState: IRootState) => ({
 	loading: storeState.analysis.loading,
 	progress: storeState.analysis.progress,
 	progressMsg: storeState.analysis.progressMsg,
+	description: storeState.analysis.description,
 	error: storeState.analysis.error,
 	docs: storeState.analysis.docs,
 	meta: storeState.analysis.meta,

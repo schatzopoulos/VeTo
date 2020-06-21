@@ -17,6 +17,7 @@ export interface IAutocompleteInputProps extends StateProps, DispatchProps {
     field: string, 
     folder: string, 
     size?: string,
+    value?: string,
 
     disabled: boolean, 
     onChange: any,
@@ -65,6 +66,7 @@ export class AutocompleteInput extends React.Component<IAutocompleteInputProps> 
                 placeholder={this.props.placeholder}
                 disabled={this.props.disabled}
                 bsSize={this.props.size}
+                defaultInputValue={this.props.value || ''}
             />
 		);
 	}

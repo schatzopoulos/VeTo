@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import athenarc.imsi.sdl.service.AnalysisService;
 import athenarc.imsi.sdl.service.util.FileUtil;
+import athenarc.imsi.sdl.service.util.RandomUtil;
 import athenarc.imsi.sdl.web.rest.vm.QueryConfigVM;
 
 /**
@@ -88,7 +89,9 @@ public class AnalysisResource {
                 }
             } else {
                 String conf = FileUtil.readJsonFile(FileUtil.getConfFile(id));
-                String operation = (String)Document.parse(conf).get("operation");
+                Document config = Document.parse(conf);
+                String operation = (String)config.get("operation");
+                String description = RandomUtil.getAnalysisDescription(config);
 
                 response.append("id", id);
 
@@ -96,13 +99,15 @@ public class AnalysisResource {
                 if (tokens.length > 1) {
                     response.append("stage", tokens[0])
                     .append("step", tokens[2])
-                    .append("progress", analysisService.getProgress(operation, tokens[0], Integer.parseInt(tokens[1])));
+                    .append("progress", analysisService.getProgress(operation, tokens[0], Integer.parseInt(tokens[1])))
+                    .append("description", description);
                 
                 // in case logfile is still empty
                 } else {
                     response.append("stage", "HIN Transformation")
                     .append("step", "Initializing")
-                    .append("progress", 0);                
+                    .append("progress", 0)
+                    .append("description", description);                
                 }
             }
 

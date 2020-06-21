@@ -2,7 +2,7 @@ import React from 'react';
 import { 
 	Row, 
 	Col, 
-	ListGroup, 
+	Button, 
 	ListGroupItem,
 } from 'reactstrap';
 import ConstraintItemField from './constraint-item-field';
