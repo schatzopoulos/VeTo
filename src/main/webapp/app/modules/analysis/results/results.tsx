@@ -101,31 +101,35 @@ export class ResultsPanel extends React.Component<IResultsPanelProps> {
                 <TabContent activeTab={this.state.activeAnalysis}>
                     {
                         _.map(this.props.results, ({docs, meta}, analysis) => {
-                            if (docs.length === 0) {
-                                return <div key={analysis} style={{ textAlign: "center" }}>No results found for the specified query!<br/> 
-                                {/* {
-                                    (this.props.analysis === 'simjoin' || this.props.analysis === 'simsearch') &&
-                                    <span>
-                                        Please try again with more loose analysis parameters. <br/>
-                                        <Button onClick={this.tryAgain.bind(this)} color='success' size='sm'><FontAwesomeIcon icon="play" />  Try again</Button>
-                                    </span>
-                                } */}
-                                </div>;
-
-                            }
+                            
                             return <TabPane tabId={analysis} key={analysis}>
-                                <br/>
+                            {
+                                    (docs.length === 0) ?
+                                        <div key={analysis} style={{ textAlign: "center" }}>No results found for the specified query!<br/> 
+                                        {/* {
+                                            (this.props.analysis === 'simjoin' || this.props.analysis === 'simsearch') &&
+                                            <span>
+                                                Please try again with more loose analysis parameters. <br/>
+                                                <Button onClick={this.tryAgain.bind(this)} color='success' size='sm'><FontAwesomeIcon icon="play" />  Try again</Button>
+                                            </span>
+                                        } */}
+                                        </div>
 
-                                <Row>
-                                    <Col md='10' className="small-grey">
-                                        Displaying {docs.length} out of {meta.totalRecords} results
-                                    </Col>
-                                    <Col md='2' style={{textAlign: 'right'}}>
-                                        <Button color="info" size='sm' outline onClick={this.downloadResults.bind(this)}><FontAwesomeIcon icon="download" /> Download</Button>
-                                    </Col>
-                                </Row>
-                                <br/>
-                                { resultPanel }
+                                : <div>
+                                    <br/>
+
+                                    <Row>
+                                        <Col md='10' className="small-grey">
+                                            Displaying {docs.length} out of {meta.totalRecords} results
+                                        </Col>
+                                        <Col md='2' style={{textAlign: 'right'}}>
+                                            <Button color="info" size='sm' outline onClick={this.downloadResults.bind(this)}><FontAwesomeIcon icon="download" /> Download</Button>
+                                        </Col>
+                                    </Row>
+                                    <br/>
+                                    { resultPanel }
+                                </div>
+                            }
                             </TabPane>
                         })
                     }

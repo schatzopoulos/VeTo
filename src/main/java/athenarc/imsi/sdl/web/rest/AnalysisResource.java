@@ -58,7 +58,8 @@ public class AnalysisResource {
                 config.getMinValues(),
                 config.getTargetId(),
                 config.getFolder(), 
-                config.getSelectField()
+                config.getSelectField(),
+                config.getEdgesThreshold()
             );        
 
         } catch (java.io.IOException | InterruptedException e) {

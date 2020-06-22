@@ -41,7 +41,8 @@ public class AnalysisService {
         int minValues,
         int targetId,
         String folder, 
-        String selectField) throws java.io.IOException, InterruptedException {
+        String selectField,
+        int edgesThreshold) throws java.io.IOException, InterruptedException {
         
         // create folder to store results
         String outputDir = FileUtil.createDir(id);
@@ -60,7 +61,8 @@ public class AnalysisService {
             minValues, 
             targetId,
             folder, 
-            selectField
+            selectField,
+            edgesThreshold
         );
 
         // prepare ranking script arguments

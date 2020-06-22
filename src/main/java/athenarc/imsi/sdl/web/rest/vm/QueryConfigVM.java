@@ -38,6 +38,15 @@ public class QueryConfigVM {
     private int joinW;
     private int minValues;
     private int targetId;
+    private int edgesThreshold;
+
+    public int getEdgesThreshold() {
+        return this.edgesThreshold;
+    }
+
+    public void setEdgesThreshold(int edgesThreshold) {
+        this.edgesThreshold = edgesThreshold;
+    }
 
     public String getMetapath() {
         return metapath;

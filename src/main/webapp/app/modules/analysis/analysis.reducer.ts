@@ -121,9 +121,7 @@ export default (state: AnalysisState = initialState, action): AnalysisState => {
 
 // Actions
 
-function formatPayload(analysis, metapath, joinpath, constraints, folder, selectField) {
-  const payload = { analysis, metapath, joinpath, folder, selectField };
-
+function formatConstraints(payload, constraints) {
   payload['constraints'] = {};
   _.forOwn(constraints, (entityConstraint, entity) => {
     const e = entity.substr(0, 1);
@@ -188,14 +186,23 @@ export const getMoreResults = (analysis, id, page) => {
   };
 };
 
-export const analysisRun = (analysis, metapath, joinpath, constraints, folder, selectField, targetEntity, w, minValues) => {
-  const payload = formatPayload(analysis, metapath, joinpath, constraints, folder, selectField);
-  payload['k'] = 100;
-  payload['t'] = 1;
-  payload['joinW'] = 0;
-  payload['searchW'] = 10;
-  payload['minValues'] = 5;
-  payload['targetId'] = targetEntity;
+export const analysisRun = (analysis, metapath, joinpath, constraints, folder, selectField, targetId, edgesThreshold, w, minValues) => {
+  const payload = {
+    k: 100,
+    t: 1,
+    joinW: 0,
+    searchW: 10,
+    minValues: 5,
+    targetId,
+    analysis,
+    metapath,
+    joinpath,
+    folder,
+    selectField,
+    edgesThreshold
+  };
+
+  formatConstraints(payload, constraints);
 
   return {
     type: ACTION_TYPES.ANALYSIS_SUBMIT,

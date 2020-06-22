@@ -111,7 +111,8 @@ public final class FileUtil {
         int minValues, 
         int targetId,
         String folder, 
-        String selectField
+        String selectField,
+        int edgesThreshold
     ) throws IOException {
 
         Document config = new Document();
@@ -139,6 +140,7 @@ public final class FileUtil {
         config.put("analyses", analyses);
         config.put("pr_alpha", 0.5);
         config.put("pr_tol", 0.000001);
+        config.put("edgesThreshold", edgesThreshold);
 
         // Similarity Search & Join params
         config.put("target_id", targetId);

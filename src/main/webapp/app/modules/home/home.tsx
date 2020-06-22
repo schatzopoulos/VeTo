@@ -15,9 +15,10 @@ import {
 	Progress,
 	Container,
 	Card, 
-	Label,
+	UncontrolledCollapse,
 	CustomInput, 
-	
+	CardBody,
+	Label,
 } from 'reactstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { IRootState } from 'app/shared/reducers';
@@ -58,6 +59,7 @@ export class Home extends React.Component<IHomeProps> {
 		dataset: "DBLP",
 		selectField: '',
 		targetEntity: '',
+		edgesThreshold: 5,
 	};
 	cy: any;
 	polling: any;
@@ -360,6 +362,7 @@ export class Home extends React.Component<IHomeProps> {
 			this.props.schemas[this.state.dataset]['folder'],
 			this.state.selectField,
 			this.state.targetEntity,
+			this.state.edgesThreshold,
 			(rerunAnalysis) ? 15 : undefined,
 			(rerunAnalysis) ? 1 : undefined,
 		);
@@ -600,6 +603,11 @@ export class Home extends React.Component<IHomeProps> {
 			targetEntity: selected,
 		});
 	}
+	handleAdvancedOptions(e) {
+		const newState = {...this.state};
+		newState[e.target.id] = e.target.value;
+		this.setState(newState);
+	}
 	render() {
 
 		const datasetOptions = this.getDatasetOptions();
@@ -663,21 +671,7 @@ export class Home extends React.Component<IHomeProps> {
 		</span>;
 		const simSearchLabel = <span>
 			Similarity Search <FontAwesomeIcon style={{ color: '#17a2b8' }} icon="question-circle" title="Similarity Search is perfomed using JoinSim similarity measure."/>
-			{
-			(this.state.analysis.includes("Similarity Search")) &&
-				<span>
-					<AutocompleteInput 
-						id="targetEntityInput"
-						placeholder={ _.isEmpty(this.state.metapath) ? "First, select a metapath" : `Search for ${selectedEntity} entities`}
-						onChange={this.handleTargetEntity.bind(this)}								
-						entity={selectedEntity}
-						field={this.state.selectField}
-						folder={datasetFolder}
-						disabled={_.isEmpty(this.state.metapath)}
-						size='sm'
-					/>
-				</span>
-			}
+			
 		</span>;
 
 		return (
@@ -719,7 +713,7 @@ export class Home extends React.Component<IHomeProps> {
 								</InputGroupAddon>
 							</InputGroup>
 							{
-								(!validMetapathLength || !validMetapath) &&
+								((!validMetapathLength || !validMetapath) && this.state.metapathStr.length !== 0) &&
 									<span className="attribute-type text-danger">Please insert a valid metapath (metapaths should be symmetric { (this.state.dataset === 'DBLP' || this.state.dataset === 'Bio') && "e.g."} { this.state.dataset === 'DBLP' && "APA" }{ this.state.dataset === 'Bio' && "MGDGM" })</span>
 							}		
 						</Col>
@@ -732,10 +726,7 @@ export class Home extends React.Component<IHomeProps> {
 								</Input>
 							</Col>
 						}
-						
-
 					</Row>
-					
 				</Col>
 				<Col md="6">
 					
@@ -745,11 +736,38 @@ export class Home extends React.Component<IHomeProps> {
 
 					<br/>
 					<h4>Select analysis type</h4>
-					<div>
-						<CustomInput type="switch" id="rankingSwith" onChange={() => this.onCheckboxBtnClick("Ranking")} checked={this.state.analysis.includes("Ranking")} label={rankingLabel} />
-						<CustomInput type="switch" id="cdSwitch" onChange={() => this.onCheckboxBtnClick("Community Detection")} checked={this.state.analysis.includes("Community Detection")} label={communityLabel} />
-						<CustomInput type="switch" id="simJoinSwitch" onChange={() => this.onCheckboxBtnClick("Similarity Join")} checked={this.state.analysis.includes("Similarity Join")} label={simJoinLabel} />
-						<CustomInput type="switch" id="simSearchSwitch" onChange={() => this.onCheckboxBtnClick("Similarity Search")} checked={this.state.analysis.includes("Similarity Search")} label={simSearchLabel} />
+					<Col md='12'>
+						<Row>
+							<CustomInput type="switch" id="rankingSwith" onChange={() => this.onCheckboxBtnClick("Ranking")} checked={this.state.analysis.includes("Ranking")} label={rankingLabel} />
+						</Row>
+						<Row>
+							<CustomInput type="switch" id="cdSwitch" onChange={() => this.onCheckboxBtnClick("Community Detection")} checked={this.state.analysis.includes("Community Detection")} label={communityLabel} />
+						</Row>
+						<Row>
+							<CustomInput type="switch" id="simJoinSwitch" onChange={() => this.onCheckboxBtnClick("Similarity Join")} checked={this.state.analysis.includes("Similarity Join")} label={simJoinLabel} />
+						</Row>
+						<Row>
+							<Col md='6'>
+								<Row>
+							<CustomInput type="switch" id="simSearchSwitch" onChange={() => this.onCheckboxBtnClick("Similarity Search")} checked={this.state.analysis.includes("Similarity Search")} label={simSearchLabel} />
+							</Row>
+							</Col>
+							{
+							(this.state.analysis.includes("Similarity Search")) &&
+								<span>
+									<AutocompleteInput 
+										id="targetEntityInput"
+										placeholder={ _.isEmpty(this.state.metapath) ? "First, select a metapath" : `Search for ${selectedEntity} entities`}
+										onChange={this.handleTargetEntity.bind(this)}								
+										entity={selectedEntity}
+										field={this.state.selectField}
+										folder={datasetFolder}
+										disabled={_.isEmpty(this.state.metapath)}
+										size='sm'
+									/>
+								</span>
+							}
+						</Row>
 					
 						{
 							(!validAnalysisType) &&
@@ -757,20 +775,50 @@ export class Home extends React.Component<IHomeProps> {
 									Please select at least one type of analysis.
 								</span>
 						}
-					</div>
-					<br/>
-					<Col md={{ size: 4, offset: 8 }}>
-						<Row>
-							{/* <Col md="6">
-								<Button block color="success" outline onClick={this.runExample.bind(this)}>
-									<FontAwesomeIcon icon="play" /> Execute example
-								</Button>
-							</Col> */}
-							<Button block color="success" disabled={this.props.loading || !validMetapath || !validConstraints || !validTargetEntity} onClick={this.execute.bind(this)}>
-								<FontAwesomeIcon icon="play" /> Execute analysis
-							</Button>
-						</Row>
 					</Col>
+					<br/>
+					
+				</Col>
+				<Col md='12'>
+
+				<UncontrolledCollapse toggler="#toggler">
+					<br/>
+					<Row>
+						<Col md={{offset: 2, size: 8}}>
+							<Card block>
+								<CardBody>
+									<Label for="edgesThreshold">
+										Min. support threshold for edges
+									</Label>
+									<Input id="edgesThreshold" value={this.state.edgesThreshold} bsSize="sm" type='number' onChange={this.handleAdvancedOptions.bind(this)}/>
+									{
+										(this.state.edgesThreshold === '') &&
+										<span className="attribute-type text-danger">
+											This field cannot be empty.
+										</span>
+									}
+								</CardBody>
+							</Card>
+
+						</Col>
+					</Row>
+					<br/>
+				</UncontrolledCollapse>
+				</Col>
+
+				<Col md={{ size: 4, offset: 4 }}>
+					<Row>
+						<Col md='6'>
+							<Button block outline color="info" id="toggler">
+								<FontAwesomeIcon icon="cogs" /> Advanced options
+							</Button>
+						</Col>
+						<Col md='6'>
+						<Button block color="success" disabled={this.props.loading || !validMetapath || !validConstraints || !validTargetEntity} onClick={this.execute.bind(this)}>
+							<FontAwesomeIcon icon="play" /> Execute analysis
+						</Button>
+						</Col>
+					</Row>
 				</Col>
 				
 
@@ -781,7 +829,7 @@ export class Home extends React.Component<IHomeProps> {
 						(this.props.loading) &&
 						<Row className="small-grey text-center">
 							<Col>
-							The analysis may take some time, you can check its progress in the following <Link to={`/jobs/${this.props.uuid}`} target="_blank">link</Link>.<br/>
+							The analysis may take some time, you can check its progress in the following <Link to={`/jobs/${this.props.uuid}`} target="_blank">link</Link> (job id = {this.props.uuid}).<br/>
 							{this.props.description}
 							</Col>
 						</Row>
