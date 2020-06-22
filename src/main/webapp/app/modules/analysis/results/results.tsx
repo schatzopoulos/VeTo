@@ -15,6 +15,7 @@ import FileSaver from 'file-saver';
 import  _  from 'lodash';
 
 export interface IResultsPanelProps {
+    uuid: any,
     results: any,
     analysis: string,
     analysisId: string,
@@ -31,12 +32,21 @@ export class ResultsPanel extends React.Component<IResultsPanelProps> {
         super(props);
     }
     componentDidUpdate(prevProps) {
+
         if (this.state.activeAnalysis === "" && !_.isEmpty(this.props.results)) {
             this.setState({
                 activeAnalysis: Object.keys(this.props.results)[0]
             });
         }
+
+        // new analysis, reset state
+        if (prevProps.uuid !== this.props.uuid) {
+            this.setState({
+                activeAnalysis: ""
+            });
+        }
     }
+
     downloadResults() {
         axios.get('api/datasets/download', {
             params: {
@@ -60,7 +70,7 @@ export class ResultsPanel extends React.Component<IResultsPanelProps> {
         let resultPanel;
 
         if (!_.isEmpty(this.props.results)) {
-            
+
             const result = this.props.results[this.state.activeAnalysis];
 
             resultPanel = (this.state.activeAnalysis) ? <RankingResultsPanel 
@@ -92,7 +102,7 @@ export class ResultsPanel extends React.Component<IResultsPanelProps> {
                     {
                         _.map(this.props.results, ({docs, meta}, analysis) => {
                             if (docs.length === 0) {
-                                return <div style={{ textAlign: "center" }}>No results found for the specified query!<br/> 
+                                return <div key={analysis} style={{ textAlign: "center" }}>No results found for the specified query!<br/> 
                                 {/* {
                                     (this.props.analysis === 'simjoin' || this.props.analysis === 'simsearch') &&
                                     <span>

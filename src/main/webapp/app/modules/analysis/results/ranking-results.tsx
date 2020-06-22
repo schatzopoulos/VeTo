@@ -28,13 +28,12 @@ export class RankingResultsPanel extends React.Component<IRankingResultsProps> {
 	}
 	render() {
 
-		const rows = this.props.docs.map( (row) => {
-			return <tr key={row.id}>
-			<td>{row.name}</td>
+		const rows = this.props.docs.map( (row, index) => {
+			return <tr key={index}>
 			{
-				this.props.headers.map( (fieldName, index) => {
+				this.props.headers.map( (fieldName, index2) => {
 					if (fieldName !== "id" && fieldName !== "name")
-						return <td key={index}>{row[fieldName]}</td>; 
+						return <td key={index2}>{row[fieldName]}</td>; 
 				})
 			}
 		  </tr>
@@ -45,7 +44,6 @@ export class RankingResultsPanel extends React.Component<IRankingResultsProps> {
 				<Table size="sm">
 					<thead>
 						<tr>
-							<th>Entity</th>
 							{
 								this.props.headers.map( (fieldName, index) => {
 									if (fieldName !== "id" && fieldName !== "name")

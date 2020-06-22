@@ -792,6 +792,7 @@ export class Home extends React.Component<IHomeProps> {
 						(this.props.loading) && <Progress animated color="info" value={this.props.progress}>{this.props.progressMsg}</Progress>
 					}
 					<ResultsPanel 
+						uuid={this.props.uuid}
 						results={this.props.results}
 						analysis={this.props.analysis}
 						analysisId={this.props.uuid}
