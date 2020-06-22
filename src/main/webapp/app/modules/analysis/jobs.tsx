@@ -22,6 +22,7 @@ import { IRootState } from 'app/shared/reducers';
 import  _  from 'lodash';
 import { 
 	getJob,
+	getStatus,
 	getResults, 
 	getMoreResults 
 } from './jobs.reducer';
@@ -47,7 +48,7 @@ export class Jobs extends React.Component<IHomeProps> {
 	
 	pollForResults() {
 		this.polling = setInterval( () => {
-			this.props.getResults(this.props.uuid);
+			this.props.getStatus(this.props.uuid);
 		}, 1000);
 	}
 
@@ -69,6 +70,12 @@ export class Jobs extends React.Component<IHomeProps> {
 		} else if (prevProps.loading && !this.props.loading) {
 			clearInterval(this.polling);
 		}
+console.warn(prevProps);
+		_.forOwn(this.props.status, (completed, analysis) => {
+			if (completed && ( (prevProps.status && ! prevProps.status[analysis]) || (!prevProps.status) )) {
+				this.props.getResults(analysis, this.props.uuid);
+			}
+		});
 	}
 
 	componentWillUnmount() {
@@ -80,8 +87,8 @@ export class Jobs extends React.Component<IHomeProps> {
 		this.props.getJob(this.state.jobId);
 	}
 	
-	loadMoreResults() {
-		this.props.getMoreResults(this.props.uuid, this.props.meta.page + 1);
+	loadMoreResults(analysis, nextPage) {
+		this.props.getMoreResults(analysis, this.props.uuid, nextPage);
 	}
 
 	onChangeInput(e) {
@@ -139,8 +146,7 @@ export class Jobs extends React.Component<IHomeProps> {
 						(this.props.loading) && <Progress animated color="info" value={this.props.progress}>{this.props.progressMsg}</Progress>
 					}
 					<ResultsPanel 
-						docs={this.props.docs}
-						meta={this.props.meta}
+						results={this.props.results}
 						analysis={this.props.analysis}
 						analysisId={this.props.uuid}
 						loadMore={this.loadMoreResults.bind(this)}
@@ -160,14 +166,15 @@ const mapStateToProps = (storeState: IRootState) => ({
 	progressMsg: storeState.jobs.progressMsg,
 	description: storeState.jobs.description,
 	error: storeState.jobs.error,
-	docs: storeState.jobs.docs,
-	meta: storeState.jobs.meta,
+	results: storeState.jobs.results,
+	status: storeState.jobs.status,
 	uuid: storeState.jobs.uuid,  
 	analysis: storeState.jobs.analysis,
 });
 
 const mapDispatchToProps = { 
 	getJob,
+	getStatus,
 	getResults,
 	getMoreResults,
 };

@@ -102,7 +102,7 @@ public class DatasetsResource {
     public ResponseEntity<Resource> download(String analysisType, String id) {
 
         try {
-        String downloadFile = FileUtil.getOutputFile(id);
+        String downloadFile = FileUtil.getOutputFile(id, analysisType);
         File fd = new File(downloadFile);
         InputStreamResource resource = new InputStreamResource(new FileInputStream(fd));
 

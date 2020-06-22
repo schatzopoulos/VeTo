@@ -55,22 +55,15 @@ public final class RandomUtil {
         return generateRandomAlphanumericString();
     }
 
-    public static String getAnalysisDescription(Document config) {
+    public static String getAnalysisDescription(final Document config) {
         String description = "Executing ";
 
-        ArrayList<String> ops = new ArrayList<>();
-        if (((String)config.get("operation")).contains("ranking")) {
-            ops.add("Ranking");
-        }
-        if (((String)config.get("operation")).contains("community")) {
-            ops.add("Community Detection");
-        }
-        description += String.join(", ", ops);
+        description += String.join(", ", (ArrayList<String>) config.get("analyses"));
 
-        Document query = (Document)config.get("query");
-        description += " with metapath " + (String)query.get("metapath");
-        
-        ArrayList<String> constraints = new ArrayList<>();
+        final Document query = (Document) config.get("query");
+        description += " with metapath " + (String) query.get("metapath");
+
+        final ArrayList<String> constraints = new ArrayList<>();
         for (final Map.Entry<String, Object> entry : ((Document)query.get("constraints")).entrySet()) {
             constraints.add(entry.getKey() + ": " + ((String)entry.getValue()));
         }

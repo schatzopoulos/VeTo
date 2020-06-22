@@ -1,5 +1,7 @@
 package athenarc.imsi.sdl.web.rest.vm;
 
+import java.util.ArrayList;
+
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
@@ -13,6 +15,10 @@ public class QueryConfigVM {
     @NotNull
     @Size(min = 1, max = 50)
     private String metapath;
+    
+    @NotNull
+    @Size(min = 1, max = 50)
+    private String joinpath;
 
     @NotNull
     private String folder;
@@ -24,11 +30,12 @@ public class QueryConfigVM {
     private String selectField;
     
     @NotNull
-    private String analysis;
+    private ArrayList<String> analysis;
 
     private int k;
     private int t;
-    private int w;
+    private int searchW;
+    private int joinW;
     private int minValues;
     private int targetId;
 
@@ -52,12 +59,20 @@ public class QueryConfigVM {
         this.t = t;
     }
 
-    public int getW() {
-        return this.w;
+    public int getSearchW() {
+        return this.searchW;
     }
 
-    public void setW(int w) {
-        this.w = w;
+    public void setSearchW(int searchW) {
+        this.searchW = searchW;
+    }
+
+    public int getJoinW() {
+        return this.joinW;
+    }
+
+    public void setJoinW(int joinW) {
+        this.joinW = joinW;
     }
 
     public int getMinValues() {
@@ -104,12 +119,20 @@ public class QueryConfigVM {
         this.targetId = targetId;
     }
 
-    public String getAnalysis() {
+    public ArrayList<String> getAnalysis() {
         return this.analysis;
     }
 
-    public void setAnalysis(String analysis) {
+    public void setAnalysis(ArrayList<String> analysis) {
         this.analysis = analysis;
+    }
+
+    public String getJoinpath() {
+        return this.joinpath;
+    }
+
+    public void setJoinpath(String joinpath) {
+        this.joinpath = joinpath;
     }
 
     @Override

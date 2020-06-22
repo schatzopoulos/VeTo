@@ -15,7 +15,7 @@ import {
 	Progress,
 	Container,
 	Card, 
-	CardBody,
+	Label,
 	CustomInput, 
 	
 } from 'reactstrap';
@@ -25,8 +25,9 @@ import CytoscapeComponent from 'react-cytoscapejs';
 import  _  from 'lodash';
 import { 
 	analysisRun,
-	simjoinRun,
-	simsearchRun,
+	// simjoinRun,
+	// simsearchRun,
+	getStatus,
 	getResults, 
 	getMoreResults 
 } from '../analysis/analysis.reducer';
@@ -53,7 +54,7 @@ export class Home extends React.Component<IHomeProps> {
 		metapathStr: '',
 		neighbors: undefined,
 		constraints: {},
-		analysis: ["ranking"],
+		analysis: ["Ranking"],
 		dataset: "DBLP",
 		selectField: '',
 		targetEntity: '',
@@ -111,7 +112,7 @@ export class Home extends React.Component<IHomeProps> {
 
 	pollForResults() {
 		this.polling = setInterval( () => {
-			this.props.getResults(this.props.analysis, this.props.uuid);
+			this.props.getStatus(this.props.uuid);
 		}, 1000);
 	}
 
@@ -123,6 +124,12 @@ export class Home extends React.Component<IHomeProps> {
 		} else if (prevProps.loading && !this.props.loading) {
 			clearInterval(this.polling);
 		}
+
+		_.forOwn(this.props.status, (completed, analysis) => {
+			if (completed && prevProps.status && ! prevProps.status[analysis]) {
+				this.props.getResults(analysis, this.props.uuid);
+			}
+		});
 
 		if (!prevProps.schemas && this.props.schemas) {
 			this.initCy();
@@ -343,24 +350,12 @@ export class Home extends React.Component<IHomeProps> {
 
 	execute(e, rerunAnalysis) {
 		
-		let analysis = null;
-		const analysisType = (rerunAnalysis) ? rerunAnalysis : this.state.analysis.sort().join("-");
-		switch(analysisType) {
-			case 'ranking': 
-			case 'community': 
-			case 'community-ranking': 
-				analysis = this.props.analysisRun; break;
-			case 'simjoin':
-				analysis = this.props.simjoinRun; break;
-			case 'simsearch':
-				analysis = this.props.simsearchRun; break;
-			default:
-				alert("This type of analysis will be implemented soon");
-		}
+		const analysisType = (rerunAnalysis) ? rerunAnalysis : this.state.analysis;
 
-		analysis(
+		this.props.analysisRun(
 			analysisType,
-			(analysisType === 'simjoin' || analysisType === 'simsearch') ? this.getJoinPath() : this.state.metapathStr,
+			this.state.metapathStr,
+			this.getJoinPath(),
 			this.state.constraints, 
 			this.props.schemas[this.state.dataset]['folder'],
 			this.state.selectField,
@@ -407,8 +402,8 @@ export class Home extends React.Component<IHomeProps> {
 			this.execute(e, null);
 		});
 	}
-	loadMoreResults() {
-		this.props.getMoreResults(this.props.analysis, this.props.uuid, this.props.meta.page + 1);
+	loadMoreResults(analysis, nextPage) {
+		this.props.getMoreResults(analysis, this.props.uuid, nextPage);
 	}
 
 	handleAnalysisDropdown(e) {
@@ -669,7 +664,22 @@ export class Home extends React.Component<IHomeProps> {
 			Similarity Join <FontAwesomeIcon style={{ color: '#17a2b8' }} icon="question-circle" title="Similarity Join is perfomed using JoinSim."/>
 		</span>;
 		const simSearchLabel = <span>
-			Similarity Search <FontAwesomeIcon style={{ color: '#17a2b8' }} icon="question-circle" title="Similarity Search is perfomed using PathSim."/>
+			Similarity Search <FontAwesomeIcon style={{ color: '#17a2b8' }} icon="question-circle" title="Similarity Search is perfomed using JoinSim similarity measure."/>
+			{
+			(this.state.analysis.includes("Similarity Search")) &&
+				<span>
+					<AutocompleteInput 
+						id="targetEntityInput"
+						placeholder={ _.isEmpty(this.state.metapath) ? "First, select a metapath" : `Search for ${selectedEntity} entities`}
+						onChange={this.handleTargetEntity.bind(this)}								
+						entity={selectedEntity}
+						field={this.state.selectField}
+						folder={datasetFolder}
+						disabled={_.isEmpty(this.state.metapath)}
+						size='sm'
+					/>
+				</span>
+			}
 		</span>;
 
 		return (
@@ -712,7 +722,7 @@ export class Home extends React.Component<IHomeProps> {
 							</InputGroup>
 							{
 								(!validMetapathLength || !validMetapath) &&
-									<span className="attribute-type text-danger">Please insert a symmetric metapath { (this.state.dataset === 'DBLP' || this.state.dataset === 'Bio') && "e.g."} { this.state.dataset === 'DBLP' && "APA" }{ this.state.dataset === 'Bio' && "MGDGM" }</span>
+									<span className="attribute-type text-danger">Please insert a valid metapath (metapaths should be symmetric { (this.state.dataset === 'DBLP' || this.state.dataset === 'Bio') && "e.g."} { this.state.dataset === 'DBLP' && "APA" }{ this.state.dataset === 'Bio' && "MGDGM" })</span>
 							}		
 						</Col>
 						{
@@ -738,10 +748,10 @@ export class Home extends React.Component<IHomeProps> {
 					<br/>
 					<h4>Select analysis type</h4>
 					<div>
-						<CustomInput type="switch" id="rankingSwith" onChange={() => this.onCheckboxBtnClick("ranking")} checked={this.state.analysis.includes("ranking")} label={rankingLabel} />
-						<CustomInput type="switch" id="cdSwitch" onChange={() => this.onCheckboxBtnClick("community")} checked={this.state.analysis.includes("community")} label={communityLabel} />
-						{/* <CustomInput type="switch" id="simJoinSwitch" onChange={() => this.onCheckboxBtnClick("simjoin")} checked={this.state.analysis.includes("simjoin")} label={simJoinLabel} />
-						<CustomInput type="switch" id="simSearchSwitch" onChange={() => this.onCheckboxBtnClick("simsearch")} checked={this.state.analysis.includes("simsearch")} label={simSearchLabel} /> */}
+						<CustomInput type="switch" id="rankingSwith" onChange={() => this.onCheckboxBtnClick("Ranking")} checked={this.state.analysis.includes("Ranking")} label={rankingLabel} />
+						<CustomInput type="switch" id="cdSwitch" onChange={() => this.onCheckboxBtnClick("Community Detection")} checked={this.state.analysis.includes("Community Detection")} label={communityLabel} />
+						<CustomInput type="switch" id="simJoinSwitch" onChange={() => this.onCheckboxBtnClick("Similarity Join")} checked={this.state.analysis.includes("Similarity Join")} label={simJoinLabel} />
+						<CustomInput type="switch" id="simSearchSwitch" onChange={() => this.onCheckboxBtnClick("Similarity Search")} checked={this.state.analysis.includes("Similarity Search")} label={simSearchLabel} />
 					
 						{
 							(!validAnalysisType) &&
@@ -750,29 +760,6 @@ export class Home extends React.Component<IHomeProps> {
 								</span>
 						}
 					</div>
-
-					{/* <Input id="analysis-dropdown" type="select" value={this.state.analysis} onChange={this.handleAnalysisDropdown.bind(this)} >
-						<option value={"ranking"}>Ranking</option>
-						<option value={"simjoin"}>Similarity Join</option>
-						<option value={"simsearch"}>Similarity Search</option>
-					</Input> */}
-					
-					{
-						(this.state.analysis === "simsearch") &&
-							<div>
-								<br/>
-								<h4>Select target entity</h4>
-								<AutocompleteInput 
-									id="targetEntityInput"
-									placeholder={ _.isEmpty(this.state.metapath) ? "First, select a metapath" : `Search for ${selectedEntity} entities by ${this.state.selectField}`}
-									onChange={this.handleTargetEntity.bind(this)}								
-									entity={selectedEntity}
-									field={this.state.selectField}
-									folder={datasetFolder}
-									disabled={_.isEmpty(this.state.metapath)}
-								/>
-							</div>
-					}
 					<br/>
 					<Col md={{ size: 4, offset: 8 }}>
 						<Row>
@@ -805,8 +792,7 @@ export class Home extends React.Component<IHomeProps> {
 						(this.props.loading) && <Progress animated color="info" value={this.props.progress}>{this.props.progressMsg}</Progress>
 					}
 					<ResultsPanel 
-						docs={this.props.docs}
-						meta={this.props.meta}
+						results={this.props.results}
 						analysis={this.props.analysis}
 						analysisId={this.props.uuid}
 						loadMore={this.loadMoreResults.bind(this)}
@@ -822,12 +808,12 @@ export class Home extends React.Component<IHomeProps> {
 
 const mapStateToProps = (storeState: IRootState) => ({  
 	loading: storeState.analysis.loading,
+	status: storeState.analysis.status,
 	progress: storeState.analysis.progress,
 	progressMsg: storeState.analysis.progressMsg,
 	description: storeState.analysis.description,
 	error: storeState.analysis.error,
-	docs: storeState.analysis.docs,
-	meta: storeState.analysis.meta,
+	results: storeState.analysis.results,
 	uuid: storeState.analysis.uuid,  
 	analysis: storeState.analysis.analysis,
 	schemas: storeState.datasets.schemas,
@@ -835,8 +821,9 @@ const mapStateToProps = (storeState: IRootState) => ({
 
 const mapDispatchToProps = { 
 	analysisRun,
-	simjoinRun,
-	simsearchRun,
+	// simjoinRun,
+	// simsearchRun,
+	getStatus,
 	getResults,
 	getMoreResults,
 	getDatasetSchemas,

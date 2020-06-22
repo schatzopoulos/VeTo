@@ -8,6 +8,7 @@ const simsearchAPIUrl = 'api/simsearch';
 
 export const ACTION_TYPES = {
   GET_JOB: 'jobs/GET',
+  GET_STATUS: 'jobs/GET_STATUS',
   GET_RESULTS: 'jobs/GET_RESULTS',
   GET_MORE_RESULTS: 'jobs/GET_MORE_RESULTS'
 };
@@ -20,8 +21,8 @@ const initialState = {
   error: null as string,
   uuid: null as string,
   analysis: null as string,
-  docs: null as any,
-  meta: null as any
+  results: null as any,
+  status: null as any
 };
 
 export type JobState = Readonly<typeof initialState>;
@@ -39,13 +40,16 @@ export default (state: JobState = initialState, action): JobState => {
         error: null,
         uuid: null,
         analysis: null,
-        docs: null,
-        meta: null
+        results: {},
+        status: null
       };
+
+    case REQUEST(ACTION_TYPES.GET_STATUS):
     case REQUEST(ACTION_TYPES.GET_RESULTS):
-      return state;
     case REQUEST(ACTION_TYPES.GET_MORE_RESULTS):
       return state;
+
+    case FAILURE(ACTION_TYPES.GET_STATUS):
     case FAILURE(ACTION_TYPES.GET_RESULTS):
     case FAILURE(ACTION_TYPES.GET_MORE_RESULTS): {
       const errorMsg = 'An unexpected error occurred during the analysis';
@@ -58,8 +62,8 @@ export default (state: JobState = initialState, action): JobState => {
         error: errorMsg,
         uuid: null,
         analysis: null,
-        docs: null,
-        meta: null
+        results: {},
+        status: null
       };
     }
     case SUCCESS(ACTION_TYPES.GET_JOB): {
@@ -74,48 +78,49 @@ export default (state: JobState = initialState, action): JobState => {
           ...state,
           error: null,
           uuid: action.payload.data.id,
-          analysis: 'ranking'
+          analysis: action.payload.data.analysis
         };
       }
     }
-    case SUCCESS(ACTION_TYPES.GET_RESULTS): {
+    case SUCCESS(ACTION_TYPES.GET_STATUS): {
       const data = action.payload.data;
-
-      let loading = true;
-      let docs = null;
-      let meta = null;
-      if (data.docs) {
-        loading = false;
-        docs = data.docs;
-        meta = data._meta;
-      }
-
       return {
         ...state,
-        loading,
+        loading: Object.values(data.completed).some(v => v === false), // when all analysis tasks have been completed
+        status: data.completed,
         progress: data.progress,
         progressMsg: `${data.stage}: ${data.step}`,
         description: data.description,
+        error: null
+      };
+    }
+    case SUCCESS(ACTION_TYPES.GET_RESULTS): {
+      const data = action.payload.data;
+      const results = { ...state.results };
+      results[data.analysis] = {
+        docs: data.docs,
+        meta: data._meta
+      };
+
+      return {
+        ...state,
         error: null,
-        docs,
-        meta
+        results
       };
     }
     case SUCCESS(ACTION_TYPES.GET_MORE_RESULTS): {
       const data = action.payload.data;
 
-      let docs = null;
-      let meta = null;
-      if (data.docs) {
-        docs = [...state.docs, ...data.docs];
-        meta = data._meta;
-      }
+      const results = { ...state.results };
+      results[data.analysis] = {
+        docs: [...results[data.analysis]['docs'], ...data.docs],
+        meta: data._meta
+      };
 
       return {
         ...state,
         error: null,
-        docs,
-        meta
+        results
       };
     }
     default:
@@ -135,10 +140,10 @@ export const getJob = id => {
   };
 };
 
-export const getResults = id => {
+export const getStatus = id => {
   return {
-    type: ACTION_TYPES.GET_RESULTS,
-    payload: axios.get(`${analysisAPIUrl}/get`, {
+    type: ACTION_TYPES.GET_STATUS,
+    payload: axios.get(`${analysisAPIUrl}/status`, {
       params: {
         id
       }
@@ -146,12 +151,25 @@ export const getResults = id => {
   };
 };
 
-export const getMoreResults = (id, page) => {
+export const getResults = (analysis, id) => {
+  return {
+    type: ACTION_TYPES.GET_RESULTS,
+    payload: axios.get(`${analysisAPIUrl}/get`, {
+      params: {
+        id,
+        analysis
+      }
+    })
+  };
+};
+
+export const getMoreResults = (analysis, id, page) => {
   return {
     type: ACTION_TYPES.GET_MORE_RESULTS,
     payload: axios.get(`${analysisAPIUrl}/get`, {
       params: {
         id,
+        analysis,
         page
       }
     })

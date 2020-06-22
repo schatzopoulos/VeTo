@@ -3,15 +3,12 @@ import axios from 'axios';
 import { REQUEST, SUCCESS, FAILURE } from 'app/shared/reducers/action-type.util';
 import _ from 'lodash';
 import { min } from 'moment';
+import { setFileData } from 'react-jhipster';
 const analysisAPIUrl = 'api/analysis';
-const simjoinAPIUrl = 'api/simjoin';
-const simsearchAPIUrl = 'api/simsearch';
 
 export const ACTION_TYPES = {
-  RANKING_SUBMIT: 'ranking/SUBMIT',
-  SIMJOIN_SUBMIT: 'simjoin/SUBMIT',
-  SIMSEARCH_SUBMIT: 'simsearch/SUBMIT',
-
+  ANALYSIS_SUBMIT: 'analysis/SUBMIT',
+  GET_STATUS: 'analysis/GET_STATUS',
   GET_RESULTS: 'analysis/GET_RESULTS',
   GET_MORE_RESULTS: 'analysis/GET_MORE_RESULTS'
 };
@@ -24,8 +21,8 @@ const initialState = {
   error: null as string,
   uuid: null as string,
   analysis: null as string,
-  docs: null as any,
-  meta: null as any
+  results: null as any,
+  status: null as any
 };
 
 export type AnalysisState = Readonly<typeof initialState>;
@@ -33,9 +30,7 @@ export type AnalysisState = Readonly<typeof initialState>;
 // Reducer
 export default (state: AnalysisState = initialState, action): AnalysisState => {
   switch (action.type) {
-    case REQUEST(ACTION_TYPES.RANKING_SUBMIT):
-    case REQUEST(ACTION_TYPES.SIMJOIN_SUBMIT):
-    case REQUEST(ACTION_TYPES.SIMSEARCH_SUBMIT):
+    case REQUEST(ACTION_TYPES.ANALYSIS_SUBMIT):
       return {
         ...state,
         loading: true,
@@ -45,14 +40,16 @@ export default (state: AnalysisState = initialState, action): AnalysisState => {
         error: null,
         uuid: null,
         analysis: null,
-        docs: null,
-        meta: null
+        results: {},
+        status: null
       };
+    case REQUEST(ACTION_TYPES.GET_STATUS):
     case REQUEST(ACTION_TYPES.GET_RESULTS):
-      return state;
     case REQUEST(ACTION_TYPES.GET_MORE_RESULTS):
       return state;
-    case FAILURE(ACTION_TYPES.RANKING_SUBMIT):
+
+    case FAILURE(ACTION_TYPES.GET_STATUS):
+    case FAILURE(ACTION_TYPES.ANALYSIS_SUBMIT):
     case FAILURE(ACTION_TYPES.GET_RESULTS):
     case FAILURE(ACTION_TYPES.GET_MORE_RESULTS): {
       const errorMsg = 'An unexpected error occurred during the analysis';
@@ -65,72 +62,56 @@ export default (state: AnalysisState = initialState, action): AnalysisState => {
         error: errorMsg,
         uuid: null,
         analysis: null,
-        docs: null,
-        meta: null
+        results: {}
       };
     }
-    case SUCCESS(ACTION_TYPES.RANKING_SUBMIT): {
+    case SUCCESS(ACTION_TYPES.ANALYSIS_SUBMIT): {
       return {
         ...state,
         error: null,
         uuid: action.payload.data.id,
-        analysis: 'ranking'
+        analysis: action.payload.data.analysis
       };
     }
-    case SUCCESS(ACTION_TYPES.SIMSEARCH_SUBMIT): {
+    case SUCCESS(ACTION_TYPES.GET_STATUS): {
+      const data = action.payload.data;
       return {
         ...state,
-        error: null,
-        uuid: action.payload.data.id,
-        analysis: 'simsearch'
-      };
-    }
-    case SUCCESS(ACTION_TYPES.SIMJOIN_SUBMIT): {
-      return {
-        ...state,
-        error: null,
-        uuid: action.payload.data.id,
-        analysis: 'simjoin'
+        loading: Object.values(data.completed).some(v => v === false), // when all analysis tasks have been completed
+        status: data.completed,
+        progress: data.progress,
+        progressMsg: `${data.stage}: ${data.step}`,
+        description: data.description,
+        error: null
       };
     }
     case SUCCESS(ACTION_TYPES.GET_RESULTS): {
       const data = action.payload.data;
-
-      let loading = true;
-      let docs = null;
-      let meta = null;
-      if (data.docs) {
-        loading = false;
-        docs = data.docs;
-        meta = data._meta;
-      }
+      const results = { ...state.results };
+      results[data.analysis] = {
+        docs: data.docs,
+        meta: data._meta
+      };
 
       return {
         ...state,
-        loading,
-        progress: data.progress,
-        progressMsg: `${data.stage}: ${data.step}`,
-        description: data.description,
         error: null,
-        docs,
-        meta
+        results
       };
     }
     case SUCCESS(ACTION_TYPES.GET_MORE_RESULTS): {
       const data = action.payload.data;
 
-      let docs = null;
-      let meta = null;
-      if (data.docs) {
-        docs = [...state.docs, ...data.docs];
-        meta = data._meta;
-      }
+      const results = { ...state.results };
+      results[data.analysis] = {
+        docs: [...results[data.analysis]['docs'], ...data.docs],
+        meta: data._meta
+      };
 
       return {
         ...state,
         error: null,
-        docs,
-        meta
+        results
       };
     }
     default:
@@ -140,8 +121,8 @@ export default (state: AnalysisState = initialState, action): AnalysisState => {
 
 // Actions
 
-function formatPayload(analysis, metapath, constraints, folder, selectField) {
-  const payload = { analysis, metapath, folder, selectField };
+function formatPayload(analysis, metapath, joinpath, constraints, folder, selectField) {
+  const payload = { analysis, metapath, joinpath, folder, selectField };
 
   payload['constraints'] = {};
   _.forOwn(constraints, (entityConstraint, entity) => {
@@ -171,24 +152,10 @@ function formatPayload(analysis, metapath, constraints, folder, selectField) {
   return payload;
 }
 
-function getAPIUrl(analysisType) {
-  let url;
-  if (analysisType === 'ranking') {
-    url = analysisAPIUrl;
-  } else if (analysisType === 'simjoin') {
-    url = simjoinAPIUrl;
-  } else if (analysisType === 'simsearch') {
-    url = simsearchAPIUrl;
-  }
-  return url;
-}
-
-export const getResults = (analysis, id) => {
-  const url = getAPIUrl(analysis);
-
+export const getStatus = id => {
   return {
-    type: ACTION_TYPES.GET_RESULTS,
-    payload: axios.get(`${url}/get`, {
+    type: ACTION_TYPES.GET_STATUS,
+    payload: axios.get(`${analysisAPIUrl}/status`, {
       params: {
         id
       }
@@ -196,57 +163,41 @@ export const getResults = (analysis, id) => {
   };
 };
 
-export const getMoreResults = (analysis, id, page) => {
-  const url = getAPIUrl(analysis);
-
+export const getResults = (analysis, id) => {
   return {
-    type: ACTION_TYPES.GET_MORE_RESULTS,
-    payload: axios.get(`${url}/get`, {
+    type: ACTION_TYPES.GET_RESULTS,
+    payload: axios.get(`${analysisAPIUrl}/get`, {
       params: {
         id,
+        analysis
+      }
+    })
+  };
+};
+
+export const getMoreResults = (analysis, id, page) => {
+  return {
+    type: ACTION_TYPES.GET_MORE_RESULTS,
+    payload: axios.get(`${analysisAPIUrl}/get`, {
+      params: {
+        id,
+        analysis,
         page
       }
     })
   };
 };
 
-export const analysisRun = (analysis, metapath, constraints, folder, selectField, w, minValues) => {
-  const payload = formatPayload(analysis, metapath, constraints, folder, selectField);
+export const analysisRun = (analysis, metapath, joinpath, constraints, folder, selectField, targetEntity, w, minValues) => {
+  const payload = formatPayload(analysis, metapath, joinpath, constraints, folder, selectField);
+  payload['k'] = 100;
+  payload['t'] = 1;
+  payload['joinW'] = 0;
+  payload['searchW'] = 10;
+  payload['minValues'] = 5;
 
   return {
-    type: ACTION_TYPES.RANKING_SUBMIT,
+    type: ACTION_TYPES.ANALYSIS_SUBMIT,
     payload: axios.post(`${analysisAPIUrl}/submit`, payload)
-  };
-};
-
-export const simjoinRun = (metapath, constraints, folder, selectField, targetEntity, w, minValues) => {
-  const payload = formatPayload('simjoin', metapath, constraints, folder, selectField);
-  console.warn(w);
-  console.warn(minValues);
-  // similarity-join specific values
-  payload['k'] = 100;
-  payload['t'] = 1;
-  payload['w'] = w ? w : 0;
-  payload['minValues'] = minValues ? minValues : 5;
-
-  return {
-    type: ACTION_TYPES.SIMJOIN_SUBMIT,
-    payload: axios.post(`${simjoinAPIUrl}/submit`, payload)
-  };
-};
-
-export const simsearchRun = (metapath, constraints, folder, selectField, targetEntity, w, minValues) => {
-  const payload = formatPayload('simsearch', metapath, constraints, folder, selectField);
-
-  // similarity-searcg specific values
-  payload['targetId'] = targetEntity;
-  payload['k'] = 100;
-  payload['t'] = 1;
-  payload['w'] = w ? w : 10;
-  payload['minValues'] = minValues ? minValues : 5;
-
-  return {
-    type: ACTION_TYPES.SIMSEARCH_SUBMIT,
-    payload: axios.post(`${simsearchAPIUrl}/submit`, payload)
   };
 };

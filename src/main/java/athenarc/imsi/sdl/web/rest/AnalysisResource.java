@@ -1,6 +1,7 @@
 package athenarc.imsi.sdl.web.rest;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -44,24 +45,94 @@ public class AnalysisResource {
         try {
 
             // run async method from service
-            analysisService.submit(id, config.getAnalysis(), config.getMetapath(), config.getConstraints(), config.getFolder(), config.getSelectField());        
+            analysisService.submit(
+                id, 
+                config.getAnalysis(), 
+                config.getMetapath(), 
+                config.getJoinpath(),
+                config.getConstraints(), 
+                config.getK(),
+                config.getT(), 
+                config.getJoinW(),
+                config.getSearchW(),
+                config.getMinValues(),
+                config.getTargetId(),
+                config.getFolder(), 
+                config.getSelectField()
+            );        
 
         } catch (java.io.IOException | InterruptedException e) {
             throw new RuntimeException("Error running ranking task: " + id);
         }
-		return new Document("id", id);
+		return new Document("id", id).append("analysis", config.getAnalysis());
     }
 
+    @GetMapping("/status")
+    public Document status(String id) {
+        log.debug("analysis/status : {}", id);
+
+        Document response = new Document();
+        response.append("id", id);
+
+        try {
+            // parse config file
+            String conf = FileUtil.readJsonFile(FileUtil.getConfFile(id));
+            Document config = Document.parse(conf);
+            ArrayList<String> analyses = (ArrayList<String>)config.get("analyses");
+            
+            // parse log file
+            String logfile = FileUtil.getLogfile(id);
+            Document logInfo = FileUtil.parseLogfile(logfile);
+            String lastLine = (String) logInfo.get("lastLine");
+
+            ArrayList<String> completedStages = (ArrayList<String>) logInfo.get("completedStages");
+            
+            // determine analyses that have been completed
+            Document completed = new Document();
+            for (String analysis : analyses) {
+                completed.append(analysis, completedStages.contains(analysis));
+            }
+            response.append("completed", completed);
+
+            // form description of analysis
+            String description = RandomUtil.getAnalysisDescription(config);
+            response.append("description", description);                
+
+            String[] tokens = lastLine.split("\t");
+            if (tokens[0].equals("Exit Code") && !tokens[1].equals("0")){
+                throw new RuntimeException("Error in analysis task: " + id);
+            }
+            else if (tokens.length == 3) {
+                response.append("stage", tokens[0])
+                .append("step", tokens[2])
+                .append("progress", analysisService.getProgress(analyses, (Integer)logInfo.get("stageNum"), Integer.parseInt(tokens[1])));
+            
+            // in case logfile is still empty
+            } else {
+                response.append("stage", "HIN Transformation")
+                .append("step", "Initializing")
+                .append("progress", 0);
+            }
+
+        } catch (IOException e) {
+            throw new RuntimeException("Error reading status from logfile");
+        }
+        return response;
+
+    }
     /**
     * GET status
     */
     @GetMapping("/get")
-    public Document status(String id,  Integer page) {
-        log.debug("analysis/status : {}", id, page);
+    public Document get(String id,  String analysis, Integer page) {
+        log.debug("analysis/get : {}", id, page);
 
         String logfile = FileUtil.getLogfile(id);
         try {
-            String lastLine = FileUtil.getLastLine(logfile);
+            Document logInfo = FileUtil.parseLogfile(logfile);
+            String lastLine = (String) logInfo.get("lastLine");
+
+            // throw error if analaysis was aborted with an error code
             int index = lastLine.indexOf("Exit Code");
             Document response = new Document();
             if (index >= 0) {
@@ -71,46 +142,23 @@ public class AnalysisResource {
                 if (exitCode != 0) {
                     throw new RuntimeException("Error in analysis task: " + id);
                 }
-
-                String rankingFile = FileUtil.getOutputFile(id);
-                
-                try {
-                    Document meta = new Document();
-                    List<Document> docs = analysisService.getResults(rankingFile, page, meta);
-
-                    response.append("id", id)
-                        .append("progress", 100)
-                        .append("exitCode", exitCode)
-                        .append("_meta", meta)
-                        .append("docs", docs);
-
-                } catch (IOException e) {
-                    throw new RuntimeException("Error results from file");
-                }
-            } else {
-                String conf = FileUtil.readJsonFile(FileUtil.getConfFile(id));
-                Document config = Document.parse(conf);
-                String operation = (String)config.get("operation");
-                String description = RandomUtil.getAnalysisDescription(config);
-
-                response.append("id", id);
-
-                String[] tokens = lastLine.split("\t");
-                if (tokens.length > 1) {
-                    response.append("stage", tokens[0])
-                    .append("step", tokens[2])
-                    .append("progress", analysisService.getProgress(operation, tokens[0], Integer.parseInt(tokens[1])))
-                    .append("description", description);
-                
-                // in case logfile is still empty
-                } else {
-                    response.append("stage", "HIN Transformation")
-                    .append("step", "Initializing")
-                    .append("progress", 0)
-                    .append("description", description);                
-                }
             }
+                
+            String resultsFile = FileUtil.getOutputFile(id, analysis);
+                
+            try {
+                Document meta = new Document();
+                List<Document> docs = analysisService.getResults(resultsFile, page, meta);
 
+                response.append("id", id)
+                    .append("analysis", analysis)
+                    .append("_meta", meta)
+                    .append("docs", docs);
+
+            } catch (IOException e) {
+                throw new RuntimeException("Error results from file");
+            }
+           
             return response;
         } catch (IOException e) {
             throw new RuntimeException("Error reading status from logfile");
@@ -125,7 +173,17 @@ public class AnalysisResource {
         log.debug("analysis/exists : {}", id);
 
         Boolean exists = FileUtil.dirExists(id);
-        return new Document().append("id", id).append("exists", exists);
+        try {
+            // parse config file
+            String conf = FileUtil.readJsonFile(FileUtil.getConfFile(id));
+            Document config = Document.parse(conf);
+            ArrayList<String> analyses = (ArrayList<String>)config.get("analyses");
+            return new Document().append("id", id).append("exists", exists).append("analysis", analyses);
+
+        } catch (IOException e) {
+            throw new RuntimeException("Error reading status from logfile");
+        }
+
     }
 
 }

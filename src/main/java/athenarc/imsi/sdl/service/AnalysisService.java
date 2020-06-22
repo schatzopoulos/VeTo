@@ -28,14 +28,40 @@ public class AnalysisService {
     private final Logger log = LoggerFactory.getLogger(AnalysisService.class);
 
     @Async
-    public void submit(String id, String analysis, String metapath, Document constraints, String folder, String selectField) 
-        throws java.io.IOException, InterruptedException {
+    public void submit(
+        String id, 
+        ArrayList<String> analysis, 
+        String metapath, 
+        String joinpath,
+        Document constraints,
+        int k, 
+        int t, 
+        int joinW,
+        int searchW,
+        int minValues,
+        int targetId,
+        String folder, 
+        String selectField) throws java.io.IOException, InterruptedException {
         
         // create folder to store results
         String outputDir = FileUtil.createDir(id);
         String outputLog = FileUtil.getLogfile(id);
         
-        String config = FileUtil.writeConfig(analysis, outputDir, metapath, constraints, -1, -1, -1, -1, folder, selectField, -1);
+        String config = FileUtil.writeConfig(
+            analysis, 
+            outputDir, 
+            metapath, 
+            joinpath,
+            constraints, 
+            k, 
+            t, 
+            joinW, 
+            searchW,
+            minValues, 
+            targetId,
+            folder, 
+            selectField
+        );
 
         // prepare ranking script arguments
         ProcessBuilder pb = new ProcessBuilder();
@@ -107,21 +133,7 @@ public class AnalysisService {
         return docs;
     }
 
-    public double getProgress(String operation, String stage, int step) {
-        if (operation.equals("community-ranking")) {
-            if (stage.equals("HIN Transformation")) {
-                return (step / 3.0) * 30;
-            } else if (stage.equals("Ranking")) {
-                return (step / 4.0) * 30 + 30;
-            } else {
-                return (step / 4.0) * 30 + 30;
-            }
-        } else {
-            if (stage.equals("HIN Transformation")) {
-                return (step / 3.0) * 50;
-            } else {
-                return (step / 4.0) * 50 + 50;
-            }
-        }
+    public double getProgress(ArrayList<String> analyses, int stage, int step) {
+        return (step / 3.0) * (100.0 / (analyses.size()+1)) + (stage-1) * (100.0 / (analyses.size()+1));
     }
 }
