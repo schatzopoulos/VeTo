@@ -195,6 +195,7 @@ export const analysisRun = (analysis, metapath, joinpath, constraints, folder, s
   payload['joinW'] = 0;
   payload['searchW'] = 10;
   payload['minValues'] = 5;
+  payload['targetId'] = targetEntity;
 
   return {
     type: ACTION_TYPES.ANALYSIS_SUBMIT,

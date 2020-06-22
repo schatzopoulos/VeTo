@@ -374,8 +374,6 @@ export class Home extends React.Component<IHomeProps> {
 			case 'ranking': {
 				const node = nodes.select('label=MiRNA');
 
-				console.log(node);
-
 				newState.dataset = 'Bio';
 				newState.metapathStr = "MGDGM";
 				newState.selectField = "name";
