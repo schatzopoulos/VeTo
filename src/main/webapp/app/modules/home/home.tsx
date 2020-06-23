@@ -856,7 +856,7 @@ export class Home extends React.Component<IHomeProps> {
 											<h5>Similarity Join</h5>
 
 											<Label for="joinK">
-												k
+												k <FontAwesomeIcon style={{ color: '#17a2b8' }} icon="question-circle" title="Number of retrieved results."/>
 											</Label>
 											<Input id="joinK" value={this.state.joinK} bsSize="sm" type='number' onChange={this.handleAdvancedOptions.bind(this)}/>
 											{
@@ -867,7 +867,7 @@ export class Home extends React.Component<IHomeProps> {
 											}
 											<br/>
 											<Label for="joinW">
-												w
+												w <FontAwesomeIcon style={{ color: '#17a2b8' }} icon="question-circle" title="Hamming distance threshold for merging buckets."/>
 											</Label>
 											<Input id="joinW" value={this.state.joinW} bsSize="sm" type='number' onChange={this.handleAdvancedOptions.bind(this)}/>
 											{
@@ -878,7 +878,7 @@ export class Home extends React.Component<IHomeProps> {
 											}
 											<br/>
 											<Label for="joinMinValues">
-												Min. values
+												Min. values <FontAwesomeIcon style={{ color: '#17a2b8' }} icon="question-circle" title="Min number of values for each entity."/>
 											</Label>
 											<Input id="joinMinValues" value={this.state.joinMinValues} bsSize="sm" type='number' onChange={this.handleAdvancedOptions.bind(this)}/>
 											{
@@ -895,7 +895,7 @@ export class Home extends React.Component<IHomeProps> {
 											<h5>Similarity Search</h5>
 
 											<Label for="searchK">
-												k
+												k <FontAwesomeIcon style={{ color: '#17a2b8' }} icon="question-circle" title="Number of retrieved results."/>
 											</Label>
 											<Input id="searchK" value={this.state.searchK} bsSize="sm" type='number' onChange={this.handleAdvancedOptions.bind(this)}/>
 											{
@@ -906,7 +906,7 @@ export class Home extends React.Component<IHomeProps> {
 											}
 											<br/>
 											<Label for="searchW">
-												w
+												w <FontAwesomeIcon style={{ color: '#17a2b8' }} icon="question-circle" title="Hamming distance threshold for merging buckets."/>
 											</Label>
 											<Input id="searchW" value={this.state.searchW} bsSize="sm" type='number' onChange={this.handleAdvancedOptions.bind(this)}/>
 											{
@@ -917,7 +917,7 @@ export class Home extends React.Component<IHomeProps> {
 											}
 											<br/>
 											<Label for="searchMinValues">
-												Min. values
+												Min. values <FontAwesomeIcon style={{ color: '#17a2b8' }} icon="question-circle" title="Min number of values for each entity."/>
 											</Label>
 											<Input id="searchMinValues" value={this.state.searchMinValues} bsSize="sm" type='number' onChange={this.handleAdvancedOptions.bind(this)}/>
 											{
