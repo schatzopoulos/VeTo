@@ -19,6 +19,7 @@ import {
 	CustomInput, 
 	CardBody,
 	Label,
+	CardTitle,
 } from 'reactstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { IRootState } from 'app/shared/reducers';
@@ -26,8 +27,6 @@ import CytoscapeComponent from 'react-cytoscapejs';
 import  _  from 'lodash';
 import { 
 	analysisRun,
-	// simjoinRun,
-	// simsearchRun,
 	getStatus,
 	getResults, 
 	getMoreResults 
@@ -59,7 +58,16 @@ export class Home extends React.Component<IHomeProps> {
 		dataset: "DBLP",
 		selectField: '',
 		targetEntity: '',
+
 		edgesThreshold: 5,
+		prTol: 0.000001,
+		prAlpha: 0.5,
+		joinK: 100,
+		joinW: 0,
+		joinMinValues: 5,
+		searchK: 100,
+		searchW: 10,
+		searchMinValues: 5,
 	};
 	cy: any;
 	polling: any;
@@ -363,6 +371,14 @@ export class Home extends React.Component<IHomeProps> {
 			this.state.selectField,
 			this.state.targetEntity,
 			this.state.edgesThreshold,
+			this.state.prAlpha,
+			this.state.prTol,
+			this.state.joinK,
+			this.state.joinW,
+			this.state.joinMinValues,
+			this.state.searchK,
+			this.state.searchW,
+			this.state.searchMinValues,
 			(rerunAnalysis) ? 15 : undefined,
 			(rerunAnalysis) ? 1 : undefined,
 		);
@@ -785,18 +801,135 @@ export class Home extends React.Component<IHomeProps> {
 					<br/>
 					<Row>
 						<Col md={{offset: 2, size: 8}}>
-							<Card block>
+							<Card block outline color='info'>
 								<CardBody>
-									<Label for="edgesThreshold">
-										Min. support threshold for edges
-									</Label>
-									<Input id="edgesThreshold" value={this.state.edgesThreshold} bsSize="sm" type='number' onChange={this.handleAdvancedOptions.bind(this)}/>
-									{
-										(this.state.edgesThreshold === '') &&
-										<span className="attribute-type text-danger">
-											This field cannot be empty.
-										</span>
-									}
+
+									<CardTitle><h5>Advanced Options</h5></CardTitle>
+									<Row>
+										<Col md='6'>
+											<Card block >
+											<h5>General</h5>
+
+											<Label for="edgesThreshold">
+												Min. support threshold for graph edges
+											</Label>
+											<Input id="edgesThreshold" value={this.state.edgesThreshold} bsSize="sm" type='number' onChange={this.handleAdvancedOptions.bind(this)}/>
+											{
+												(this.state.edgesThreshold === '') &&
+												<span className="attribute-type text-danger">
+													This field cannot be empty.
+												</span>
+											}
+											</Card>
+										</Col>
+										<Col md='6'>
+											<Card block >
+											<h5>Ranking</h5>
+											<Label for="edgesThreshold">
+												Alpha
+											</Label>
+											<Input id="prAlpha" value={this.state.prAlpha} bsSize="sm" type='number' onChange={this.handleAdvancedOptions.bind(this)}/>
+											{
+												(this.state.prAlpha === '') &&
+												<span className="attribute-type text-danger">
+													This field cannot be empty.
+												</span>
+											}
+											<br/>
+											<Label for="edgesThreshold">
+												Tolerance
+											</Label>
+											<Input id="prTol" value={this.state.prTol} bsSize="sm" type='number' onChange={this.handleAdvancedOptions.bind(this)}/>
+											{
+												(this.state.prTol === '') &&
+												<span className="attribute-type text-danger">
+													This field cannot be empty.
+												</span>
+											}
+											</Card>
+										</Col>
+									</Row>
+									<br/>
+									<Row>
+										<Col md='6'>
+											<Card block >
+											<h5>Similarity Join</h5>
+
+											<Label for="joinK">
+												k
+											</Label>
+											<Input id="joinK" value={this.state.joinK} bsSize="sm" type='number' onChange={this.handleAdvancedOptions.bind(this)}/>
+											{
+												(this.state.joinK === '') &&
+												<span className="attribute-type text-danger">
+													This field cannot be empty.
+												</span>
+											}
+											<br/>
+											<Label for="joinW">
+												w
+											</Label>
+											<Input id="joinW" value={this.state.joinW} bsSize="sm" type='number' onChange={this.handleAdvancedOptions.bind(this)}/>
+											{
+												(this.state.joinW === '') &&
+												<span className="attribute-type text-danger">
+													This field cannot be empty.
+												</span>
+											}
+											<br/>
+											<Label for="joinMinValues">
+												Min. values
+											</Label>
+											<Input id="joinMinValues" value={this.state.joinMinValues} bsSize="sm" type='number' onChange={this.handleAdvancedOptions.bind(this)}/>
+											{
+												(this.state.joinMinValues === '') &&
+												<span className="attribute-type text-danger">
+													This field cannot be empty.
+												</span>
+											}
+											</Card>
+
+										</Col>
+										<Col md='6'>
+											<Card block >
+											<h5>Similarity Search</h5>
+
+											<Label for="searchK">
+												k
+											</Label>
+											<Input id="searchK" value={this.state.searchK} bsSize="sm" type='number' onChange={this.handleAdvancedOptions.bind(this)}/>
+											{
+												(this.state.searchK === '') &&
+												<span className="attribute-type text-danger">
+													This field cannot be empty.
+												</span>
+											}
+											<br/>
+											<Label for="searchW">
+												w
+											</Label>
+											<Input id="searchW" value={this.state.searchW} bsSize="sm" type='number' onChange={this.handleAdvancedOptions.bind(this)}/>
+											{
+												(this.state.searchW === '') &&
+												<span className="attribute-type text-danger">
+													This field cannot be empty.
+												</span>
+											}
+											<br/>
+											<Label for="searchMinValues">
+												Min. values
+											</Label>
+											<Input id="searchMinValues" value={this.state.searchMinValues} bsSize="sm" type='number' onChange={this.handleAdvancedOptions.bind(this)}/>
+											{
+												(this.state.searchMinValues === '') &&
+												<span className="attribute-type text-danger">
+													This field cannot be empty.
+												</span>
+											}
+											</Card>
+
+										</Col>
+									</Row>
 								</CardBody>
 							</Card>
 
@@ -805,22 +938,22 @@ export class Home extends React.Component<IHomeProps> {
 					<br/>
 				</UncontrolledCollapse>
 				</Col>
-
-				<Col md={{ size: 4, offset: 4 }}>
+				<br/>
+				<Col md='12'>
 					<Row>
-						<Col md='6'>
-							<Button block outline color="info" id="toggler">
-								<FontAwesomeIcon icon="cogs" /> Advanced options
-							</Button>
+						<Col md='1'>
+							<Button outline color="info" id="toggler" title="Advanced Options">
+								<FontAwesomeIcon icon="cogs" /> 
+							</Button>	
 						</Col>
-						<Col md='6'>
-						<Button block color="success" disabled={this.props.loading || !validMetapath || !validConstraints || !validTargetEntity} onClick={this.execute.bind(this)}>
-							<FontAwesomeIcon icon="play" /> Execute analysis
-						</Button>
+						<Col md={{ size: 2, offset: 4 }}>
+							<Button block color="success" disabled={this.props.loading || !validMetapath || !validConstraints || !validTargetEntity} onClick={this.execute.bind(this)}>
+								<FontAwesomeIcon icon="play" /> Execute analysis
+							</Button>
 						</Col>
 					</Row>
 				</Col>
-				
+								
 
 				<Col md='12'>
 					<Container>

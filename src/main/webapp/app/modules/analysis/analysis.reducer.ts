@@ -186,12 +186,30 @@ export const getMoreResults = (analysis, id, page) => {
   };
 };
 
-export const analysisRun = (analysis, metapath, joinpath, constraints, folder, selectField, targetId, edgesThreshold, w, minValues) => {
+export const analysisRun = (
+  analysis,
+  metapath,
+  joinpath,
+  constraints,
+  folder,
+  selectField,
+  targetId,
+  edgesThreshold,
+  prAlpha,
+  prTol,
+  joinK,
+  joinW,
+  joinMinValues,
+  searchK,
+  searchW,
+  searchMinValues,
+  w,
+  minValues
+) => {
   const payload = {
-    k: 100,
+    searchK,
+    joinK,
     t: 1,
-    joinW: 0,
-    searchW: 10,
     minValues: 5,
     targetId,
     analysis,
@@ -199,7 +217,13 @@ export const analysisRun = (analysis, metapath, joinpath, constraints, folder, s
     joinpath,
     folder,
     selectField,
-    edgesThreshold
+    edgesThreshold,
+    prAlpha,
+    prTol,
+    joinW,
+    joinMinValues,
+    searchW,
+    searchMinValues
   };
 
   formatConstraints(payload, constraints);

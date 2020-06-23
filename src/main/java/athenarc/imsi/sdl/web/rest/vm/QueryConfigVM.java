@@ -32,13 +32,34 @@ public class QueryConfigVM {
     @NotNull
     private ArrayList<String> analysis;
 
-    private int k;
+    private int searchK;
+    private int joinK;
+    private int searchMinValues;
+    private int joinMinValues;
     private int t;
     private int searchW;
     private int joinW;
     private int minValues;
     private int targetId;
     private int edgesThreshold;
+    private double prAlpha;
+    private double prTol;
+
+    public double getPrAlpha() {
+        return this.prAlpha;
+    }
+
+    public void setPrAlpha(double prAlpha) {
+        this.prAlpha = prAlpha;
+    }
+
+    public double getPrTol() {
+        return this.prTol;
+    }
+
+    public void setPrTol(double prTol) {
+        this.prTol = prTol;
+    }
 
     public int getEdgesThreshold() {
         return this.edgesThreshold;
@@ -52,12 +73,36 @@ public class QueryConfigVM {
         return metapath;
     }
 
-    public int getK() {
-        return this.k;
+    public int getSearchK() {
+        return this.searchK;
     }
 
-    public void setK(int k) {
-        this.k = k;
+    public void setSearchK(int searchK) {
+        this.searchK = searchK;
+    }
+
+    public int getJoinK() {
+        return this.joinK;
+    }
+
+    public void setJoinK(int joinK) {
+        this.joinK = joinK;
+    }
+
+    public int getSearchMinValues() {
+        return this.searchMinValues;
+    }
+
+    public void setSearchMinValues(int searchMinValues) {
+        this.searchMinValues = searchMinValues;
+    }
+
+    public int getJoinMinValues() {
+        return this.joinMinValues;
+    }
+
+    public void setJoinMinValues(int joinMinValues) {
+        this.joinMinValues = joinMinValues;
     }
 
     public int getT() {

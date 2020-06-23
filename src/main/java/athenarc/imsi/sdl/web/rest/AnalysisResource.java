@@ -51,7 +51,8 @@ public class AnalysisResource {
                 config.getMetapath(), 
                 config.getJoinpath(),
                 config.getConstraints(), 
-                config.getK(),
+                config.getJoinK(),
+                config.getSearchK(),
                 config.getT(), 
                 config.getJoinW(),
                 config.getSearchW(),
@@ -59,7 +60,11 @@ public class AnalysisResource {
                 config.getTargetId(),
                 config.getFolder(), 
                 config.getSelectField(),
-                config.getEdgesThreshold()
+                config.getEdgesThreshold(),
+                config.getPrAlpha(),
+                config.getPrTol(),
+                config.getJoinMinValues(),
+                config.getSearchMinValues()
             );        
 
         } catch (java.io.IOException | InterruptedException e) {

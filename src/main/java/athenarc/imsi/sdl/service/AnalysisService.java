@@ -34,7 +34,8 @@ public class AnalysisService {
         String metapath, 
         String joinpath,
         Document constraints,
-        int k, 
+        int joinK, 
+        int searchK,
         int t, 
         int joinW,
         int searchW,
@@ -42,7 +43,11 @@ public class AnalysisService {
         int targetId,
         String folder, 
         String selectField,
-        int edgesThreshold) throws java.io.IOException, InterruptedException {
+        int edgesThreshold,
+        double prAlpha, 
+        double prTol,
+        int joinMinValues, 
+        int searchMinValues) throws java.io.IOException, InterruptedException {
         
         // create folder to store results
         String outputDir = FileUtil.createDir(id);
@@ -54,7 +59,8 @@ public class AnalysisService {
             metapath, 
             joinpath,
             constraints, 
-            k, 
+            joinK,
+            searchK, 
             t, 
             joinW, 
             searchW,
@@ -62,7 +68,11 @@ public class AnalysisService {
             targetId,
             folder, 
             selectField,
-            edgesThreshold
+            edgesThreshold,
+            prAlpha, 
+            prTol,
+            joinMinValues,
+            searchMinValues
         );
 
         // prepare ranking script arguments

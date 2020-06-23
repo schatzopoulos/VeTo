@@ -104,7 +104,8 @@ public final class FileUtil {
         String metapath,
         String joinpath, 
         Document constraints, 
-        int k, 
+        int joinK, 
+        int searchK,
         int t, 
         int joinW,
         int searchW, 
@@ -112,7 +113,11 @@ public final class FileUtil {
         int targetId,
         String folder, 
         String selectField,
-        int edgesThreshold
+        int edgesThreshold,
+        double prAlpha,
+        double prTol,
+        int joinMinValues,
+        int searchMinValues
     ) throws IOException {
 
         Document config = new Document();
@@ -138,18 +143,21 @@ public final class FileUtil {
 
         // Ranking params 
         config.put("analyses", analyses);
-        config.put("pr_alpha", 0.5);
-        config.put("pr_tol", 0.000001);
+        config.put("pr_alpha", prAlpha);
+        config.put("pr_tol", prTol);
         config.put("edgesThreshold", edgesThreshold);
 
         // Similarity Search & Join params
         config.put("target_id", targetId);
-        config.put("k", k);
+        config.put("joinK", joinK);
+        config.put("searchK", searchK);
+
         config.put("t", t);
         config.put("joinW", joinW);
         config.put("searchW", searchW);
-        config.put("min_values", minValues);
-        
+        config.put("joinMinValues", joinMinValues);
+        config.put("searchMinValues", searchMinValues);
+
         // Query specific params
         Document query = new Document();
         query.put("metapath", metapath);
