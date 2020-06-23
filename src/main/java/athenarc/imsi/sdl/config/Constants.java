@@ -20,6 +20,7 @@ public final class Constants {
     public static final String SIM_SEARCH_OUT = "SIM_SEARCH.csv";
     public static final String RANKING_OUT = "RANKING";
     public static final String COMMUNITY_DETECTION_OUT = "COMMUNITIES";
+    public static final String COMMUNITY_DETAILS = "COMMUNITY_DETAILS.json";
 
     public static final String RANKING_COMMUNITY_OUT = "RANKING_COMMUNITY_RESULT.csv";
     public static final String COMMUNITY_RANKING_OUT = "COMMUNITY_RANKING_RESULT.csv";

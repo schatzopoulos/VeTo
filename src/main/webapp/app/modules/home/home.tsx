@@ -124,7 +124,7 @@ export class Home extends React.Component<IHomeProps> {
 	pollForResults() {
 		this.polling = setInterval( () => {
 			this.props.getStatus(this.props.uuid);
-		}, 1000);
+		}, 2000);
 	}
 
 	componentDidUpdate(prevProps) {

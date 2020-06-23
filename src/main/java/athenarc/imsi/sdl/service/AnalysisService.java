@@ -1,6 +1,7 @@
 package athenarc.imsi.sdl.service;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -22,58 +23,25 @@ import org.springframework.stereotype.Service;
 
 import athenarc.imsi.sdl.config.Constants;
 import athenarc.imsi.sdl.service.util.FileUtil;
+
 @Service
 public class AnalysisService {
 
     private final Logger log = LoggerFactory.getLogger(AnalysisService.class);
 
     @Async
-    public void submit(
-        String id, 
-        ArrayList<String> analysis, 
-        String metapath, 
-        String joinpath,
-        Document constraints,
-        int joinK, 
-        int searchK,
-        int t, 
-        int joinW,
-        int searchW,
-        int minValues,
-        int targetId,
-        String folder, 
-        String selectField,
-        int edgesThreshold,
-        double prAlpha, 
-        double prTol,
-        int joinMinValues, 
-        int searchMinValues) throws java.io.IOException, InterruptedException {
-        
+    public void submit(String id, ArrayList<String> analysis, String metapath, String joinpath, Document constraints,
+            int joinK, int searchK, int t, int joinW, int searchW, int minValues, int targetId, String folder,
+            String selectField, int edgesThreshold, double prAlpha, double prTol, int joinMinValues,
+            int searchMinValues) throws java.io.IOException, InterruptedException {
+
         // create folder to store results
         String outputDir = FileUtil.createDir(id);
         String outputLog = FileUtil.getLogfile(id);
-        
-        String config = FileUtil.writeConfig(
-            analysis, 
-            outputDir, 
-            metapath, 
-            joinpath,
-            constraints, 
-            joinK,
-            searchK, 
-            t, 
-            joinW, 
-            searchW,
-            minValues, 
-            targetId,
-            folder, 
-            selectField,
-            edgesThreshold,
-            prAlpha, 
-            prTol,
-            joinMinValues,
-            searchMinValues
-        );
+
+        String config = FileUtil.writeConfig(analysis, outputDir, metapath, joinpath, constraints, joinK, searchK, t,
+                joinW, searchW, minValues, targetId, folder, selectField, edgesThreshold, prAlpha, prTol, joinMinValues,
+                searchMinValues);
 
         // prepare ranking script arguments
         ProcessBuilder pb = new ProcessBuilder();
@@ -110,10 +78,10 @@ public class AnalysisService {
         meta.append("headers", headers);
     }
 
-    public List<Document> getResults(String analysisFile, Integer page, Document meta) throws IOException{
-        if (page == null) 
+    public List<Document> getResults(String analysisFile, Integer page, Document meta) throws IOException {
+        if (page == null)
             page = 1;
-        
+
         List<Document> docs = new ArrayList<>();
         int totalRecords = FileUtil.countLines(analysisFile);
         int totalPages = FileUtil.totalPages(totalRecords);
@@ -122,17 +90,17 @@ public class AnalysisService {
 
         int count = 0;
         Reader reader = Files.newBufferedReader(Paths.get(analysisFile));
-        CSVReader csvReader =  new CSVReaderBuilder(reader)
-            .withCSVParser(new CSVParserBuilder().withSeparator('\t').build())
-            .withSkipLines(firstRecordNumber)
-            .build();
+        CSVReader csvReader = new CSVReaderBuilder(reader)
+                .withCSVParser(new CSVParserBuilder().withSeparator('\t').build()).withSkipLines(firstRecordNumber)
+                .build();
 
         String[] attributes;
         while (count < Constants.PAGE_SIZE && ((attributes = csvReader.readNext()) != null)) {
 
-            // IMPORTANT: the order of the fields is indicated from the headers array in the metadata section
+            // IMPORTANT: the order of the fields is indicated from the headers array in the
+            // metadata section
             Document doc = new Document();
-            for (int i=0; i<attributes.length; i++) {
+            for (int i = 0; i < attributes.length; i++) {
                 doc.append(headers[i], attributes[i]);
             }
 
@@ -146,6 +114,32 @@ public class AnalysisService {
     }
 
     public double getProgress(ArrayList<String> analyses, int stage, int step) {
-        return (step / 3.0) * (100.0 / (analyses.size()+1)) + (stage-1) * (100.0 / (analyses.size()+1));
+        int analysesSize = analyses.size();
+
+        // do count combinations Ranking-CD and CD-Ranking as extra analyses in progress
+        if (analyses.contains("Ranking") && analyses.contains("Community Detection")) {
+            analysesSize -= 2;
+        }
+
+        return (step / 3.0) * (100.0 / (analysesSize + 1)) + (stage - 1) * (100.0 / (analysesSize + 1));
+    }
+
+    public Document getCommunityCounts(String detailsFile, List<Document> docs)
+            throws FileNotFoundException, IOException {
+        Document communityCounts = new Document();
+        Document counts = Document.parse(FileUtil.readJsonFile(detailsFile));
+
+        // get number of entities of each community in the results
+        for (Document doc : docs) {
+            System.out.println(doc);
+            String entity = (String)doc.get("Community");
+
+            int count = (int) counts.get(entity);
+            communityCounts.append(entity, count);
+        }
+
+        // add total number of communities
+        communityCounts.append("total", (int) counts.get("total"));
+        return communityCounts;
     }
 }

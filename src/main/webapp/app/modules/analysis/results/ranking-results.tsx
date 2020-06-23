@@ -1,3 +1,5 @@
+import './ranking-results.scss';
+
 import React from 'react';
 import { 
 	Row,
@@ -11,6 +13,7 @@ export interface IRankingResultsProps {
 	docs: any,
 	headers: any,
 	hasMore: boolean,
+	communityCounts: any,
 
 	loadMore: any,
 
@@ -27,13 +30,19 @@ export class RankingResultsPanel extends React.Component<IRankingResultsProps> {
 		this.props.loadMore();
 	}
 	render() {
-
+		let prevCommunity = null;
 		const rows = this.props.docs.map( (row, index) => {
 			return <tr key={index}>
 			{
 				this.props.headers.map( (fieldName, index2) => {
-					if (fieldName !== "id" && fieldName !== "name")
-						return <td key={index2}>{row[fieldName]}</td>; 
+					const fieldValue = row[fieldName];
+					let communityDetails = null;
+					if (fieldName === "Community" && prevCommunity !== fieldValue) {
+						prevCommunity = fieldValue;
+						console.warn(this.props.communityCounts[fieldValue]);
+						communityDetails = <span className="small-grey">{`(#${this.props.communityCounts[fieldValue]})`}</span>;
+					}
+					return <td key={index2}>{fieldValue} {(communityDetails) && communityDetails}</td>; 
 				})
 			}
 		  </tr>
@@ -46,8 +55,7 @@ export class RankingResultsPanel extends React.Component<IRankingResultsProps> {
 						<tr>
 							{
 								this.props.headers.map( (fieldName, index) => {
-									if (fieldName !== "id" && fieldName !== "name")
-										return <th key={index}>{fieldName}</th>;
+									return <th key={index}>{fieldName}</th>;
 								})
 							}
 						</tr>

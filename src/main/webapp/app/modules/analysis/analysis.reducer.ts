@@ -103,9 +103,16 @@ export default (state: AnalysisState = initialState, action): AnalysisState => {
       const data = action.payload.data;
 
       const results = { ...state.results };
+      const meta = data._meta;
+
+      // merge old with new community details
+      if (_.get(results[data.analysis], 'meta.community_counts') && _.get(data, '_meta.community_counts')) {
+        meta['community_counts'] = { ...results[data.analysis].meta.community_counts, ...data._meta.community_counts };
+      }
+
       results[data.analysis] = {
         docs: [...results[data.analysis]['docs'], ...data.docs],
-        meta: data._meta
+        meta
       };
 
       return {

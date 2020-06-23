@@ -162,6 +162,11 @@ public class AnalysisResource {
             try {
                 Document meta = new Document();
                 List<Document> docs = analysisService.getResults(resultsFile, page, meta);
+                if (analysis.contains("Community")) {
+                    String communityDetailsFile = FileUtil.getCommunityDetailsFile(id);
+                    Document communityCounts = analysisService.getCommunityCounts(communityDetailsFile, docs);
+                    meta.append("community_counts", communityCounts);
+                }
 
                 response.append("id", id)
                     .append("analysis", analysis)

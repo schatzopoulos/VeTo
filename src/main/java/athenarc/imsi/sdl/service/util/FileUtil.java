@@ -68,6 +68,11 @@ public final class FileUtil {
         return resultsFile;
     }
 
+    public static String getCommunityDetailsFile(String uuid) {
+        return Constants.BASE_PATH + "/" + uuid + "/" + Constants.COMMUNITY_DETAILS;
+    }
+
+
     public static Document parseLogfile(String logfile) throws IOException {
         String lastLine = "";
         Integer stageNum = 0;
@@ -135,6 +140,8 @@ public final class FileUtil {
         // config.put("final_out", outputDir + "/" + Constants.FINAL_OUT);
         config.put("ranking_out", outputDir + "/" + Constants.RANKING_OUT);
         config.put("communities_out", outputDir + "/" + Constants.COMMUNITY_DETECTION_OUT);
+        config.put("communities_details", outputDir + "/" + Constants.COMMUNITY_DETAILS);
+
         config.put("sim_search_out", outputDir + "/" + Constants.SIM_SEARCH_OUT);
         config.put("sim_join_out", outputDir + "/" + Constants.SIM_JOIN_OUT);
 

@@ -77,9 +77,11 @@ export class ResultsPanel extends React.Component<IResultsPanelProps> {
                 docs={result.docs} 
                 headers={result.meta.headers}
                 hasMore={result.meta.links.hasNext} 
+                communityCounts={result.meta.community_counts}
                 loadMore={this.props.loadMore.bind(this, this.state.activeAnalysis, result.meta.page+1)}
             /> : '';
 
+            const totalCommunities = (_.get(result, "meta.community_counts")) ? <span>/ {result.meta.community_counts['total']} communities found in total</span> : '';
             return (<div>
                 <h2>Results</h2>
 
@@ -120,7 +122,7 @@ export class ResultsPanel extends React.Component<IResultsPanelProps> {
 
                                     <Row>
                                         <Col md='10' className="small-grey">
-                                            Displaying {docs.length} out of {meta.totalRecords} results
+                                            Displaying {docs.length} out of {meta.totalRecords} results { totalCommunities }
                                         </Col>
                                         <Col md='2' style={{textAlign: 'right'}}>
                                             <Button color="info" size='sm' outline onClick={this.downloadResults.bind(this)}><FontAwesomeIcon icon="download" /> Download</Button>
