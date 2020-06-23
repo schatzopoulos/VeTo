@@ -42,6 +42,13 @@ public class AnalysisResource {
         String id = UUID.randomUUID().toString();
         log.debug("Analysis task submitted with id: " + id);
 
+        ArrayList<String> analyses = config.getAnalysis();
+        if (analyses.contains("Ranking") && analyses.contains("Community Detection")) {
+            analyses.add("Ranking - Community Detection");
+            analyses.add("Community Detection - Ranking");
+            config.setAnalysis(analyses);
+        }
+
         try {
 
             // run async method from service

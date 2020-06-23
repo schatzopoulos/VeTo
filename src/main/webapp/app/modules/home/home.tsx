@@ -58,6 +58,7 @@ export class Home extends React.Component<IHomeProps> {
 		dataset: "DBLP",
 		selectField: '',
 		targetEntity: '',
+		configurationActive: false,
 
 		edgesThreshold: 5,
 		prTol: 0.000001,
@@ -452,6 +453,11 @@ export class Home extends React.Component<IHomeProps> {
 			constraints 
 		});
 	}
+	toggleConfiguration() {
+		this.setState({
+			configurationActive: !this.state.configurationActive,
+		});
+	}
 
 	checkMetapathLength() {
 		const metapath = this.state.metapathStr;
@@ -632,7 +638,7 @@ export class Home extends React.Component<IHomeProps> {
 		const validMetapath = this.checkSymmetricMetapath();
 		const validConstraints = this.checkConstraints();
 		const validAnalysisType = this.state.analysis.length !== 0;
-		const validTargetEntity = (this.state.analysis !== 'simsearch') || (this.state.analysis === 'simsearch' && this.state.targetEntity !== '');
+		const validTargetEntity = ( !this.state.analysis.includes('Similarity Search') || (this.state.analysis.includes('Similarity Search') && this.state.targetEntity !== ''));
 		const { selectedEntity, selectFieldOptions }: any = this.getSelectFieldOptions();
 		
 		let datasetFolder = '';
@@ -730,7 +736,7 @@ export class Home extends React.Component<IHomeProps> {
 							</InputGroup>
 							{
 								((!validMetapathLength || !validMetapath) && this.state.metapathStr.length !== 0) &&
-									<span className="attribute-type text-danger">Please insert a valid metapath (metapaths should be symmetric { (this.state.dataset === 'DBLP' || this.state.dataset === 'Bio') && "e.g."} { this.state.dataset === 'DBLP' && "APA" }{ this.state.dataset === 'Bio' && "MGDGM" })</span>
+									<span className="attribute-type text-danger">Please insert a valid symmetric metapath { (this.state.dataset === 'DBLP' || this.state.dataset === 'Bio') && "e.g."} { this.state.dataset === 'DBLP' && "APA" }{ this.state.dataset === 'Bio' && "MGDGM" }</span>
 							}		
 						</Col>
 						{
@@ -751,13 +757,23 @@ export class Home extends React.Component<IHomeProps> {
 					}
 
 					<br/>
-					<h4>Select analysis type</h4>
+					<Row>
+						<Col md="12">
+							<Row>
+								<Col md='8'>
+									<h4>Select analysis type</h4>
+								</Col>
+								<Col md='4'>	
+									<Button outline size='sm' color="info" id="toggler" title="Advanced Options" className="float-right" active={this.state.configurationActive} onClick={this.toggleConfiguration.bind(this)}>
+										<FontAwesomeIcon icon="cogs" /> Configuration
+									</Button>
+								</Col>
+							</Row>
+						</Col>
+					</Row>
 					<Col md='12'>
 						<Row>
 							<CustomInput type="switch" id="rankingSwith" onChange={() => this.onCheckboxBtnClick("Ranking")} checked={this.state.analysis.includes("Ranking")} label={rankingLabel} />
-						</Row>
-						<Row>
-							<CustomInput type="switch" id="cdSwitch" onChange={() => this.onCheckboxBtnClick("Community Detection")} checked={this.state.analysis.includes("Community Detection")} label={communityLabel} />
 						</Row>
 						<Row>
 							<CustomInput type="switch" id="simJoinSwitch" onChange={() => this.onCheckboxBtnClick("Similarity Join")} checked={this.state.analysis.includes("Similarity Join")} label={simJoinLabel} />
@@ -781,33 +797,41 @@ export class Home extends React.Component<IHomeProps> {
 										disabled={_.isEmpty(this.state.metapath)}
 										size='sm'
 									/>
+
+									{
+										(this.state.targetEntity === '') && 
+										<span className="attribute-type text-danger">
+											This field cannot be empty when Similarity Search is enabled.
+										</span>
+									}
 								</span>
+								
 							}
 						</Row>
-					
+						<Row>
+							<CustomInput type="switch" id="cdSwitch" onChange={() => this.onCheckboxBtnClick("Community Detection")} checked={this.state.analysis.includes("Community Detection")} label={communityLabel} />
+						</Row>
 						{
 							(!validAnalysisType) &&
 								<span className="attribute-type text-danger">
 									Please select at least one type of analysis.
 								</span>
 						}
+						
 					</Col>
-					<br/>
-					
 				</Col>
 				<Col md='12'>
-
 				<UncontrolledCollapse toggler="#toggler">
 					<br/>
 					<Row>
 						<Col md={{offset: 2, size: 8}}>
-							<Card block outline color='info'>
+							<Card outline color='info'>
 								<CardBody>
 
-									<CardTitle><h5>Advanced Options</h5></CardTitle>
+									<CardTitle><h5>Methods Configuration</h5></CardTitle>
 									<Row>
-										<Col md='6'>
-											<Card block >
+										<Col md='3'>
+											<Card>
 											<h5>General</h5>
 
 											<Label for="edgesThreshold">
@@ -822,8 +846,8 @@ export class Home extends React.Component<IHomeProps> {
 											}
 											</Card>
 										</Col>
-										<Col md='6'>
-											<Card block >
+										<Col md='3'>
+											<Card>
 											<h5>Ranking</h5>
 											<Label for="edgesThreshold">
 												Alpha
@@ -848,11 +872,8 @@ export class Home extends React.Component<IHomeProps> {
 											}
 											</Card>
 										</Col>
-									</Row>
-									<br/>
-									<Row>
-										<Col md='6'>
-											<Card block >
+										<Col md='3'>
+											<Card>
 											<h5>Similarity Join</h5>
 
 											<Label for="joinK">
@@ -890,8 +911,8 @@ export class Home extends React.Component<IHomeProps> {
 											</Card>
 
 										</Col>
-										<Col md='6'>
-											<Card block >
+										<Col md='3'>
+											<Card>
 											<h5>Similarity Search</h5>
 
 											<Label for="searchK">
@@ -941,12 +962,7 @@ export class Home extends React.Component<IHomeProps> {
 				<br/>
 				<Col md='12'>
 					<Row>
-						<Col md='1'>
-							<Button outline color="info" id="toggler" title="Advanced Options">
-								<FontAwesomeIcon icon="cogs" /> 
-							</Button>	
-						</Col>
-						<Col md={{ size: 2, offset: 4 }}>
+						<Col md={{ size: 2, offset: 5 }}>
 							<Button block color="success" disabled={this.props.loading || !validMetapath || !validConstraints || !validTargetEntity} onClick={this.execute.bind(this)}>
 								<FontAwesomeIcon icon="play" /> Execute analysis
 							</Button>

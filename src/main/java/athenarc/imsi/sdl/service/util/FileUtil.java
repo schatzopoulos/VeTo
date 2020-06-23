@@ -59,6 +59,10 @@ public final class FileUtil {
             resultsFile += Constants.FINAL_SIM_JOIN_OUT;
         } else if (analysis.equals("Similarity Search")) {
             resultsFile += Constants.FINAL_SIM_SEARCH_OUT;
+        } else if (analysis.equals("Ranking - Community Detection")) {
+            resultsFile += Constants.RANKING_COMMUNITY_OUT;
+        } else if (analysis.equals("Community Detection - Ranking")) {
+            resultsFile += Constants.COMMUNITY_RANKING_OUT;
         }
 
         return resultsFile;
@@ -138,6 +142,9 @@ public final class FileUtil {
         config.put("final_communities_out", outputDir + "/" + Constants.FINAL_COMMUNITY_OUT);
         config.put("final_sim_search_out", outputDir + "/" + Constants.FINAL_SIM_SEARCH_OUT);
         config.put("final_sim_join_out", outputDir + "/" + Constants.FINAL_SIM_JOIN_OUT);
+
+        config.put("final_ranking_community_out", outputDir + "/" + Constants.RANKING_COMMUNITY_OUT);
+        config.put("final_community_ranking_out", outputDir + "/" + Constants.COMMUNITY_RANKING_OUT);
 
         config.put("select_field", selectField);
 

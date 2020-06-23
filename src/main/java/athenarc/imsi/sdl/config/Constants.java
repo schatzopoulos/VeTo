@@ -21,6 +21,9 @@ public final class Constants {
     public static final String RANKING_OUT = "RANKING";
     public static final String COMMUNITY_DETECTION_OUT = "COMMUNITIES";
 
+    public static final String RANKING_COMMUNITY_OUT = "RANKING_COMMUNITY_RESULT.csv";
+    public static final String COMMUNITY_RANKING_OUT = "COMMUNITY_RANKING_RESULT.csv";
+
     public static final String FINAL_RANKING_OUT = "RANKING_RESULT.csv";
     public static final String FINAL_COMMUNITY_OUT = "COMMUNITY_RESULT.csv";
     public static final String FINAL_SIM_JOIN_OUT = "SIM_JOIN_RESULT.csv";
