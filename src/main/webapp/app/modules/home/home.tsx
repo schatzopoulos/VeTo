@@ -55,7 +55,7 @@ export class Home extends React.Component<IHomeProps> {
 		neighbors: undefined,
 		constraints: {},
 		analysis: ["Ranking"],
-		dataset: "DBLP",
+		dataset: "DBLP-Ext",
 		selectField: '',
 		targetEntity: '',
 		configurationActive: false,
