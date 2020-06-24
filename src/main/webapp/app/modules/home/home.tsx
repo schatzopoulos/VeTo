@@ -957,8 +957,7 @@ export class Home extends React.Component<IHomeProps> {
 					<br/>
 				</UncontrolledCollapse>
 				</Col>
-				<br/>
-				<Col md='12'>
+				<Col md='12' style={{    paddingTop: '20px' }}>
 					<Row>
 						<Col md={{ size: 2, offset: 5 }}>
 							<Button block color="success" disabled={this.props.loading || !validMetapath || !validConstraints || !validTargetEntity} onClick={this.execute.bind(this)}>
@@ -967,7 +966,6 @@ export class Home extends React.Component<IHomeProps> {
 						</Col>
 					</Row>
 				</Col>
-								
 
 				<Col md='12'>
 					<Container>
