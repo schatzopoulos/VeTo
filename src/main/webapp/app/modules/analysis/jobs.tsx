@@ -106,7 +106,7 @@ console.warn(prevProps);
 				<Col md="6">
 					<Row>
 						<Col>
-							<h4>Search for job</h4>
+							<h4>Re-attach to job</h4>
 							<Row>
 								<Col md='10'>
 									<Input name="job_id" id="job_id" placeholder="Please give a valid job id" onChange={this.onChangeInput.bind(this)} value={this.state.jobId} />

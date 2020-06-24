@@ -40,7 +40,7 @@ export class RankingResultsPanel extends React.Component<IRankingResultsProps> {
 					if (fieldName === "Community" && prevCommunity !== fieldValue) {
 						prevCommunity = fieldValue;
 						console.warn(this.props.communityCounts[fieldValue]);
-						communityDetails = <span className="small-grey">{`(#${this.props.communityCounts[fieldValue]})`}</span>;
+						communityDetails = <span className="small-grey">{`(${this.props.communityCounts[fieldValue]} members)`}</span>;
 					}
 					return <td key={index2}>{fieldValue} {(communityDetails) && communityDetails}</td>; 
 				})

@@ -465,8 +465,8 @@ export class Home extends React.Component<IHomeProps> {
 		return (metapath.length >= 3);
 	}
 	getJoinPath() {
-		const metapath = this.state.metapathStr;	
-		const midPos = Math.ceil(metapath.length / 2);
+		const metapath = this.state.metapathStr.slice(0);	
+		const midPos = Math.floor(metapath.length / 2) + 1;
 		return metapath.substr(0, midPos);
 	}
 	reverseString(str) {
@@ -477,25 +477,23 @@ export class Home extends React.Component<IHomeProps> {
 	}
 	checkSymmetricMetapath() {
 		
-		const metapath = this.state.metapathStr;	
+		let metapath = this.state.metapathStr.slice(0);
 
-		if (metapath.length < 3 || metapath.length % 2 === 0)
+		if (metapath.length < 3)
 			return false;
-
-		// CHECKS MATCHING FIRST AND LAST CHARACTER
-		// const firstLetter = metapath.substr(0, 1);
-		// const lastLetter = metapath.substr(metapath.length-1, 1);
-
-		// if (firstLetter !== lastLetter)
-		// 	return false;
 		
-		const midPos = Math.ceil(metapath.length / 2);
+		const midPos = Math.floor(metapath.length / 2);
 
-		const firstHalf = metapath.substr(0, midPos-1);
+		// if metapath length is even, remove mid character
+		if (metapath.length % 2 !== 0) {
+			metapath = metapath.slice(0, midPos) + metapath.slice(midPos+1);
+		};
+
+		const firstHalf = metapath.substr(0, midPos);
 		const lastHalf = metapath.substr(midPos, metapath.length-1);
 		// console.log("first " + firstHalf);
 		// console.log("last " + lastHalf);
-		
+		console.warn(this.getJoinPath());
 		return ( firstHalf === this.reverseString(lastHalf) );
 	}
 
@@ -828,14 +826,14 @@ export class Home extends React.Component<IHomeProps> {
 							<Card outline color='info'>
 								<CardBody>
 
-									<CardTitle><h5>Methods Configuration</h5></CardTitle>
+									<CardTitle><h5>Analysis configuration</h5></CardTitle>
 									<Row>
 										<Col md='3'>
 											<Card>
 											<h5>General</h5>
 
 											<Label for="edgesThreshold">
-												Min. support threshold for graph edges
+												Minimum number of instances for a metapath-based connection to be considered <FontAwesomeIcon style={{ color: '#17a2b8' }} icon="question-circle" title="Connections with fewer occurences are not considered in the analysis; it affects the overall efficiency."/>
 											</Label>
 											<Input id="edgesThreshold" value={this.state.edgesThreshold} bsSize="sm" type='number' onChange={this.handleAdvancedOptions.bind(this)}/>
 											{
@@ -850,7 +848,7 @@ export class Home extends React.Component<IHomeProps> {
 											<Card>
 											<h5>Ranking</h5>
 											<Label for="edgesThreshold">
-												Alpha
+												Alpha <FontAwesomeIcon style={{ color: '#17a2b8' }} icon="question-circle" title="The random reset propability of the PageRank algorithm."/>
 											</Label>
 											<Input id="prAlpha" value={this.state.prAlpha} bsSize="sm" type='number' onChange={this.handleAdvancedOptions.bind(this)}/>
 											{
@@ -861,7 +859,7 @@ export class Home extends React.Component<IHomeProps> {
 											}
 											<br/>
 											<Label for="edgesThreshold">
-												Tolerance
+												Tolerance <FontAwesomeIcon style={{ color: '#17a2b8' }} icon="question-circle" title="The tolerance allowed for convergence."/>
 											</Label>
 											<Input id="prTol" value={this.state.prTol} bsSize="sm" type='number' onChange={this.handleAdvancedOptions.bind(this)}/>
 											{
