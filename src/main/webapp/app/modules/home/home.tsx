@@ -493,7 +493,6 @@ export class Home extends React.Component<IHomeProps> {
 		const lastHalf = metapath.substr(midPos, metapath.length-1);
 		// console.log("first " + firstHalf);
 		// console.log("last " + lastHalf);
-		console.warn(this.getJoinPath());
 		return ( firstHalf === this.reverseString(lastHalf) );
 	}
 
