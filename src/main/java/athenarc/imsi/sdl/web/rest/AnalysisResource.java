@@ -123,7 +123,7 @@ public class AnalysisResource {
                 response.append("completed", comp);
                 if (tokens[1].equals("100")) {
                     response.append("description", "Warning: The produced HIN view does not contain any entities; please try again with more loose constrains.");                                
-                } else if (tokens[2].equals("200")) {
+                } else if (tokens[1].equals("200")) {
                     response.append("description", "Warning: Due to limited resources the analysis was aborted as a large HIN view was created; please try again with more strict constraints.");
                 } else {
                     throw new RuntimeException("Error in analysis task: " + id);
