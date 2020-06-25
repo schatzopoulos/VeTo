@@ -21,6 +21,7 @@ export interface IConstraintItemFieldProps {
     field: string,
     type: string,
     enabled: boolean,
+    lastFieldCondition: boolean,
 
     // functions
     handleSwitch: any,
@@ -135,6 +136,7 @@ export class ConstraintItemField extends React.Component<IConstraintItemFieldPro
             disabled={!enabled}
             placeholder={''}
             size="sm"
+            value={data.value}
         />
         if (type === 'numeric') {
             inputField = <Input disabled={ !enabled } value={data.value || ''} bsSize="sm" type='number' onChange={this.handleInput}/>;
@@ -187,19 +189,27 @@ export class ConstraintItemField extends React.Component<IConstraintItemFieldPro
                 </Col>
                 <Col md='6'>
                     { inputField }
-                    {
-                        (example) && <span className='attribute-type'>e.g. { example }</span>
-                    }
+                    
                 </Col>
                 <Col md='1'>
                     {
-                        (index === 0) 
-                            ?   <Button disabled={ !enabled } color="info" outline size="sm" title="Add constraint" onClick={this.handleAddition}><FontAwesomeIcon icon="plus" /></Button>
-                            :   <Button disabled={ !enabled } color="danger" outline size="sm" title="Remove constraint" onClick={this.handleRemoval}><FontAwesomeIcon icon="minus" /></Button>
-
+                        (index !== 0) &&
+                          <Button disabled={ !enabled } color="danger" outline size="sm" title="Remove constraint" onClick={this.handleRemoval}><FontAwesomeIcon icon="minus" /></Button>
+                    }
+                </Col>
+                <Col md={{ offset: 4, size: 5}}>
+                    {
+                        (example && this.props.lastFieldCondition) && <span className='attribute-type'>e.g. { example }</span>
+                    }
+                </Col>
+                <Col md='2'>
+                    {
+                        (this.props.lastFieldCondition) && 
+                            <Button className="float-right" disabled={ !enabled } color="info" outline size="sm" title="Add constraint" onClick={this.handleAddition}><FontAwesomeIcon icon="plus" /> Add new</Button>
                     }
                 </Col>
             </Row>
+            
         );
 	}
 };

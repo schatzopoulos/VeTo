@@ -12,10 +12,24 @@ public final class Constants {
     public static final String DEFAULT_LANGUAGE = "en";
     public static final String ANONYMOUS_USER = "anonymoususer";
     
-    public static final String BASE_PATH = "/tmp";
-    public static final String HIN_OUT = "HIN.csv";
-    public static final String ANALYSIS_OUT = "ANALYSIS.csv";
-    public static final String FINAL_OUT = "RESULT.csv";
+    public static final String BASE_PATH = "/dataX/SciNeM-results";
+    public static final String HIN_OUT = "HIN";
+    public static final String JOIN_HIN_OUT = "JOIN_HIN";
+
+    public static final String SIM_JOIN_OUT = "SIM_JOIN.csv";
+    public static final String SIM_SEARCH_OUT = "SIM_SEARCH.csv";
+    public static final String RANKING_OUT = "RANKING";
+    public static final String COMMUNITY_DETECTION_OUT = "COMMUNITIES";
+    public static final String COMMUNITY_DETAILS = "COMMUNITY_DETAILS.json";
+
+    public static final String RANKING_COMMUNITY_OUT = "RANKING_COMMUNITY_RESULT.csv";
+    public static final String COMMUNITY_RANKING_OUT = "COMMUNITY_RANKING_RESULT.csv";
+
+    public static final String FINAL_RANKING_OUT = "RANKING_RESULT.csv";
+    public static final String FINAL_COMMUNITY_OUT = "COMMUNITY_RESULT.csv";
+    public static final String FINAL_SIM_JOIN_OUT = "SIM_JOIN_RESULT.csv";
+    public static final String FINAL_SIM_SEARCH_OUT = "SIM_SEARCH_RESULT.csv";
+
     public static final String CONFIG_FILE = "config.json";
 
     public static final String DATA_DIR = "/dataX/SciNeM-data/";

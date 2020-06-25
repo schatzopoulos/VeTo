@@ -1,5 +1,7 @@
 package athenarc.imsi.sdl.web.rest.vm;
 
+import java.util.ArrayList;
+
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
@@ -13,6 +15,10 @@ public class QueryConfigVM {
     @NotNull
     @Size(min = 1, max = 50)
     private String metapath;
+    
+    @NotNull
+    @Size(min = 1, max = 50)
+    private String joinpath;
 
     @NotNull
     private String folder;
@@ -22,23 +28,81 @@ public class QueryConfigVM {
 
     @NotNull
     private String selectField;
+    
+    @NotNull
+    private ArrayList<String> analysis;
 
-    private int k;
+    private int searchK;
+    private int joinK;
+    private int searchMinValues;
+    private int joinMinValues;
     private int t;
-    private int w;
+    private int searchW;
+    private int joinW;
     private int minValues;
     private int targetId;
+    private int edgesThreshold;
+    private double prAlpha;
+    private double prTol;
+
+    public double getPrAlpha() {
+        return this.prAlpha;
+    }
+
+    public void setPrAlpha(double prAlpha) {
+        this.prAlpha = prAlpha;
+    }
+
+    public double getPrTol() {
+        return this.prTol;
+    }
+
+    public void setPrTol(double prTol) {
+        this.prTol = prTol;
+    }
+
+    public int getEdgesThreshold() {
+        return this.edgesThreshold;
+    }
+
+    public void setEdgesThreshold(int edgesThreshold) {
+        this.edgesThreshold = edgesThreshold;
+    }
 
     public String getMetapath() {
         return metapath;
     }
 
-    public int getK() {
-        return this.k;
+    public int getSearchK() {
+        return this.searchK;
     }
 
-    public void setK(int k) {
-        this.k = k;
+    public void setSearchK(int searchK) {
+        this.searchK = searchK;
+    }
+
+    public int getJoinK() {
+        return this.joinK;
+    }
+
+    public void setJoinK(int joinK) {
+        this.joinK = joinK;
+    }
+
+    public int getSearchMinValues() {
+        return this.searchMinValues;
+    }
+
+    public void setSearchMinValues(int searchMinValues) {
+        this.searchMinValues = searchMinValues;
+    }
+
+    public int getJoinMinValues() {
+        return this.joinMinValues;
+    }
+
+    public void setJoinMinValues(int joinMinValues) {
+        this.joinMinValues = joinMinValues;
     }
 
     public int getT() {
@@ -49,12 +113,20 @@ public class QueryConfigVM {
         this.t = t;
     }
 
-    public int getW() {
-        return this.w;
+    public int getSearchW() {
+        return this.searchW;
     }
 
-    public void setW(int w) {
-        this.w = w;
+    public void setSearchW(int searchW) {
+        this.searchW = searchW;
+    }
+
+    public int getJoinW() {
+        return this.joinW;
+    }
+
+    public void setJoinW(int joinW) {
+        this.joinW = joinW;
     }
 
     public int getMinValues() {
@@ -99,6 +171,22 @@ public class QueryConfigVM {
 
     public void setTargetId(int targetId) {
         this.targetId = targetId;
+    }
+
+    public ArrayList<String> getAnalysis() {
+        return this.analysis;
+    }
+
+    public void setAnalysis(ArrayList<String> analysis) {
+        this.analysis = analysis;
+    }
+
+    public String getJoinpath() {
+        return this.joinpath;
+    }
+
+    public void setJoinpath(String joinpath) {
+        this.joinpath = joinpath;
     }
 
     @Override

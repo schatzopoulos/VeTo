@@ -8,14 +8,14 @@ import appConfig from 'app/config/constants';
 
 export const BrandIcon = props => (
   <div {...props} className="brand-icon">
-    <img src="content/images/logo-jhipster.png" alt="Logo" />
+    <img src="content/images/scinem_logo_wh.png" alt="Scinem" />
   </div>
 );
 
 export const Brand = props => (
   <NavbarBrand tag={Link} to="/" className="brand-logo">
-    {/* <BrandIcon /> */}
-    <span className="brand-title">SciNeM</span>
+    <BrandIcon />
+    {/* <span className="brand-title">SciNeM</span> */}
     {/* <span className="navbar-version">{appConfig.VERSION}</span> */}
   </NavbarBrand>
 );
@@ -34,6 +34,15 @@ export const Upload = props => (
     <NavLink tag={Link} to="/upload" className="d-flex align-items-center">
       <FontAwesomeIcon icon="upload" />
       <span>Upload</span>
+    </NavLink>
+  </NavItem>
+);
+
+export const Jobs = props => (
+  <NavItem>
+    <NavLink tag={Link} to="/jobs" className="d-flex align-items-center">
+      <FontAwesomeIcon icon="search" />
+      <span>Re-attach to job</span>
     </NavLink>
   </NavItem>
 );

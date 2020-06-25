@@ -15,16 +15,19 @@ import {
 	Progress,
 	Container,
 	Card, 
+	UncontrolledCollapse,
+	CustomInput, 
 	CardBody,
+	Label,
+	CardTitle,
 } from 'reactstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { IRootState } from 'app/shared/reducers';
 import CytoscapeComponent from 'react-cytoscapejs';
 import  _  from 'lodash';
 import { 
-	rankingRun,
-	simjoinRun,
-	simsearchRun,
+	analysisRun,
+	getStatus,
 	getResults, 
 	getMoreResults 
 } from '../analysis/analysis.reducer';
@@ -33,7 +36,7 @@ import ResultsPanel from '../analysis/results/results';
 import ConstraintItem from '../constraints/constraint-item';
 import { __metadata } from 'tslib';
 import AutocompleteInput from '../datasets/autocomplete-input';
-import registerReducer from '../account/register/register.reducer';
+import { NavLink } from 'reactstrap';
 
 export interface IHomeProps extends StateProps, DispatchProps {
 	loading: boolean;
@@ -51,10 +54,21 @@ export class Home extends React.Component<IHomeProps> {
 		metapathStr: '',
 		neighbors: undefined,
 		constraints: {},
-		analysis: "ranking",
-		dataset: "Bio",
+		analysis: ["Ranking"],
+		dataset: "DBLP-Ext",
 		selectField: '',
 		targetEntity: '',
+		configurationActive: false,
+
+		edgesThreshold: 5,
+		prTol: 0.000001,
+		prAlpha: 0.5,
+		joinK: 100,
+		joinW: 0,
+		joinMinValues: 5,
+		searchK: 100,
+		searchW: 10,
+		searchMinValues: 5,
 	};
 	cy: any;
 	polling: any;
@@ -109,8 +123,8 @@ export class Home extends React.Component<IHomeProps> {
 
 	pollForResults() {
 		this.polling = setInterval( () => {
-			this.props.getResults(this.props.analysis, this.props.uuid);
-		}, 1000);
+			this.props.getStatus(this.props.uuid);
+		}, 2000);
 	}
 
 	componentDidUpdate(prevProps) {
@@ -121,6 +135,12 @@ export class Home extends React.Component<IHomeProps> {
 		} else if (prevProps.loading && !this.props.loading) {
 			clearInterval(this.polling);
 		}
+
+		_.forOwn(this.props.status, (completed, analysis) => {
+			if (completed && prevProps.status && ! prevProps.status[analysis]) {
+				this.props.getResults(analysis, this.props.uuid);
+			}
+		});
 
 		if (!prevProps.schemas && this.props.schemas) {
 			this.initCy();
@@ -341,26 +361,25 @@ export class Home extends React.Component<IHomeProps> {
 
 	execute(e, rerunAnalysis) {
 		
-		let analysis = null;
 		const analysisType = (rerunAnalysis) ? rerunAnalysis : this.state.analysis;
 
-		switch(analysisType) {
-			case 'ranking': 
-				analysis = this.props.rankingRun; break;
-			case 'simjoin':
-				analysis = this.props.simjoinRun; break;
-			case 'simsearch':
-				analysis = this.props.simsearchRun; break;
-			default:
-				alert("This type of analysis will be implemented soon");
-		}
-
-		analysis(
-			(this.state.analysis === 'ranking') ? this.state.metapathStr : this.getJoinPath(), 
+		this.props.analysisRun(
+			analysisType,
+			this.state.metapathStr,
+			this.getJoinPath(),
 			this.state.constraints, 
 			this.props.schemas[this.state.dataset]['folder'],
 			this.state.selectField,
 			this.state.targetEntity,
+			this.state.edgesThreshold,
+			this.state.prAlpha,
+			this.state.prTol,
+			this.state.joinK,
+			this.state.joinW,
+			this.state.joinMinValues,
+			this.state.searchK,
+			this.state.searchW,
+			this.state.searchMinValues,
 			(rerunAnalysis) ? 15 : undefined,
 			(rerunAnalysis) ? 1 : undefined,
 		);
@@ -374,8 +393,6 @@ export class Home extends React.Component<IHomeProps> {
 		switch(this.state.analysis) {
 			case 'ranking': {
 				const node = nodes.select('label=MiRNA');
-
-				console.log(node);
 
 				newState.dataset = 'Bio';
 				newState.metapathStr = "MGDGM";
@@ -403,8 +420,8 @@ export class Home extends React.Component<IHomeProps> {
 			this.execute(e, null);
 		});
 	}
-	loadMoreResults() {
-		this.props.getMoreResults(this.props.analysis, this.props.uuid, this.props.meta.page + 1);
+	loadMoreResults(analysis, nextPage) {
+		this.props.getMoreResults(analysis, this.props.uuid, nextPage);
 	}
 
 	handleAnalysisDropdown(e) {
@@ -413,6 +430,18 @@ export class Home extends React.Component<IHomeProps> {
 			targetEntity: '',
 		});
 	}
+	
+	onCheckboxBtnClick (selected)  {
+		const newState = { ...this.state };
+
+		const index = newState.analysis.indexOf(selected);
+		if (index < 0) {
+			newState.analysis.push(selected);
+		} else {
+			newState.analysis.splice(index, 1);
+		}
+		this.setState(newState);
+	  }
 
 	handleConstraintSwitch({ entity, field }) {
 		// create object for entity, if not present
@@ -424,6 +453,11 @@ export class Home extends React.Component<IHomeProps> {
 			constraints 
 		});
 	}
+	toggleConfiguration() {
+		this.setState({
+			configurationActive: !this.state.configurationActive,
+		});
+	}
 
 	checkMetapathLength() {
 		const metapath = this.state.metapathStr;
@@ -431,8 +465,8 @@ export class Home extends React.Component<IHomeProps> {
 		return (metapath.length >= 3);
 	}
 	getJoinPath() {
-		const metapath = this.state.metapathStr;	
-		const midPos = Math.ceil(metapath.length / 2);
+		const metapath = this.state.metapathStr.slice(0);	
+		const midPos = Math.floor(metapath.length / 2) + 1;
 		return metapath.substr(0, midPos);
 	}
 	reverseString(str) {
@@ -443,25 +477,22 @@ export class Home extends React.Component<IHomeProps> {
 	}
 	checkSymmetricMetapath() {
 		
-		const metapath = this.state.metapathStr;	
+		let metapath = this.state.metapathStr.slice(0);
 
-		if (metapath.length < 3 || metapath.length % 2 === 0)
+		if (metapath.length < 3)
 			return false;
-
-		// CHECKS MATCHING FIRST AND LAST CHARACTER
-		// const firstLetter = metapath.substr(0, 1);
-		// const lastLetter = metapath.substr(metapath.length-1, 1);
-
-		// if (firstLetter !== lastLetter)
-		// 	return false;
 		
-		const midPos = Math.ceil(metapath.length / 2);
+		const midPos = Math.floor(metapath.length / 2);
 
-		const firstHalf = metapath.substr(0, midPos-1);
+		// if metapath length is even, remove mid character
+		if (metapath.length % 2 !== 0) {
+			metapath = metapath.slice(0, midPos) + metapath.slice(midPos+1);
+		};
+
+		const firstHalf = metapath.substr(0, midPos);
 		const lastHalf = metapath.substr(midPos, metapath.length-1);
 		// console.log("first " + firstHalf);
 		// console.log("last " + lastHalf);
-		
 		return ( firstHalf === this.reverseString(lastHalf) );
 	}
 
@@ -591,10 +622,22 @@ export class Home extends React.Component<IHomeProps> {
 			targetEntity: selected,
 		});
 	}
+	handleAdvancedOptions(e) {
+		const newState = {...this.state};
+		newState[e.target.id] = e.target.value;
+		this.setState(newState);
+	}
 	render() {
 
 		const datasetOptions = this.getDatasetOptions();
 		const schema = this.getSchema();
+		const validMetapathLength = this.checkMetapathLength();
+		const validMetapath = this.checkSymmetricMetapath();
+		const validConstraints = this.checkConstraints();
+		const validAnalysisType = this.state.analysis.length !== 0;
+		const validTargetEntity = ( !this.state.analysis.includes('Similarity Search') || (this.state.analysis.includes('Similarity Search') && this.state.targetEntity !== ''));
+		const { selectedEntity, selectFieldOptions }: any = this.getSelectFieldOptions();
+		
 		let datasetFolder = '';
 		if (this.props.schemas) {
 			datasetFolder = this.props.schemas[this.state.dataset]['folder'];
@@ -602,7 +645,7 @@ export class Home extends React.Component<IHomeProps> {
 
 		const constraintsPanel = <Row>
 		<Col md="12">
-			<h4>3. Select constraints</h4>
+			<h4>Select constraints</h4>
 		</Col>
 		<Col md="12">
 			{
@@ -628,22 +671,44 @@ export class Home extends React.Component<IHomeProps> {
 					}
 					</ListGroup>
 			}
+			{
+				(!validConstraints && (this.state.metapathStr.length !== 0)) &&
+				<span className="attribute-type text-danger">
+					Please provide at least one constraint.
+				</span>
+			}
 		</Col>
 		</Row>;
+		const rankingLabel = <span>
+			Ranking <FontAwesomeIcon style={{ color: '#17a2b8' }} icon="question-circle" title="Ranking analysis is perfomed using PageRank."/>
+		</span>;
+		const communityLabel = <span>
+			Community Detection <FontAwesomeIcon style={{ color: '#17a2b8' }} icon="question-circle" title="Community Detection analysis is perfomed using Louvain Modularity method."/>
+		</span>;
+		const simJoinLabel = <span>
+			Similarity Join <FontAwesomeIcon style={{ color: '#17a2b8' }} icon="question-circle" title="Similarity Join is perfomed using JoinSim."/>
+		</span>;
+		const simSearchLabel = <span>
+			Similarity Search <FontAwesomeIcon style={{ color: '#17a2b8' }} icon="question-circle" title="Similarity Search is perfomed using JoinSim similarity measure."/>
+			
+		</span>;
 
-		const validMetapathLength = this.checkMetapathLength();
-		const validMetapath = this.checkSymmetricMetapath();
-		const validConstraints = this.checkConstraints();
-		const validTargetEntity = (this.state.analysis !== 'simsearch') || (this.state.analysis === 'simsearch' && this.state.targetEntity !== '');
-		const { selectedEntity, selectFieldOptions }: any = this.getSelectFieldOptions();
-		
 		return (
 			<Container fluid>
 			<Row>
 				<Col md="6">
 					<Row>
 						<Col md="12">
-							<h4>1. Select dataset</h4>
+							<Row>
+								<Col md='8'>
+									<h4>Select dataset</h4>		
+								</Col>
+								<Col md='4'>	
+									<Button outline color="info" tag={Link} to="/upload" className="float-right" size='sm'>
+										<FontAwesomeIcon icon="upload" /> Upload new
+									</Button>
+								</Col>
+							</Row>
 							<Input value={this.state.dataset} type="select" name="dataset" id="dataset" onChange={this.handleDatasetDropdown.bind(this)}>
 								{ datasetOptions }
 							</Input>
@@ -651,7 +716,7 @@ export class Home extends React.Component<IHomeProps> {
 					</Row>
 					<br/>
 
-					<h4>2. Select metapath</h4>
+					<h4>Select metapath</h4>
 					<Card className="mx-auto">		
 						{ schema }
 					</Card>
@@ -666,7 +731,10 @@ export class Home extends React.Component<IHomeProps> {
 									<Button color="danger" title="Delete last node" onClick={this.deleteLast.bind(this)} ><FontAwesomeIcon icon="arrow-left" /></Button>
 								</InputGroupAddon>
 							</InputGroup>
-							<span className='attribute-type'>e.g. { this.state.dataset === 'DBLP' && "APVPA" }{ this.state.dataset === 'Bio' && "MGDGM" }</span>
+							{
+								((!validMetapathLength || !validMetapath) && this.state.metapathStr.length !== 0) &&
+									<span className="attribute-type text-danger">Please insert a valid symmetric metapath { (this.state.dataset === 'DBLP' || this.state.dataset === 'Bio') && "e.g."} { this.state.dataset === 'DBLP' && "APA" }{ this.state.dataset === 'Bio' && "MGDGM" }</span>
+							}		
 						</Col>
 						{
 							(selectedEntity) &&
@@ -677,10 +745,7 @@ export class Home extends React.Component<IHomeProps> {
 								</Input>
 							</Col>
 						}
-						
-
 					</Row>
-					
 				</Col>
 				<Col md="6">
 					
@@ -689,92 +754,236 @@ export class Home extends React.Component<IHomeProps> {
 					}
 
 					<br/>
-					<h4>4. Select analysis type</h4>
-					<Input id="analysis-dropdown" type="select" value={this.state.analysis} onChange={this.handleAnalysisDropdown.bind(this)} >
-						<option value={"ranking"}>Ranking</option>
-						<option value={"simjoin"}>Similarity Join</option>
-						<option value={"simsearch"}>Similarity Search</option>
-					</Input>
-					{
-						(this.state.analysis === "simsearch") &&
-							<div>
-								<br/>
-								<h4>5. Select target entity</h4>
-								<AutocompleteInput 
-									id="targetEntityInput"
-									placeholder={ _.isEmpty(this.state.metapath) ? "First, select a metapath" : `Search for ${selectedEntity} entities by ${this.state.selectField}`}
-									onChange={this.handleTargetEntity.bind(this)}								
-									entity={selectedEntity}
-									field={this.state.selectField}
-									folder={datasetFolder}
-									disabled={_.isEmpty(this.state.metapath)}
-								/>
-							</div>
-					}
-					<br/>
-					<Col md={{ size: 4, offset: 8 }}>
+					<Row>
+						<Col md="12">
+							<Row>
+								<Col md='8'>
+									<h4>Select analysis type</h4>
+								</Col>
+								<Col md='4'>	
+									<Button outline size='sm' color="info" id="toggler" title="Advanced Options" className="float-right" active={this.state.configurationActive} onClick={this.toggleConfiguration.bind(this)}>
+										<FontAwesomeIcon icon="cogs" /> Configuration
+									</Button>
+								</Col>
+							</Row>
+						</Col>
+					</Row>
+					<Col md='12'>
 						<Row>
-							{/* <Col md="6">
-								<Button block color="success" outline onClick={this.runExample.bind(this)}>
-									<FontAwesomeIcon icon="play" /> Execute example
-								</Button>
-							</Col> */}
+							<CustomInput type="switch" id="rankingSwith" onChange={() => this.onCheckboxBtnClick("Ranking")} checked={this.state.analysis.includes("Ranking")} label={rankingLabel} />
+						</Row>
+						<Row>
+							<CustomInput type="switch" id="simJoinSwitch" onChange={() => this.onCheckboxBtnClick("Similarity Join")} checked={this.state.analysis.includes("Similarity Join")} label={simJoinLabel} />
+						</Row>
+						<Row>
+							<Col md='6'>
+								<Row>
+							<CustomInput type="switch" id="simSearchSwitch" onChange={() => this.onCheckboxBtnClick("Similarity Search")} checked={this.state.analysis.includes("Similarity Search")} label={simSearchLabel} />
+							</Row>
+							</Col>
+							{
+							(this.state.analysis.includes("Similarity Search")) &&
+								<span>
+									<AutocompleteInput 
+										id="targetEntityInput"
+										placeholder={ _.isEmpty(this.state.metapath) ? "First, select a metapath" : `Search for ${selectedEntity} entities`}
+										onChange={this.handleTargetEntity.bind(this)}								
+										entity={selectedEntity}
+										field={this.state.selectField}
+										folder={datasetFolder}
+										disabled={_.isEmpty(this.state.metapath)}
+										size='sm'
+									/>
+
+									{
+										(this.state.targetEntity === '') && 
+										<span className="attribute-type text-danger">
+											This field cannot be empty when Similarity Search is enabled.
+										</span>
+									}
+								</span>
+								
+							}
+						</Row>
+						<Row>
+							<CustomInput type="switch" id="cdSwitch" onChange={() => this.onCheckboxBtnClick("Community Detection")} checked={this.state.analysis.includes("Community Detection")} label={communityLabel} />
+						</Row>
+						{
+							(!validAnalysisType) &&
+								<span className="attribute-type text-danger">
+									Please select at least one type of analysis.
+								</span>
+						}
+						
+					</Col>
+				</Col>
+				<Col md='12'>
+				<UncontrolledCollapse toggler="#toggler">
+					<br/>
+					<Row>
+						<Col md={{offset: 2, size: 8}}>
+							<Card outline color='info'>
+								<CardBody>
+
+									<CardTitle><h5>Analysis configuration</h5></CardTitle>
+									<Row>
+										<Col md='3'>
+											<Card>
+											<h5>General</h5>
+
+											<Label for="edgesThreshold">
+												Minimum number of instances for a metapath-based connection to be considered <FontAwesomeIcon style={{ color: '#17a2b8' }} icon="question-circle" title="Connections with fewer occurences are not considered in the analysis; it affects the overall efficiency."/>
+											</Label>
+											<Input id="edgesThreshold" value={this.state.edgesThreshold} bsSize="sm" type='number' onChange={this.handleAdvancedOptions.bind(this)}/>
+											{
+												(this.state.edgesThreshold === '') &&
+												<span className="attribute-type text-danger">
+													This field cannot be empty.
+												</span>
+											}
+											</Card>
+										</Col>
+										<Col md='3'>
+											<Card>
+											<h5>Ranking</h5>
+											<Label for="edgesThreshold">
+												Alpha <FontAwesomeIcon style={{ color: '#17a2b8' }} icon="question-circle" title="The random reset propability of the PageRank algorithm."/>
+											</Label>
+											<Input id="prAlpha" value={this.state.prAlpha} bsSize="sm" type='number' onChange={this.handleAdvancedOptions.bind(this)}/>
+											{
+												(this.state.prAlpha === '') &&
+												<span className="attribute-type text-danger">
+													This field cannot be empty.
+												</span>
+											}
+											<br/>
+											<Label for="edgesThreshold">
+												Tolerance <FontAwesomeIcon style={{ color: '#17a2b8' }} icon="question-circle" title="The tolerance allowed for convergence."/>
+											</Label>
+											<Input id="prTol" value={this.state.prTol} bsSize="sm" type='number' onChange={this.handleAdvancedOptions.bind(this)}/>
+											{
+												(this.state.prTol === '') &&
+												<span className="attribute-type text-danger">
+													This field cannot be empty.
+												</span>
+											}
+											</Card>
+										</Col>
+										<Col md='3'>
+											<Card>
+											<h5>Similarity Join</h5>
+
+											<Label for="joinK">
+												k <FontAwesomeIcon style={{ color: '#17a2b8' }} icon="question-circle" title="Number of retrieved results."/>
+											</Label>
+											<Input id="joinK" value={this.state.joinK} bsSize="sm" type='number' onChange={this.handleAdvancedOptions.bind(this)}/>
+											{
+												(this.state.joinK === '') &&
+												<span className="attribute-type text-danger">
+													This field cannot be empty.
+												</span>
+											}
+											<br/>
+											<Label for="joinW">
+												w <FontAwesomeIcon style={{ color: '#17a2b8' }} icon="question-circle" title="Hamming distance threshold for merging buckets."/>
+											</Label>
+											<Input id="joinW" value={this.state.joinW} bsSize="sm" type='number' onChange={this.handleAdvancedOptions.bind(this)}/>
+											{
+												(this.state.joinW === '') &&
+												<span className="attribute-type text-danger">
+													This field cannot be empty.
+												</span>
+											}
+											<br/>
+											<Label for="joinMinValues">
+												Min. values <FontAwesomeIcon style={{ color: '#17a2b8' }} icon="question-circle" title="Min number of values for each entity."/>
+											</Label>
+											<Input id="joinMinValues" value={this.state.joinMinValues} bsSize="sm" type='number' onChange={this.handleAdvancedOptions.bind(this)}/>
+											{
+												(this.state.joinMinValues === '') &&
+												<span className="attribute-type text-danger">
+													This field cannot be empty.
+												</span>
+											}
+											</Card>
+
+										</Col>
+										<Col md='3'>
+											<Card>
+											<h5>Similarity Search</h5>
+
+											<Label for="searchK">
+												k <FontAwesomeIcon style={{ color: '#17a2b8' }} icon="question-circle" title="Number of retrieved results."/>
+											</Label>
+											<Input id="searchK" value={this.state.searchK} bsSize="sm" type='number' onChange={this.handleAdvancedOptions.bind(this)}/>
+											{
+												(this.state.searchK === '') &&
+												<span className="attribute-type text-danger">
+													This field cannot be empty.
+												</span>
+											}
+											<br/>
+											<Label for="searchW">
+												w <FontAwesomeIcon style={{ color: '#17a2b8' }} icon="question-circle" title="Hamming distance threshold for merging buckets."/>
+											</Label>
+											<Input id="searchW" value={this.state.searchW} bsSize="sm" type='number' onChange={this.handleAdvancedOptions.bind(this)}/>
+											{
+												(this.state.searchW === '') &&
+												<span className="attribute-type text-danger">
+													This field cannot be empty.
+												</span>
+											}
+											<br/>
+											<Label for="searchMinValues">
+												Min. values <FontAwesomeIcon style={{ color: '#17a2b8' }} icon="question-circle" title="Min number of values for each entity."/>
+											</Label>
+											<Input id="searchMinValues" value={this.state.searchMinValues} bsSize="sm" type='number' onChange={this.handleAdvancedOptions.bind(this)}/>
+											{
+												(this.state.searchMinValues === '') &&
+												<span className="attribute-type text-danger">
+													This field cannot be empty.
+												</span>
+											}
+											</Card>
+
+										</Col>
+									</Row>
+								</CardBody>
+							</Card>
+
+						</Col>
+					</Row>
+					<br/>
+				</UncontrolledCollapse>
+				</Col>
+				<Col md='12' style={{    paddingTop: '20px' }}>
+					<Row>
+						<Col md={{ size: 2, offset: 5 }}>
 							<Button block color="success" disabled={this.props.loading || !validMetapath || !validConstraints || !validTargetEntity} onClick={this.execute.bind(this)}>
 								<FontAwesomeIcon icon="play" /> Execute analysis
 							</Button>
-						</Row>
-					</Col>
+						</Col>
+					</Row>
 				</Col>
-				
-				{
-					(!validMetapathLength || !validMetapath || !validConstraints || !validTargetEntity) &&
-					<Col md={{size: 4, offset: 4}}>
-						<br/>
-						<Row className="small-grey">
-							<Card block>
-								<CardBody>
-									<b>Please note that:</b>
-									<ul>
-										{
-											(!validMetapathLength) &&
-											<li>
-												The metapath should containt at least 3 entities.
-											</li>
-										}
-										{
-											(!validMetapath) && 
-											<li>
-												The metapath should be symmetric  e.g. APVPA
-											</li>
-										}
-										{
-											(!validConstraints) &&
-											<li>
-												You should provide at least one constraint for ranking.
-											</li>
-										}
-										{
-											(!validTargetEntity) &&
-											<li>
-												You should specify target entity for search.
-											</li>
-										}
-									</ul>
-								</CardBody>
-							</Card>
-						</Row>
-					</Col>
-				}
 
 				<Col md='12'>
 					<Container>
 					<br/>
 					{
+						(this.props.loading) &&
+						<Row className="small-grey text-center">
+							<Col>
+							The analysis may take some time, you can check its progress in the following <Link to={`/jobs/${this.props.uuid}`} target="_blank">link</Link> (job id = {this.props.uuid}).<br/>
+							{this.props.description}
+							</Col>
+						</Row>
+					}
+					{
 						(this.props.loading) && <Progress animated color="info" value={this.props.progress}>{this.props.progressMsg}</Progress>
 					}
 					<ResultsPanel 
-						docs={this.props.docs}
-						meta={this.props.meta}
+						uuid={this.props.uuid}
+						results={this.props.results}
 						analysis={this.props.analysis}
 						analysisId={this.props.uuid}
 						loadMore={this.loadMoreResults.bind(this)}
@@ -790,20 +999,22 @@ export class Home extends React.Component<IHomeProps> {
 
 const mapStateToProps = (storeState: IRootState) => ({  
 	loading: storeState.analysis.loading,
+	status: storeState.analysis.status,
 	progress: storeState.analysis.progress,
 	progressMsg: storeState.analysis.progressMsg,
+	description: storeState.analysis.description,
 	error: storeState.analysis.error,
-	docs: storeState.analysis.docs,
-	meta: storeState.analysis.meta,
+	results: storeState.analysis.results,
 	uuid: storeState.analysis.uuid,  
 	analysis: storeState.analysis.analysis,
 	schemas: storeState.datasets.schemas,
 });
 
 const mapDispatchToProps = { 
-	rankingRun, 
-	simjoinRun,
-	simsearchRun,
+	analysisRun,
+	// simjoinRun,
+	// simsearchRun,
+	getStatus,
 	getResults,
 	getMoreResults,
 	getDatasetSchemas,

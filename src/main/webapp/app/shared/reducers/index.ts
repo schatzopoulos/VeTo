@@ -14,6 +14,7 @@ import passwordReset, { PasswordResetState } from 'app/modules/account/password-
 
 import analysis, { AnalysisState } from 'app/modules/analysis/analysis.reducer';
 import datasets, { DatasetsState } from 'app/modules/datasets/datasets.reducer';
+import jobs, { JobState } from 'app/modules/analysis/jobs.reducer';
 
 /* jhipster-needle-add-reducer-import - JHipster will add reducer here */
 
@@ -32,6 +33,7 @@ export interface IRootState {
 
   readonly analysis: AnalysisState;
   readonly datasets: DatasetsState;
+  readonly jobs: JobState;
 }
 
 const rootReducer = combineReducers<IRootState>({
@@ -47,7 +49,8 @@ const rootReducer = combineReducers<IRootState>({
   /* jhipster-needle-add-reducer-combine - JHipster will add reducer here */
   loadingBar,
   analysis,
-  datasets
+  datasets,
+  jobs
 });
 
 export default rootReducer;

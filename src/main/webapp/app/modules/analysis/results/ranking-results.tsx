@@ -1,3 +1,5 @@
+import './ranking-results.scss';
+
 import React from 'react';
 import { 
 	Row,
@@ -9,7 +11,9 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 export interface IRankingResultsProps {
 	docs: any,
+	headers: any,
 	hasMore: boolean,
+	communityCounts: any,
 
 	loadMore: any,
 
@@ -26,11 +30,20 @@ export class RankingResultsPanel extends React.Component<IRankingResultsProps> {
 		this.props.loadMore();
 	}
 	render() {
-
-		const rows = this.props.docs.map( (row) => {
-			return <tr key={row.id}>
-			<td>{row.name}</td>
-			<td>{row.score}</td>
+		let prevCommunity = null;
+		const rows = this.props.docs.map( (row, index) => {
+			return <tr key={index}>
+			{
+				this.props.headers.map( (fieldName, index2) => {
+					const fieldValue = row[fieldName];
+					let communityDetails = null;
+					if (fieldName === "Community" && prevCommunity !== fieldValue) {
+						prevCommunity = fieldValue;
+						communityDetails = <span className="small-grey">{`(${this.props.communityCounts[fieldValue]} members)`}</span>;
+					}
+					return <td key={index2}>{fieldValue} {(communityDetails) && communityDetails}</td>; 
+				})
+			}
 		  </tr>
 		});
 
@@ -39,8 +52,11 @@ export class RankingResultsPanel extends React.Component<IRankingResultsProps> {
 				<Table size="sm">
 					<thead>
 						<tr>
-							<th>Entity</th>
-							<th>Score</th>
+							{
+								this.props.headers.map( (fieldName, index) => {
+									return <th key={index}>{fieldName}</th>;
+								})
+							}
 						</tr>
 					</thead>
 					<tbody>

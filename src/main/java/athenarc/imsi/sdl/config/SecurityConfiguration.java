@@ -78,7 +78,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         .and()
             .authorizeRequests()
 
-            .antMatchers("/api/ranking/**").permitAll()
+            .antMatchers("/api/analysis/**").permitAll()
             .antMatchers("/api/simjoin/**").permitAll()
             .antMatchers("/api/simsearch/**").permitAll()
             .antMatchers("/api/datasets/**").permitAll()

@@ -2,15 +2,15 @@ import axios from 'axios';
 
 import { REQUEST, SUCCESS, FAILURE } from 'app/shared/reducers/action-type.util';
 import _ from 'lodash';
-import { min } from 'moment';
-import { setFileData } from 'react-jhipster';
 const analysisAPIUrl = 'api/analysis';
+const simjoinAPIUrl = 'api/simjoin';
+const simsearchAPIUrl = 'api/simsearch';
 
 export const ACTION_TYPES = {
-  ANALYSIS_SUBMIT: 'analysis/SUBMIT',
-  GET_STATUS: 'analysis/GET_STATUS',
-  GET_RESULTS: 'analysis/GET_RESULTS',
-  GET_MORE_RESULTS: 'analysis/GET_MORE_RESULTS'
+  GET_JOB: 'jobs/GET',
+  GET_STATUS: 'jobs/GET_STATUS',
+  GET_RESULTS: 'jobs/GET_RESULTS',
+  GET_MORE_RESULTS: 'jobs/GET_MORE_RESULTS'
 };
 
 const initialState = {
@@ -25,12 +25,12 @@ const initialState = {
   status: null as any
 };
 
-export type AnalysisState = Readonly<typeof initialState>;
+export type JobState = Readonly<typeof initialState>;
 
 // Reducer
-export default (state: AnalysisState = initialState, action): AnalysisState => {
+export default (state: JobState = initialState, action): JobState => {
   switch (action.type) {
-    case REQUEST(ACTION_TYPES.ANALYSIS_SUBMIT):
+    case REQUEST(ACTION_TYPES.GET_JOB):
       return {
         ...state,
         loading: true,
@@ -43,13 +43,13 @@ export default (state: AnalysisState = initialState, action): AnalysisState => {
         results: {},
         status: null
       };
+
     case REQUEST(ACTION_TYPES.GET_STATUS):
     case REQUEST(ACTION_TYPES.GET_RESULTS):
     case REQUEST(ACTION_TYPES.GET_MORE_RESULTS):
       return state;
 
     case FAILURE(ACTION_TYPES.GET_STATUS):
-    case FAILURE(ACTION_TYPES.ANALYSIS_SUBMIT):
     case FAILURE(ACTION_TYPES.GET_RESULTS):
     case FAILURE(ACTION_TYPES.GET_MORE_RESULTS): {
       const errorMsg = 'An unexpected error occurred during the analysis';
@@ -62,16 +62,25 @@ export default (state: AnalysisState = initialState, action): AnalysisState => {
         error: errorMsg,
         uuid: null,
         analysis: null,
-        results: {}
+        results: {},
+        status: null
       };
     }
-    case SUCCESS(ACTION_TYPES.ANALYSIS_SUBMIT): {
-      return {
-        ...state,
-        error: null,
-        uuid: action.payload.data.id,
-        analysis: action.payload.data.analysis
-      };
+    case SUCCESS(ACTION_TYPES.GET_JOB): {
+      if (!action.payload.data.exists) {
+        return {
+          ...state,
+          error: 'We were unable to locate the analysis with the specified job id.',
+          loading: false
+        };
+      } else {
+        return {
+          ...state,
+          error: null,
+          uuid: action.payload.data.id,
+          analysis: action.payload.data.analysis
+        };
+      }
     }
     case SUCCESS(ACTION_TYPES.GET_STATUS): {
       const data = action.payload.data;
@@ -103,16 +112,9 @@ export default (state: AnalysisState = initialState, action): AnalysisState => {
       const data = action.payload.data;
 
       const results = { ...state.results };
-      const meta = data._meta;
-
-      // merge old with new community details
-      if (_.get(results[data.analysis], 'meta.community_counts') && _.get(data, '_meta.community_counts')) {
-        meta['community_counts'] = { ...results[data.analysis].meta.community_counts, ...data._meta.community_counts };
-      }
-
       results[data.analysis] = {
         docs: [...results[data.analysis]['docs'], ...data.docs],
-        meta
+        meta: data._meta
       };
 
       return {
@@ -127,35 +129,16 @@ export default (state: AnalysisState = initialState, action): AnalysisState => {
 };
 
 // Actions
-
-function formatConstraints(payload, constraints) {
-  payload['constraints'] = {};
-  _.forOwn(constraints, (entityConstraint, entity) => {
-    const e = entity.substr(0, 1);
-    let entityConditions = [];
-
-    _.forOwn(entityConstraint, ({ enabled, type, conditions }, field) => {
-      if (enabled) {
-        entityConditions = conditions
-          .filter(element => element.value)
-          .map(element => {
-            let value;
-            if (type === 'numeric') {
-              value = parseInt(element.value, 10);
-            } else {
-              value = `'${element.value}'`;
-            }
-            return `${element.logicOp || ''} ${field} ${element.operation} ${value}`;
-          });
+export const getJob = id => {
+  return {
+    type: ACTION_TYPES.GET_JOB,
+    payload: axios.get(`${analysisAPIUrl}/exists`, {
+      params: {
+        id
       }
-
-      if (entityConditions.length > 0) {
-        payload['constraints'][e] = entityConditions.join(' ');
-      }
-    });
-  });
-  return payload;
-}
+    })
+  };
+};
 
 export const getStatus = id => {
   return {
@@ -190,53 +173,5 @@ export const getMoreResults = (analysis, id, page) => {
         page
       }
     })
-  };
-};
-
-export const analysisRun = (
-  analysis,
-  metapath,
-  joinpath,
-  constraints,
-  folder,
-  selectField,
-  targetId,
-  edgesThreshold,
-  prAlpha,
-  prTol,
-  joinK,
-  joinW,
-  joinMinValues,
-  searchK,
-  searchW,
-  searchMinValues,
-  w,
-  minValues
-) => {
-  const payload = {
-    searchK,
-    joinK,
-    t: 1,
-    minValues: 5,
-    targetId,
-    analysis,
-    metapath,
-    joinpath,
-    folder,
-    selectField,
-    edgesThreshold,
-    prAlpha,
-    prTol,
-    joinW,
-    joinMinValues,
-    searchW,
-    searchMinValues
-  };
-
-  formatConstraints(payload, constraints);
-
-  return {
-    type: ACTION_TYPES.ANALYSIS_SUBMIT,
-    payload: axios.post(`${analysisAPIUrl}/submit`, payload)
   };
 };

@@ -118,13 +118,13 @@ export class Upload extends React.Component<IUploadProps> {
 						<h5>Node attribute files</h5>
 						These files should be placed inside a folder called <code>nodes</code>
 						They are tab-separated files containing all node attributes. 
-						The first line is the header that contains all attribute names with <code>_n</code> and <code>_s</code> suffixes for numeric and alphanumeric attributes respectively. 
-						The first column is an incremental integer identifier starting from 0, denoted as <code>id_n</code> in the header. 
+						The first line is the header that contains all attribute names. 
+						The first column is an incremental integer identifier starting from 0, denoted as <code>id</code> in the header. 
 						Node attribute files should be named with the first letter of the entity they are representing. 
 						For example, the file that contains the attributes for node type <code>Author</code> should be named <code>A.csv</code>. 
 						Below is an example of a file containing node attributes:<br/>				
 						<code>
-						id_n	name_s    surname_s<br/>
+						id	name    surname<br/>
 						0	Makoto  Satoh<br/>
 						1	Ryo Muramatsu<br/>
 						...<br/>

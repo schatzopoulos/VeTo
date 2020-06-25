@@ -34,6 +34,7 @@ import { faPlay } from '@fortawesome/free-solid-svg-icons/faPlay';
 import { faUpload } from '@fortawesome/free-solid-svg-icons/faUpload';
 import { faDownload } from '@fortawesome/free-solid-svg-icons/faDownload';
 import { faQuestionCircle } from '@fortawesome/free-solid-svg-icons/faQuestionCircle';
+import { faCogs } from '@fortawesome/free-solid-svg-icons/faCogs';
 
 import { library } from '@fortawesome/fontawesome-svg-core';
 
@@ -74,6 +75,7 @@ export const loadIcons = () => {
     faAngleDoubleDown,
     faUpload,
     faDownload,
-    faQuestionCircle
+    faQuestionCircle,
+    faCogs
   );
 };

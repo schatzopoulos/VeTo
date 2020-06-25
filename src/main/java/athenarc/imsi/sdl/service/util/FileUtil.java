@@ -10,6 +10,7 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.LineNumberReader;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 
 import org.bson.Document;
 
@@ -24,8 +25,8 @@ public final class FileUtil {
     private FileUtil() {
     }
 
-    public static String createDir(String type, String uuid) {
-        String dirname = Constants.BASE_PATH + "/" + type + "/" + uuid;
+    public static String createDir(String uuid) {
+        String dirname = Constants.BASE_PATH + "/" + uuid;
         File dir = new File(dirname);
         if (!dir.exists()) {
             dir.mkdirs();
@@ -33,60 +34,148 @@ public final class FileUtil {
         return dirname;
     }
 
-    public static String getLogfile(String type, String uuid) {
-        return Constants.BASE_PATH + "/" + type + "/" + uuid + "/log.out";
+    public static Boolean dirExists(String uuid) {
+        String dirname = Constants.BASE_PATH + "/" + uuid;
+        File dir = new File(dirname);
+        return dir.exists();
     }
 
-    public static String getOutputFile(String type, String uuid) {
-        return Constants.BASE_PATH + "/" + type + "/" + uuid + "/" + Constants.FINAL_OUT;
+    public static String getLogfile(String uuid) {
+        return Constants.BASE_PATH + "/" + uuid + "/log.out";
+    }
+    
+    public static String getConfFile(String uuid) {
+        return Constants.BASE_PATH + "/" + uuid + "/" + Constants.CONFIG_FILE;
     }
 
-    public static String getLastLine(String logfile) throws IOException {
+    public static String getOutputFile(String uuid, String analysis) {
+        String resultsFile = Constants.BASE_PATH + "/" + uuid + "/";
+
+        if (analysis.equals("Ranking")) {
+            resultsFile += Constants.FINAL_RANKING_OUT;
+        } else if (analysis.equals("Community Detection")) {
+            resultsFile += Constants.FINAL_COMMUNITY_OUT;
+        } else if (analysis.equals("Similarity Join")) {
+            resultsFile += Constants.FINAL_SIM_JOIN_OUT;
+        } else if (analysis.equals("Similarity Search")) {
+            resultsFile += Constants.FINAL_SIM_SEARCH_OUT;
+        } else if (analysis.equals("Ranking - Community Detection")) {
+            resultsFile += Constants.RANKING_COMMUNITY_OUT;
+        } else if (analysis.equals("Community Detection - Ranking")) {
+            resultsFile += Constants.COMMUNITY_RANKING_OUT;
+        }
+
+        return resultsFile;
+    }
+
+    public static String getCommunityDetailsFile(String uuid) {
+        return Constants.BASE_PATH + "/" + uuid + "/" + Constants.COMMUNITY_DETAILS;
+    }
+
+
+    public static Document parseLogfile(String logfile) throws IOException {
         String lastLine = "";
+        Integer stageNum = 0;
+        String prevAnalysis = "";
         String sCurrentLine;
+        ArrayList<String> completedStages = new ArrayList<>();
 
         BufferedReader br = new BufferedReader(new FileReader(logfile));
 
         while ((sCurrentLine = br.readLine()) != null)  {
+            String [] tokens = sCurrentLine.split("\\t");
             lastLine = sCurrentLine;
+
+            if (tokens.length != 3) // in case of last line with exit code
+                continue;
+
+            if (!tokens[0].equals(prevAnalysis)) {
+                prevAnalysis = tokens[0];
+                stageNum++;
+            }
+
+            // return stages that have been completed
+            if (tokens[2].equals("Completed")) {
+                completedStages.add(tokens[0]);
+            }
         }
 
         br.close();
-        return lastLine;
+        return new Document()
+            .append("lastLine", lastLine)
+            .append("stageNum", stageNum)
+            .append("completedStages", completedStages);
     }
 
-    public static String writeConfig(String analysisType, 
-        String outputDir, String metapath, Document constraints, int k, int t, int w, int minValues, String folder, String selectField, int targetId) throws IOException {
+    public static String writeConfig(
+        ArrayList<String> analyses, 
+        String outputDir, 
+        String metapath,
+        String joinpath, 
+        Document constraints, 
+        int joinK, 
+        int searchK,
+        int t, 
+        int joinW,
+        int searchW, 
+        int minValues, 
+        int targetId,
+        String folder, 
+        String selectField,
+        int edgesThreshold,
+        double prAlpha,
+        double prTol,
+        int joinMinValues,
+        int searchMinValues
+    ) throws IOException {
 
         Document config = new Document();
+        
+        // Input & Output files configuration
         config.put("indir", Constants.DATA_DIR + folder + "/nodes/");
         config.put("irdir", Constants.DATA_DIR + folder + "/relations/");
-        config.put("algorithm", "DynP");
         config.put("hin_out", outputDir + "/" + Constants.HIN_OUT);
-        config.put("analysis_out", outputDir + "/" + Constants.ANALYSIS_OUT);
-        config.put("final_out", outputDir + "/" + Constants.FINAL_OUT);
-        config.put("select_field", selectField);
-        
-        if (analysisType.equals("ranking")) {
-            config.put("pr_alpha", 0.5);
-            config.put("pr_tol", 0.00000000001);
-        } else if (analysisType.equals("simjoin")) {
-            config.put("operation", "join");
-            config.put("k", k);
-            config.put("t", t);
-            config.put("w", w);
-            config.put("min_values", minValues);
-        } else if (analysisType.equals("simsearch")) {
-            config.put("operation", "search");
-            config.put("target_id", targetId);
-            config.put("k", k);
-            config.put("t", t);
-            config.put("w", w);
-            config.put("min_values", minValues);
-        }
+        config.put("join_hin_out", outputDir + "/" + Constants.JOIN_HIN_OUT);
 
+        // config.put("final_out", outputDir + "/" + Constants.FINAL_OUT);
+        config.put("ranking_out", outputDir + "/" + Constants.RANKING_OUT);
+        config.put("communities_out", outputDir + "/" + Constants.COMMUNITY_DETECTION_OUT);
+        config.put("communities_details", outputDir + "/" + Constants.COMMUNITY_DETAILS);
+
+        config.put("sim_search_out", outputDir + "/" + Constants.SIM_SEARCH_OUT);
+        config.put("sim_join_out", outputDir + "/" + Constants.SIM_JOIN_OUT);
+
+        config.put("final_ranking_out", outputDir + "/" + Constants.FINAL_RANKING_OUT);
+        config.put("final_communities_out", outputDir + "/" + Constants.FINAL_COMMUNITY_OUT);
+        config.put("final_sim_search_out", outputDir + "/" + Constants.FINAL_SIM_SEARCH_OUT);
+        config.put("final_sim_join_out", outputDir + "/" + Constants.FINAL_SIM_JOIN_OUT);
+
+        config.put("final_ranking_community_out", outputDir + "/" + Constants.RANKING_COMMUNITY_OUT);
+        config.put("final_community_ranking_out", outputDir + "/" + Constants.COMMUNITY_RANKING_OUT);
+
+        config.put("select_field", selectField);
+
+        // Ranking params 
+        config.put("analyses", analyses);
+        config.put("pr_alpha", prAlpha);
+        config.put("pr_tol", prTol);
+        config.put("edgesThreshold", edgesThreshold);
+
+        // Similarity Search & Join params
+        config.put("target_id", targetId);
+        config.put("joinK", joinK);
+        config.put("searchK", searchK);
+
+        config.put("t", t);
+        config.put("joinW", joinW);
+        config.put("searchW", searchW);
+        config.put("joinMinValues", joinMinValues);
+        config.put("searchMinValues", searchMinValues);
+
+        // Query specific params
         Document query = new Document();
         query.put("metapath", metapath);
+        query.put("joinpath", joinpath);
         query.put("constraints", constraints);
 
         config.put("query", query);
@@ -100,14 +189,21 @@ public final class FileUtil {
 
         return configFile;
     }
-
+    public static String[] getHeaders(String filename) throws FileNotFoundException, IOException {
+        BufferedReader bf = new BufferedReader(new FileReader(filename));
+        String firstLine = bf.readLine();
+        String[] headers =  firstLine.split("\t");
+        bf.close();
+        return headers;
+    }
+    
     public static int countLines(String filename) throws FileNotFoundException, IOException {
         FileReader input = new FileReader(filename);
         LineNumberReader count = new LineNumberReader(input);
         while (count.skip(Long.MAX_VALUE) > 0) { }
         int result = count.getLineNumber();
         count.close();
-        return result;
+        return result-1;    //remove header
     }
 
     public static int totalPages(int totalRecords) {
@@ -140,7 +236,7 @@ public final class FileUtil {
         });
     }
 
-    public static String readSchema(String filename) throws FileNotFoundException, IOException {
+    public static String readJsonFile(String filename) throws FileNotFoundException, IOException {
         File file = new File(filename);
         FileInputStream fis = new FileInputStream(file);
         byte[] data = new byte[(int) file.length()];
