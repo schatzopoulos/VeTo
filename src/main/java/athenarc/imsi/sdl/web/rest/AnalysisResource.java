@@ -112,8 +112,22 @@ public class AnalysisResource {
             response.append("description", description);                
 
             String[] tokens = lastLine.split("\t");
+
             if (tokens[0].equals("Exit Code") && !tokens[1].equals("0")){
-                throw new RuntimeException("Error in analysis task: " + id);
+
+                // set all analyses as completed, in order to stop loading on frontend
+                Document comp = new Document();
+                for (String analysis : analyses) {
+                    completed.append(analysis, true);
+                }
+                response.append("completed", comp);
+                if (tokens[1].equals("100")) {
+                    response.append("description", "Warning: The produced HIN view does not contain any entities; please try again with more loose constrains.");                                
+                } else if (tokens[2].equals("200")) {
+                    response.append("description", "Warning: Due to limited resources the analysis was aborted as a large HIN view was created; please try again with more strict constraints.");
+                } else {
+                    throw new RuntimeException("Error in analysis task: " + id);
+                }
             }
             else if (tokens.length == 3) {
                 response.append("stage", tokens[0])

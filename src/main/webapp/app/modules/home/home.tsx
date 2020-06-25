@@ -137,7 +137,8 @@ export class Home extends React.Component<IHomeProps> {
 		}
 
 		_.forOwn(this.props.status, (completed, analysis) => {
-			if (completed && prevProps.status && ! prevProps.status[analysis]) {
+			if (completed && prevProps.status && ! prevProps.status[analysis]
+			&& !this.props.progressMsg.startsWith("Warning")) {		// in that case the analysis was aborted
 				this.props.getResults(analysis, this.props.uuid);
 			}
 		});
@@ -969,6 +970,14 @@ export class Home extends React.Component<IHomeProps> {
 				<Col md='12'>
 					<Container>
 					<br/>
+					{
+						((this.props.description || '').startsWith("Warning")) &&
+						<Row className="small-red text-center">
+							<Col>
+								{this.props.description}
+							</Col>
+						</Row>
+					}
 					{
 						(this.props.loading) &&
 						<Row className="small-grey text-center">

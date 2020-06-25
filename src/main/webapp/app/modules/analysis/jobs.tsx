@@ -70,9 +70,9 @@ export class Jobs extends React.Component<IHomeProps> {
 		} else if (prevProps.loading && !this.props.loading) {
 			clearInterval(this.polling);
 		}
-console.warn(prevProps);
+
 		_.forOwn(this.props.status, (completed, analysis) => {
-			if (completed && ( (prevProps.status && ! prevProps.status[analysis]) || (!prevProps.status) )) {
+			if ((completed && ( (prevProps.status && ! prevProps.status[analysis]) || (!prevProps.status) )) && !this.props.progressMsg.startsWith("Warning")){
 				this.props.getResults(analysis, this.props.uuid);
 			}
 		});
@@ -134,6 +134,14 @@ console.warn(prevProps);
 							</Col>
 						}
 					<br/>
+					{
+						((this.props.description || '').startsWith("Warning")) &&
+						<Row className="small-red text-center">
+							<Col>
+								{this.props.description}
+							</Col>
+						</Row>
+					}
 					{
 						(this.props.loading) &&
 						<Row className="small-grey text-center">
