@@ -3,20 +3,20 @@ import './home.scss';
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
-import { 
-	Row, 
-	Col, 
-	InputGroup, 
-	InputGroupAddon, 
-	Input, 
-	Button, 
+import {
+	Row,
+	Col,
+	InputGroup,
+	InputGroupAddon,
+	Input,
+	Button,
 	Spinner,
 	ListGroup,
 	Progress,
 	Container,
-	Card, 
+	Card,
 	UncontrolledCollapse,
-	CustomInput, 
+	CustomInput,
 	CardBody,
 	Label,
 	CardTitle,
@@ -25,11 +25,11 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { IRootState } from 'app/shared/reducers';
 import CytoscapeComponent from 'react-cytoscapejs';
 import  _  from 'lodash';
-import { 
+import {
 	analysisRun,
 	getStatus,
-	getResults, 
-	getMoreResults 
+	getResults,
+	getMoreResults
 } from '../analysis/analysis.reducer';
 import { getDatasetSchemas } from '../datasets/datasets.reducer';
 import ResultsPanel from '../analysis/results/results';
@@ -49,13 +49,13 @@ export interface IHomeProps extends StateProps, DispatchProps {
 };
 
 export class Home extends React.Component<IHomeProps> {
-	readonly state: any = { 
+	readonly state: any = {
 		metapath: [],
 		metapathStr: '',
 		neighbors: undefined,
 		constraints: {},
 		analysis: ["Ranking"],
-		dataset: "DBLP-Ext",
+		dataset: null,
 		selectField: '',
 		targetEntity: '',
 		configurationActive: false,
@@ -72,7 +72,7 @@ export class Home extends React.Component<IHomeProps> {
 	};
 	cy: any;
 	polling: any;
-	
+
 	validMove(node) {
 		// allow first move to be anywhere
 		if (!this.state.neighbors) {
@@ -100,12 +100,12 @@ export class Home extends React.Component<IHomeProps> {
 		node.animate({
 			style: { 'background-color': 'green' },
 		});
-		
+
 		const neighbors = node.neighborhood();
 
 		nodes.not(neighbors).animate({
 			style: { 'border-width': '0px' }
-		}); 
+		});
 
 		nodes.not(node).animate({
 			style: { 'border-width': '0px', 'background-color': 'grey' }
@@ -113,7 +113,7 @@ export class Home extends React.Component<IHomeProps> {
 
 		neighbors.animate({
 			style: { 'border-color': 'red', 'border-width': '2px' },
-			
+
 		});
 
 		this.setState({
@@ -156,14 +156,14 @@ export class Home extends React.Component<IHomeProps> {
 	componentDidMount() {
 		if (!this.props.schemas) {
 			this.props.getDatasetSchemas();
-		}		
-		
-		if (this.cy) { 
+		}
+
+		if (this.cy) {
 			this.initCy();
 		}
 	}
 	tapNode(e) {
-			
+
 		const node = e.target;
 
 		if (!this.validMove(node)) {
@@ -176,7 +176,7 @@ export class Home extends React.Component<IHomeProps> {
 		metapath.push(node);
 		const metapathStr = metapath.map(n => n.data('label').substr(0,1)).join('');
 
-		// set constraints 
+		// set constraints
 		const constraints = {...this.state.constraints};
 		// const attrs = node.data('attributes').filter(n => (n.name !== 'id'));
 		_.forOwn(node.data('attributes'), (value) => {
@@ -185,9 +185,9 @@ export class Home extends React.Component<IHomeProps> {
 
 			// create constraints for node, if not already present
 			if ( !(entity in constraints) || !(field in constraints[entity])) {
-				this.checkAndCreateConstraints(constraints, { 
-					entity, 
-					field, 
+				this.checkAndCreateConstraints(constraints, {
+					entity,
+					field,
 				}, value.type);
 			}
 		});
@@ -205,22 +205,22 @@ export class Home extends React.Component<IHomeProps> {
 		this.setState(newState, () => {
 			this.animateNeighbors(node);
 		});
-		
+
 	}
 	initCy() {
-		// center align graph 
+		// center align graph
 		this.cy.center();
 
 		// init all nodes with grey color
 		const nodes = this.cy.filter('node');
 		nodes.animate({
 			style: { 'background-color': 'grey', 'border-width': '0px' }
-		}); 
+		});
 
 		// change state and animate on node click
 		this.cy.on('tap', 'node', (e) => this.tapNode(e) );
 	}
-	
+
 	/**
 	 * Delete last character of the metapath
 	 */
@@ -240,9 +240,9 @@ export class Home extends React.Component<IHomeProps> {
 				constraints[entity] = entityConstraint;
 			}
 		});
-		
+
 		const newState = { ... this.state };
-		newState.metapath = metapath; 
+		newState.metapath = metapath;
 		newState.metapathStr = metapathStr;
 		newState.constraints = constraints;
 
@@ -253,7 +253,7 @@ export class Home extends React.Component<IHomeProps> {
 
 		this.setState(newState, () => {
 			this.animateNeighbors(node);
-		});	
+		});
 	}
 
 	checkAndCreateConstraints(constraints, { entity, field }, type=null) {
@@ -269,8 +269,8 @@ export class Home extends React.Component<IHomeProps> {
 				type,
 				conditions: [],
 			};
-		} 
-		
+		}
+
 		const index = constraints[entity][field]['nextIndex'];
 		constraints[entity][field]['nextIndex'] += 1;
 
@@ -281,7 +281,7 @@ export class Home extends React.Component<IHomeProps> {
 				value: null,
 				operation: '=',
 				logicOp: (index > 0) ? 'or' : undefined,
-			});		
+			});
 		}
 	}
 
@@ -293,7 +293,7 @@ export class Home extends React.Component<IHomeProps> {
 		}
 
 		this.setState({
-			constraints 
+			constraints
 		});
 	}
 
@@ -324,12 +324,12 @@ export class Home extends React.Component<IHomeProps> {
 		}
 
 		this.setState({
-			constraints 
+			constraints
 		});
 	}
 
 	handleConstraintInputChange({ entity, field, index }, value) {
-		
+
 		const constraints = {...this.state.constraints};
 
 		const found = constraints[entity][field]['conditions'].find(c => c.index === index);
@@ -338,7 +338,7 @@ export class Home extends React.Component<IHomeProps> {
 		}
 
 		this.setState({
-			constraints 
+			constraints
 		});
 	}
 
@@ -361,14 +361,14 @@ export class Home extends React.Component<IHomeProps> {
 	}
 
 	execute(e, rerunAnalysis) {
-		
+
 		const analysisType = (rerunAnalysis) ? rerunAnalysis : this.state.analysis;
 
 		this.props.analysisRun(
 			analysisType,
 			this.state.metapathStr,
 			this.getJoinPath(),
-			this.state.constraints, 
+			this.state.constraints,
 			this.props.schemas[this.state.dataset]['folder'],
 			this.state.selectField,
 			this.state.targetEntity,
@@ -417,7 +417,7 @@ export class Home extends React.Component<IHomeProps> {
 		}
 
 		this.setState(newState, () => {
-			this.changeSchema(); 
+			this.changeSchema();
 			this.execute(e, null);
 		});
 	}
@@ -431,7 +431,7 @@ export class Home extends React.Component<IHomeProps> {
 			targetEntity: '',
 		});
 	}
-	
+
 	onCheckboxBtnClick (selected)  {
 		const newState = { ...this.state };
 
@@ -447,11 +447,11 @@ export class Home extends React.Component<IHomeProps> {
 	handleConstraintSwitch({ entity, field }) {
 		// create object for entity, if not present
 		const constraints = {...this.state.constraints};
-		
+
 		constraints[entity][field]['enabled'] = !constraints[entity][field]['enabled'];
 
 		this.setState({
-			constraints 
+			constraints
 		});
 	}
 	toggleConfiguration() {
@@ -466,7 +466,7 @@ export class Home extends React.Component<IHomeProps> {
 		return (metapath.length >= 3);
 	}
 	getJoinPath() {
-		const metapath = this.state.metapathStr.slice(0);	
+		const metapath = this.state.metapathStr.slice(0);
 		const midPos = Math.floor(metapath.length / 2) + 1;
 		return metapath.substr(0, midPos);
 	}
@@ -477,12 +477,12 @@ export class Home extends React.Component<IHomeProps> {
 		return joinArray;
 	}
 	checkSymmetricMetapath() {
-		
+
 		let metapath = this.state.metapathStr.slice(0);
 
 		if (metapath.length < 3)
 			return false;
-		
+
 		const midPos = Math.floor(metapath.length / 2);
 
 		// if metapath length is even, remove mid character
@@ -505,7 +505,7 @@ export class Home extends React.Component<IHomeProps> {
 		_.forOwn(this.state.constraints, (entityConstraint, entity) => {
 			const e = entity.substr(0, 1);
 			let entityConditions = [];
-		
+
 			_.forOwn(entityConstraint, ({ enabled, type, conditions }, field) => {
 				if (enabled) {
 					entityConditions = conditions
@@ -520,31 +520,43 @@ export class Home extends React.Component<IHomeProps> {
 						return `${element.logicOp || ''} ${field} ${element.operation} ${value}`;
 					});
 				}
-			
+
 				if (entityConditions.length > 0) {
 					constraints[e] = entityConditions.join(' ');
 				}
 			});
 		});
-		
+
 		return !_.isEmpty(constraints);
 	}
 
 	getSchema() {
-		const style = { 
-			width: '100%', 
+		const style = {
+			width: '100%',
 			height: '200px',
 		};
 
-		const layout = { 
+		const layout = {
 			name: 'cose',
 			animate: false,
 		};
 
 		let elements;
-		if (this.props.schemas) { 
-			elements = this.props.schemas[this.state.dataset]['elements'];
-		}
+		let datasetToUse = null;
+		// let dataset = {};
+		if (this.props.schemas) {
+		  if (this.state.dataset === null) {
+        datasetToUse = Object.keys(this.props.schemas)[0];
+        // dataset = {
+        //   dataset: datasetToUse
+        // };
+      } else {
+		    datasetToUse = this.state.dataset;
+      }
+			elements = this.props.schemas[datasetToUse]['elements'];
+		} else {
+		  elements = null;
+    }
 
 		let schema;
 		if (elements) {
@@ -559,9 +571,9 @@ export class Home extends React.Component<IHomeProps> {
 
 		const elements = this.props.schemas[this.state.dataset]['elements'];
 
-		this.cy.elements().remove(); 
+		this.cy.elements().remove();
 		this.cy.add(elements)
-		const newLayout = this.cy.layout({ 
+		const newLayout = this.cy.layout({
 			name: 'cose',
 			animate: false,
 		});
@@ -587,7 +599,7 @@ export class Home extends React.Component<IHomeProps> {
 		newState.selectField = '';
 		newState.dataset = e.target.value;
 
-		this.setState(newState, () => {	
+		this.setState(newState, () => {
 			this.changeSchema();
 			this.resetSchemaColors();
 		});
@@ -638,10 +650,20 @@ export class Home extends React.Component<IHomeProps> {
 		const validAnalysisType = this.state.analysis.length !== 0;
 		const validTargetEntity = ( !this.state.analysis.includes('Similarity Search') || (this.state.analysis.includes('Similarity Search') && this.state.targetEntity !== ''));
 		const { selectedEntity, selectFieldOptions }: any = this.getSelectFieldOptions();
-		
+
 		let datasetFolder = '';
-		if (this.props.schemas) {
-			datasetFolder = this.props.schemas[this.state.dataset]['folder'];
+		let datasetToUse;
+    if (this.props.schemas) {
+      if (this.state.dataset === null) {
+        datasetToUse = Object.keys(this.props.schemas)[0];
+        // dataset = {
+        //   dataset: datasetToUse
+        // };
+      } else {
+        datasetToUse = this.state.dataset;
+      }
+		// if (this.props.schemas) {
+			datasetFolder = this.props.schemas[datasetToUse]['folder'];
 		}
 
 		const constraintsPanel = <Row>
@@ -654,7 +676,7 @@ export class Home extends React.Component<IHomeProps> {
 					{
 						(this.state.metapathStr.length > 0) ?
 						_.map(this.state.constraints, (entityConstraints, entity) => {
-							return <ConstraintItem 
+							return <ConstraintItem
 								key={ entity }
 								datasetFolder= { datasetFolder }
 								entity={ entity }
@@ -691,7 +713,7 @@ export class Home extends React.Component<IHomeProps> {
 		</span>;
 		const simSearchLabel = <span>
 			Similarity Search <FontAwesomeIcon style={{ color: '#17a2b8' }} icon="question-circle" title="Similarity Search is perfomed using JoinSim similarity measure."/>
-			
+
 		</span>;
 
 		return (
@@ -702,9 +724,9 @@ export class Home extends React.Component<IHomeProps> {
 						<Col md="12">
 							<Row>
 								<Col md='8'>
-									<h4>Select dataset</h4>		
+									<h4>Select dataset</h4>
 								</Col>
-								<Col md='4'>	
+								<Col md='4'>
 									<Button outline color="info" tag={Link} to="/upload" className="float-right" size='sm'>
 										<FontAwesomeIcon icon="upload" /> Upload new
 									</Button>
@@ -718,7 +740,7 @@ export class Home extends React.Component<IHomeProps> {
 					<br/>
 
 					<h4>Select metapath</h4>
-					<Card className="mx-auto">		
+					<Card className="mx-auto">
 						{ schema }
 					</Card>
 
@@ -735,7 +757,7 @@ export class Home extends React.Component<IHomeProps> {
 							{
 								((!validMetapathLength || !validMetapath) && this.state.metapathStr.length !== 0) &&
 									<span className="attribute-type text-danger">Please insert a valid symmetric metapath { (this.state.dataset === 'DBLP' || this.state.dataset === 'Bio') && "e.g."} { this.state.dataset === 'DBLP' && "APA" }{ this.state.dataset === 'Bio' && "MGDGM" }</span>
-							}		
+							}
 						</Col>
 						{
 							(selectedEntity) &&
@@ -749,9 +771,9 @@ export class Home extends React.Component<IHomeProps> {
 					</Row>
 				</Col>
 				<Col md="6">
-					
+
 					{
-						constraintsPanel		
+						constraintsPanel
 					}
 
 					<br/>
@@ -761,7 +783,7 @@ export class Home extends React.Component<IHomeProps> {
 								<Col md='8'>
 									<h4>Select analysis type</h4>
 								</Col>
-								<Col md='4'>	
+								<Col md='4'>
 									<Button outline size='sm' color="info" id="toggler" title="Advanced Options" className="float-right" active={this.state.configurationActive} onClick={this.toggleConfiguration.bind(this)}>
 										<FontAwesomeIcon icon="cogs" /> Configuration
 									</Button>
@@ -785,10 +807,10 @@ export class Home extends React.Component<IHomeProps> {
 							{
 							(this.state.analysis.includes("Similarity Search")) &&
 								<span>
-									<AutocompleteInput 
+									<AutocompleteInput
 										id="targetEntityInput"
 										placeholder={ _.isEmpty(this.state.metapath) ? "First, select a metapath" : `Search for ${selectedEntity} entities`}
-										onChange={this.handleTargetEntity.bind(this)}								
+										onChange={this.handleTargetEntity.bind(this)}
 										entity={selectedEntity}
 										field={this.state.selectField}
 										folder={datasetFolder}
@@ -797,13 +819,13 @@ export class Home extends React.Component<IHomeProps> {
 									/>
 
 									{
-										(this.state.targetEntity === '') && 
+										(this.state.targetEntity === '') &&
 										<span className="attribute-type text-danger">
 											This field cannot be empty when Similarity Search is enabled.
 										</span>
 									}
 								</span>
-								
+
 							}
 						</Row>
 						<Row>
@@ -815,7 +837,7 @@ export class Home extends React.Component<IHomeProps> {
 									Please select at least one type of analysis.
 								</span>
 						}
-						
+
 					</Col>
 				</Col>
 				<Col md='12'>
@@ -990,7 +1012,7 @@ export class Home extends React.Component<IHomeProps> {
 					{
 						(this.props.loading) && <Progress animated color="info" value={this.props.progress}>{this.props.progressMsg}</Progress>
 					}
-					<ResultsPanel 
+					<ResultsPanel
 						uuid={this.props.uuid}
 						results={this.props.results}
 						analysis={this.props.analysis}
@@ -1006,7 +1028,7 @@ export class Home extends React.Component<IHomeProps> {
 	}
 };
 
-const mapStateToProps = (storeState: IRootState) => ({  
+const mapStateToProps = (storeState: IRootState) => ({
 	loading: storeState.analysis.loading,
 	status: storeState.analysis.status,
 	progress: storeState.analysis.progress,
@@ -1014,12 +1036,12 @@ const mapStateToProps = (storeState: IRootState) => ({
 	description: storeState.analysis.description,
 	error: storeState.analysis.error,
 	results: storeState.analysis.results,
-	uuid: storeState.analysis.uuid,  
+	uuid: storeState.analysis.uuid,
 	analysis: storeState.analysis.analysis,
 	schemas: storeState.datasets.schemas,
 });
 
-const mapDispatchToProps = { 
+const mapDispatchToProps = {
 	analysisRun,
 	// simjoinRun,
 	// simsearchRun,
