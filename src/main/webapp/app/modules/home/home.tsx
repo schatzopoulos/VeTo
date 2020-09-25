@@ -363,13 +363,19 @@ export class Home extends React.Component<IHomeProps> {
 	execute(e, rerunAnalysis) {
 
 		const analysisType = (rerunAnalysis) ? rerunAnalysis : this.state.analysis;
+		let datasetToUse;
+		if (this.state.dataset === null) {
+		  datasetToUse=Object.keys(this.props.schemas)[0];
+    } else {
+		  datasetToUse = this.state.dataset;
+    }
 
 		this.props.analysisRun(
 			analysisType,
 			this.state.metapathStr,
 			this.getJoinPath(),
 			this.state.constraints,
-			this.props.schemas[this.state.dataset]['folder'],
+			this.props.schemas[datasetToUse]['folder'],
 			this.state.selectField,
 			this.state.targetEntity,
 			this.state.edgesThreshold,
