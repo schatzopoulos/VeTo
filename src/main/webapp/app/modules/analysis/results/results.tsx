@@ -1,5 +1,5 @@
 import React from 'react';
-import { 
+import {
 	Row,
 	Col,
 	Table,
@@ -16,6 +16,7 @@ import  _  from 'lodash';
 
 export interface IResultsPanelProps {
     uuid: any,
+    description: string,
     results: any,
     analysis: string,
     analysisId: string,
@@ -24,7 +25,7 @@ export interface IResultsPanelProps {
 }
 
 export class ResultsPanel extends React.Component<IResultsPanelProps> {
-	readonly state: any = { 
+	readonly state: any = {
         activeAnalysis: "",
     };
 
@@ -73,10 +74,10 @@ export class ResultsPanel extends React.Component<IResultsPanelProps> {
 
             const result = this.props.results[this.state.activeAnalysis];
 
-            resultPanel = (this.state.activeAnalysis) ? <RankingResultsPanel 
-                docs={result.docs} 
+            resultPanel = (this.state.activeAnalysis) ? <RankingResultsPanel
+                docs={result.docs}
                 headers={result.meta.headers}
-                hasMore={result.meta.links.hasNext} 
+                hasMore={result.meta.links.hasNext}
                 communityCounts={result.meta.community_counts}
                 loadMore={this.props.loadMore.bind(this, this.state.activeAnalysis, result.meta.page+1)}
             /> : '';
@@ -84,8 +85,8 @@ export class ResultsPanel extends React.Component<IResultsPanelProps> {
             const totalCommunities = (_.get(result, "meta.community_counts")) ? <span>/ {result.meta.community_counts['total']} communities found in total</span> : '';
             return (<div>
                 <h2>Results</h2>
-
-                <Nav tabs>  
+                <p>{this.props.description}</p>
+                <Nav tabs>
                 {
                     _.map(this.props.results, ({docs, meta}, analysis) => {
                         return <NavItem key={analysis}>
@@ -98,16 +99,16 @@ export class ResultsPanel extends React.Component<IResultsPanelProps> {
                     </NavItem>
                     })
                 }
-                    
+
                 </Nav>
                 <TabContent activeTab={this.state.activeAnalysis}>
                     {
                         _.map(this.props.results, ({docs, meta}, analysis) => {
-                            
+
                             return <TabPane tabId={analysis} key={analysis}>
                             {
                                     (docs.length === 0) ?
-                                        <div key={analysis} style={{ textAlign: "center" }}>No results found for the specified query!<br/> 
+                                        <div key={analysis} style={{ textAlign: "center" }}>No results found for the specified query!<br/>
                                         {/* {
                                             (this.props.analysis === 'simjoin' || this.props.analysis === 'simsearch') &&
                                             <span>
@@ -137,9 +138,9 @@ export class ResultsPanel extends React.Component<IResultsPanelProps> {
                     }
                 </TabContent>
             </div>);
-        } 
+        }
         return '';
-		
+
 	}
 };
 

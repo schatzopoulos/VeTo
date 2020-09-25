@@ -1,30 +1,30 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
-import { 
-	Row, 
-	Col, 
-	FormGroup, 
-	Form, 
-	Input, 
-	Button, 
+import {
+	Row,
+	Col,
+	FormGroup,
+	Form,
+	Input,
+	Button,
 	Spinner,
 	ListGroup,
 	Progress,
 	Container,
-	Card, 
+	Card,
 	CardBody,
-	CustomInput, 
-	
+	CustomInput,
+
 } from 'reactstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { IRootState } from 'app/shared/reducers';
 import  _  from 'lodash';
-import { 
+import {
 	getJob,
 	getStatus,
-	getResults, 
-	getMoreResults 
+	getResults,
+	getMoreResults
 } from './jobs.reducer';
 import ResultsPanel from './results/results';
 import { __metadata } from 'tslib';
@@ -41,11 +41,11 @@ export interface IHomeProps extends StateProps, DispatchProps {
 };
 
 export class Jobs extends React.Component<IHomeProps> {
-	readonly state: any = { 
+	readonly state: any = {
 		jobId: '',
 	};
 	polling: any;
-	
+
 	pollForResults() {
 		this.polling = setInterval( () => {
 			this.props.getStatus(this.props.uuid);
@@ -86,7 +86,7 @@ export class Jobs extends React.Component<IHomeProps> {
 		e.preventDefault();
 		this.props.getJob(this.state.jobId);
 	}
-	
+
 	loadMoreResults(analysis, nextPage) {
 		this.props.getMoreResults(analysis, this.props.uuid, nextPage);
 	}
@@ -97,6 +97,31 @@ export class Jobs extends React.Component<IHomeProps> {
 			jobId
 		});
 	}
+
+  getDescriptionString() {
+    if (this.props.analysesParameters) {
+      const metapath = this.props.analysesParameters.metapath;
+      const analyses = this.props.analysesParameters.analyses.join(", ");
+      const constraints = this.props.analysesParameters.constraints.join(", ");
+
+      let statusString = "";
+      switch (this.props.analysesParameters.status) {
+        case "PENDING":
+          statusString = "Executing";
+          break;
+        case "COMPLETE":
+          statusString = "Completed";
+          break;
+        default:
+          statusString = "Unknown state when";
+      }
+
+      return `${statusString} ${analyses} for metapath ${metapath} and constraint(s) ${constraints}.`;
+    }
+    else {
+      return "";
+    }
+  }
 
 	render() {
 
@@ -118,11 +143,11 @@ export class Jobs extends React.Component<IHomeProps> {
 									</Button>
 								</Col>
 									&nbsp;
-									
+
 							</Row>
 						</Col>
 					</Row>
-					
+
 				</Col>
 
 				<Col md='12'>
@@ -146,15 +171,16 @@ export class Jobs extends React.Component<IHomeProps> {
 						(this.props.loading) &&
 						<Row className="small-grey text-center">
 							<Col>
-								{this.props.description}
+								{this.getDescriptionString()}
 							</Col>
 						</Row>
 					}
 					{
 						(this.props.loading) && <Progress animated color="info" value={this.props.progress}>{this.props.progressMsg}</Progress>
 					}
-					<ResultsPanel 
+					<ResultsPanel
 						uuid={this.props.uuid}
+            description={this.getDescriptionString()}
 						results={this.props.results}
 						analysis={this.props.analysis}
 						analysisId={this.props.uuid}
@@ -169,19 +195,20 @@ export class Jobs extends React.Component<IHomeProps> {
 	}
 };
 
-const mapStateToProps = (storeState: IRootState) => ({  
+const mapStateToProps = (storeState: IRootState) => ({
 	loading: storeState.jobs.loading,
 	progress: storeState.jobs.progress,
 	progressMsg: storeState.jobs.progressMsg,
 	description: storeState.jobs.description,
+  analysesParameters: storeState.jobs.analysesParameters,
 	error: storeState.jobs.error,
 	results: storeState.jobs.results,
 	status: storeState.jobs.status,
-	uuid: storeState.jobs.uuid,  
+	uuid: storeState.jobs.uuid,
 	analysis: storeState.jobs.analysis,
 });
 
-const mapDispatchToProps = { 
+const mapDispatchToProps = {
 	getJob,
 	getStatus,
 	getResults,

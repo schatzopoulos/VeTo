@@ -30,13 +30,13 @@ import athenarc.imsi.sdl.web.rest.vm.QueryConfigVM;
 public class AnalysisResource {
 
     private final Logger log = LoggerFactory.getLogger(AnalysisResource.class);
-    
+
     @Autowired
     private final AnalysisService analysisService = new AnalysisService();
-    
+
     /**
-    * POST submit
-    */
+     * POST submit
+     */
     @PostMapping("/submit")
     public Document submit(@Valid @RequestBody QueryConfigVM config) {
         String id = UUID.randomUUID().toString();
@@ -53,31 +53,31 @@ public class AnalysisResource {
 
             // run async method from service
             analysisService.submit(
-                id, 
-                config.getAnalysis(), 
-                config.getMetapath(), 
+                id,
+                config.getAnalysis(),
+                config.getMetapath(),
                 config.getJoinpath(),
-                config.getConstraints(), 
+                config.getConstraints(),
                 config.getJoinK(),
                 config.getSearchK(),
-                config.getT(), 
+                config.getT(),
                 config.getJoinW(),
                 config.getSearchW(),
                 config.getMinValues(),
                 config.getTargetId(),
-                config.getFolder(), 
+                config.getFolder(),
                 config.getSelectField(),
                 config.getEdgesThreshold(),
                 config.getPrAlpha(),
                 config.getPrTol(),
                 config.getJoinMinValues(),
                 config.getSearchMinValues()
-            );        
+            );
 
         } catch (java.io.IOException | InterruptedException e) {
             throw new RuntimeException("Error running ranking task: " + id);
         }
-		return new Document("id", id).append("analysis", config.getAnalysis());
+        return new Document("id", id).append("analysis", config.getAnalysis());
     }
 
     @GetMapping("/status")
@@ -91,15 +91,15 @@ public class AnalysisResource {
             // parse config file
             String conf = FileUtil.readJsonFile(FileUtil.getConfFile(id));
             Document config = Document.parse(conf);
-            ArrayList<String> analyses = (ArrayList<String>)config.get("analyses");
-            
+            ArrayList<String> analyses = (ArrayList<String>) config.get("analyses");
+
             // parse log file
             String logfile = FileUtil.getLogfile(id);
             Document logInfo = FileUtil.parseLogfile(logfile);
             String lastLine = (String) logInfo.get("lastLine");
 
             ArrayList<String> completedStages = (ArrayList<String>) logInfo.get("completedStages");
-            
+
             // determine analyses that have been completed
             Document completed = new Document();
             for (String analysis : analyses) {
@@ -109,11 +109,22 @@ public class AnalysisResource {
 
             // form description of analysis
             String description = RandomUtil.getAnalysisDescription(config);
-            response.append("description", description);                
+            response.append("description", description);
+
+            Document analysesParameters = null;
+            analysesParameters = FileUtil.getAnalysesParameters(config);
 
             String[] tokens = lastLine.split("\t");
 
-            if (tokens[0].equals("Exit Code") && !tokens[1].equals("0")){
+            if (tokens[0].equals("Exit Code") && tokens[1].equals("0")) {
+                analysesParameters.append("status", "COMPLETE");
+            } else {
+                analysesParameters.append("status", "PENDING");
+            }
+            log.debug(analysesParameters.toString());
+            response.append("analysesParameters", analysesParameters);
+
+            if (tokens[0].equals("Exit Code") && !tokens[1].equals("0")) {
 
                 // set all analyses as completed, in order to stop loading on frontend
                 Document comp = new Document();
@@ -122,23 +133,22 @@ public class AnalysisResource {
                 }
                 response.append("completed", comp);
                 if (tokens[1].equals("100")) {
-                    response.append("description", "Warning: The produced HIN view does not contain any entities; please try again with more loose constrains.");                                
+                    response.append("description", "Warning: The produced HIN view does not contain any entities; please try again with more loose constrains.");
                 } else if (tokens[1].equals("200")) {
                     response.append("description", "Warning: Due to limited resources the analysis was aborted as a large HIN view was created; please try again with more strict constraints.");
                 } else {
                     throw new RuntimeException("Error in analysis task: " + id);
                 }
-            }
-            else if (tokens.length == 3) {
+            } else if (tokens.length == 3) {
                 response.append("stage", tokens[0])
-                .append("step", tokens[2])
-                .append("progress", analysisService.getProgress(analyses, (Integer)logInfo.get("stageNum"), Integer.parseInt(tokens[1])));
-            
-            // in case logfile is still empty
+                    .append("step", tokens[2])
+                    .append("progress", analysisService.getProgress(analyses, (Integer) logInfo.get("stageNum"), Integer.parseInt(tokens[1])));
+
+                // in case logfile is still empty
             } else {
                 response.append("stage", "HIN Transformation")
-                .append("step", "Initializing")
-                .append("progress", 0);
+                    .append("step", "Initializing")
+                    .append("progress", 0);
             }
 
         } catch (IOException e) {
@@ -147,11 +157,12 @@ public class AnalysisResource {
         return response;
 
     }
+
     /**
-    * GET status
-    */
+     * GET status
+     */
     @GetMapping("/get")
-    public Document get(String id,  String analysis, Integer page) {
+    public Document get(String id, String analysis, Integer page) {
         log.debug("analysis/get : {}", id, page);
 
         String logfile = FileUtil.getLogfile(id);
@@ -170,9 +181,9 @@ public class AnalysisResource {
                     throw new RuntimeException("Error in analysis task: " + id);
                 }
             }
-                
+
             String resultsFile = FileUtil.getOutputFile(id, analysis);
-                
+
             try {
                 Document meta = new Document();
                 List<Document> docs = analysisService.getResults(resultsFile, page, meta);
@@ -190,16 +201,16 @@ public class AnalysisResource {
             } catch (IOException e) {
                 throw new RuntimeException("Error results from file");
             }
-           
+
             return response;
         } catch (IOException e) {
             throw new RuntimeException("Error reading status from logfile");
         }
     }
 
-     /**
-    * GET analysis exists
-    */
+    /**
+     * GET analysis exists
+     */
     @GetMapping("/exists")
     public Document exists(String id) {
         log.debug("analysis/exists : {}", id);
@@ -209,7 +220,7 @@ public class AnalysisResource {
             // parse config file
             String conf = FileUtil.readJsonFile(FileUtil.getConfFile(id));
             Document config = Document.parse(conf);
-            ArrayList<String> analyses = (ArrayList<String>)config.get("analyses");
+            ArrayList<String> analyses = (ArrayList<String>) config.get("analyses");
             return new Document().append("id", id).append("exists", exists).append("analysis", analyses);
 
         } catch (IOException e) {

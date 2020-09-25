@@ -646,6 +646,32 @@ export class Home extends React.Component<IHomeProps> {
 		newState[e.target.id] = e.target.value;
 		this.setState(newState);
 	}
+
+	getDescriptionString() {
+	  if (this.props.analysesParameters) {
+	    const metapath = this.props.analysesParameters.metapath;
+	    const analyses = this.props.analysesParameters.analyses.join(", ");
+	    const constraints = this.props.analysesParameters.constraints.join(", ");
+
+	    let statusString = "";
+	    switch (this.props.analysesParameters.status) {
+        case "PENDING":
+          statusString = "Executing";
+          break;
+        case "COMPLETE":
+          statusString = "Completed";
+          break;
+        default:
+          statusString = "Unknown state when";
+      }
+
+      return `${statusString} ${analyses} for metapath ${metapath} and constraint(s) ${constraints}.`;
+    }
+	  else {
+	    return "";
+    }
+  }
+
 	render() {
 
 		const datasetOptions = this.getDatasetOptions();
@@ -1011,7 +1037,7 @@ export class Home extends React.Component<IHomeProps> {
 						<Row className="small-grey text-center">
 							<Col>
 							The analysis may take some time, you can check its progress in the following <Link to={`/jobs/${this.props.uuid}`} target="_blank">link</Link> (job id = {this.props.uuid}).<br/>
-							{this.props.description}
+							{this.getDescriptionString()}
 							</Col>
 						</Row>
 					}
@@ -1020,6 +1046,7 @@ export class Home extends React.Component<IHomeProps> {
 					}
 					<ResultsPanel
 						uuid={this.props.uuid}
+            description={this.getDescriptionString()}
 						results={this.props.results}
 						analysis={this.props.analysis}
 						analysisId={this.props.uuid}
@@ -1040,6 +1067,7 @@ const mapStateToProps = (storeState: IRootState) => ({
 	progress: storeState.analysis.progress,
 	progressMsg: storeState.analysis.progressMsg,
 	description: storeState.analysis.description,
+  analysesParameters: storeState.analysis.analysesParameters,
 	error: storeState.analysis.error,
 	results: storeState.analysis.results,
 	uuid: storeState.analysis.uuid,

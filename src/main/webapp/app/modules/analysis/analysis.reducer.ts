@@ -18,6 +18,7 @@ const initialState = {
   progress: 0 as number,
   progressMsg: null as string,
   description: null as string,
+  analysesParameters: null as any,
   error: null as string,
   uuid: null as string,
   analysis: null as string,
@@ -81,6 +82,7 @@ export default (state: AnalysisState = initialState, action): AnalysisState => {
         status: data.completed,
         progress: data.progress,
         progressMsg: `${data.stage}: ${data.step}`,
+        analysesParameters: data.analysesParameters,
         description: data.description,
         error: null
       };

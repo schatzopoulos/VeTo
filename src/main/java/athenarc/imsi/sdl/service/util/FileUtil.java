@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.LineNumberReader;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Map;
 
 import org.bson.Document;
 
@@ -43,7 +44,7 @@ public final class FileUtil {
     public static String getLogfile(String uuid) {
         return Constants.BASE_PATH + "/" + uuid + "/log.out";
     }
-    
+
     public static String getConfFile(String uuid) {
         return Constants.BASE_PATH + "/" + uuid + "/" + Constants.CONFIG_FILE;
     }
@@ -108,19 +109,19 @@ public final class FileUtil {
     }
 
     public static String writeConfig(
-        ArrayList<String> analyses, 
-        String outputDir, 
+        ArrayList<String> analyses,
+        String outputDir,
         String metapath,
-        String joinpath, 
-        Document constraints, 
-        int joinK, 
+        String joinpath,
+        Document constraints,
+        int joinK,
         int searchK,
-        int t, 
+        int t,
         int joinW,
-        int searchW, 
-        int minValues, 
+        int searchW,
+        int minValues,
         int targetId,
-        String folder, 
+        String folder,
         String selectField,
         int edgesThreshold,
         double prAlpha,
@@ -130,7 +131,7 @@ public final class FileUtil {
     ) throws IOException {
 
         Document config = new Document();
-        
+
         // Input & Output files configuration
         config.put("indir", Constants.DATA_DIR + folder + "/nodes/");
         config.put("irdir", Constants.DATA_DIR + folder + "/relations/");
@@ -155,7 +156,7 @@ public final class FileUtil {
 
         config.put("select_field", selectField);
 
-        // Ranking params 
+        // Ranking params
         config.put("analyses", analyses);
         config.put("pr_alpha", prAlpha);
         config.put("pr_tol", prTol);
@@ -179,7 +180,7 @@ public final class FileUtil {
         query.put("constraints", constraints);
 
         config.put("query", query);
-        
+
         // write json to config file
         String configFile = outputDir + "/" + Constants.CONFIG_FILE;
         FileWriter fileWriter = new FileWriter(configFile);
@@ -196,7 +197,7 @@ public final class FileUtil {
         bf.close();
         return headers;
     }
-    
+
     public static int countLines(String filename) throws FileNotFoundException, IOException {
         FileReader input = new FileReader(filename);
         LineNumberReader count = new LineNumberReader(input);
@@ -223,10 +224,10 @@ public final class FileUtil {
     }
 
     public static boolean remove(String filename) {
-        File file = new File(filename); 
+        File file = new File(filename);
         return file.delete();
     }
-    
+
     public static String[] findSubdirectories(String rootDir) {
         return new File(rootDir).list(new FilenameFilter() {
             @Override
@@ -243,5 +244,24 @@ public final class FileUtil {
         fis.read(data);
         fis.close();
         return new String(data, "UTF-8");
+    }
+
+    public static Document getAnalysesParameters(final Document config) {
+        ArrayList<String> ananyses = (ArrayList<String>) config.get("analyses");
+
+        Document query = (Document) config.get("query");
+        String metapath = (String) query.get("metapath");
+
+        ArrayList<String> constraints = new ArrayList<>();
+        for (final Map.Entry<String, Object> entry : ((Document)query.get("constraints")).entrySet()) {
+            constraints.add(entry.getKey() + ": " + ((String)entry.getValue()));
+        }
+
+        Document analysisParameters = new Document();
+        analysisParameters.append("analyses", ananyses);
+        analysisParameters.append("metapath", metapath);
+        analysisParameters.append("constraints", constraints);
+
+        return analysisParameters;
     }
 }
