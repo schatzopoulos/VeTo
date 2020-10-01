@@ -1,0 +1,3 @@
+.entity-box button:disabled {
+  opacity: 100;
+}
