@@ -1,3 +1,11 @@
 .entity-box button:disabled {
   opacity: 100;
 }
+
+.circle-button-svg-container {
+  line-height: 0.8;
+}
+
+.unset {
+  color: #bbbbbb;
+}

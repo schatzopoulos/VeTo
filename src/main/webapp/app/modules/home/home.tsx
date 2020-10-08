@@ -105,8 +105,6 @@ export class Home extends React.Component<IHomeProps> {
 		});
 
 		const neighbors = node.neighborhood();
-		console.log("Got neighbors")
-		console.log(neighbors)
 
 		nodes.not(neighbors).animate({
 			style: { 'border-width': '0px' }
@@ -172,6 +170,59 @@ export class Home extends React.Component<IHomeProps> {
 		const node = e.target;
 		this.registerNode(node);
 	}
+	registerMultipleNodes(nodeList) {
+	  const temporaryMetapath = [...this.state.metapath];
+	  const getMetapathStr = metapath => metapath.map(n => n.data('label').substr(0, 1)).join('');
+	  let temporaryNeighborhood = this.state.neighbors;
+	  let temporaryMetapathStr = getMetapathStr(temporaryMetapath);
+	  nodeList.forEach(node=>{
+      if ((!temporaryNeighborhood) || (temporaryNeighborhood.contains(node))) {
+	      temporaryMetapath.push(node);
+	      temporaryMetapathStr = getMetapathStr(temporaryMetapath);
+
+	      temporaryNeighborhood = node.neighborhood();
+      }
+      else{
+        alert("Invalid selection of metapath nodes");
+        return;
+      }
+    });
+
+    // At this point all node additions are valid
+    // temporaryMetapath contains the updated metapath structure
+    // temporaryMetapathStr contains the updated metapath
+    const constraints = { ...this.state.constraints };
+    nodeList.forEach(node => {
+      _.forOwn(node.data('attributes'), (value) => {
+        const entity = node.data('label');
+        const field = value.name;
+
+        // create constraints for node, if not already present
+        if (!(entity in constraints) || !(field in constraints[entity])) {
+          this.checkAndCreateConstraints(constraints, {
+            entity,
+            field,
+          }, value.type);
+        }
+      });
+    });
+
+    const lastNode = nodeList[nodeList.length-1];
+
+    const newState = { ... this.state };
+    newState.metapath = temporaryMetapath;
+    newState.metapathStr = temporaryMetapathStr;
+    newState.constraints = constraints;
+
+    if (this.state.selectField === '') {
+      newState.selectField = lastNode.data('attributes').filter((attr) => attr.name !== 'id')[0].name;
+    }
+
+    this.setState(newState, () => {
+      this.animateNeighbors(lastNode);
+    });
+  }
+
 	registerNode(node) {
 
 		if (!this.validMove(node)) {
@@ -215,9 +266,15 @@ export class Home extends React.Component<IHomeProps> {
 		});
 
 	}
+	addMultiple(idList) {
+    const nodeList=idList.map(id => {
+      const results = this.cy.filter(`[id="${id}"]`);
+      return results[0];
+    });
+    this.registerMultipleNodes(nodeList);
+  }
 	simulateClickOnNode(id) {
-
-		const results = this.cy.filter(`[id="${id}"]`);
+    const results = this.cy.filter(`[id="${id}"]`);
 		if (results.length > 0) {
 			const node = results[0]
 			this.registerNode(node);
@@ -698,7 +755,6 @@ export class Home extends React.Component<IHomeProps> {
 		const validAnalysisType = this.state.analysis.length !== 0;
 		const validTargetEntity = (!this.state.analysis.includes('Similarity Search') || (this.state.analysis.includes('Similarity Search') && this.state.targetEntity !== ''));
 		const { selectedEntity, selectFieldOptions }: any = this.getSelectFieldOptions();
-
 		let datasetFolder = '';
 		let datasetToUse;
 		if (this.props.schemas) {
@@ -766,7 +822,7 @@ export class Home extends React.Component<IHomeProps> {
 
 		return (
 			<Container fluid>
-				<Row>
+				<Row className={'justify-content-center'}>
 					<Col md="6">
 						<Row>
 							<Col md="12">
@@ -787,7 +843,7 @@ export class Home extends React.Component<IHomeProps> {
 						</Row>
 						<br />
 
-						<h4>Select metapath</h4>
+						<h4>{(this.state.metapath.length>0 && this.state.metapathStr)?`Current metapath: ${this.state.metapathStr}`:'Select metapath'}</h4>
 						<Card className="mx-auto">
 							{schema}
 						</Card>
@@ -797,8 +853,19 @@ export class Home extends React.Component<IHomeProps> {
 							<MetapathPanel
 								metapath={this.state.metapath}
 								schema={this.props.schemas[datasetToUse]}
+                datasetFolder={datasetFolder}
+                constraints={this.state.constraints}
+                selectFieldOptions={selectFieldOptions}
 								onNewEntity={this.simulateClickOnNode.bind(this)}
-								onDelete={this.deleteLast.bind(this)} />}
+                onRecommendationAccept = {this.addMultiple.bind(this)}
+								onDelete={this.deleteLast.bind(this)}
+                handleSwitch={this.handleConstraintSwitch.bind(this)}
+                handleDropdown={this.handleConstraintOpDropdown.bind(this)}
+                handleLogicDropdown={this.handleConstraintLogicOpDropdown.bind(this)}
+                handleInput={this.handleConstraintInputChange.bind(this)}
+                handleAddition={this.handleConstraintAddition.bind(this)}
+                handleRemoval={this.handleConstraintRemoval.bind(this)}
+                handleSelectFieldChange={this.handleSelectFieldChange.bind(this)} />}
 						{/* <MetapathControl metapath={this.state.metapath} onEntityRemove={this.deleteLast.bind(this)} neighbors={this.state.neighbors} /> */}
 						<Row>
 							<Col md='6' style={{ 'textAlign': 'center' }}>
@@ -825,12 +892,9 @@ export class Home extends React.Component<IHomeProps> {
 							}
 						</Row>
 					</Col>
+        </Row>
+        <Row className={'justify-content-center'}>
 					<Col md="6">
-
-						{
-							constraintsPanel
-						}
-
 						<br />
 						<Row>
 							<Col md="12">
@@ -895,6 +959,8 @@ export class Home extends React.Component<IHomeProps> {
 
 						</Col>
 					</Col>
+        </Row>
+        <Row>
 					<Col md='12'>
 						<UncontrolledCollapse toggler="#toggler">
 							<br />
@@ -1034,6 +1100,8 @@ export class Home extends React.Component<IHomeProps> {
 							<br />
 						</UncontrolledCollapse>
 					</Col>
+        </Row>
+        <Row>
 					<Col md='12' style={{ paddingTop: '20px' }}>
 						<Row>
 							<Col md={{ size: 2, offset: 5 }}>
@@ -1043,7 +1111,8 @@ export class Home extends React.Component<IHomeProps> {
 							</Col>
 						</Row>
 					</Col>
-
+        </Row>
+        <Row>
 					<Col md='12'>
 						<Container>
 							<br />

@@ -1,0 +1,16 @@
+.recommendation-entity-box {
+  background-color: #8f8f8f !important;
+  cursor: default !important;
+}
+
+.recommendation-entity-box .emphasized {
+  background-color: #6e6e6e !important;
+}
+
+.recommendation-connector {
+  color: #8f8f8f !important;
+}
+
+.recommendation-connector .emphasized {
+  color: #6e6e6e !important;
+}

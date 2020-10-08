@@ -41,3 +41,12 @@
   font-weight: 600;
   font-family: Arial, Helvetica, sans-serif;
 }
+
+.metapath-control-options {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  padding-left: 20px;
+  padding-right: 20px;
+  z-index: 40;
+}
