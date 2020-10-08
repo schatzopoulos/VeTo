@@ -867,30 +867,6 @@ export class Home extends React.Component<IHomeProps> {
                 handleRemoval={this.handleConstraintRemoval.bind(this)}
                 handleSelectFieldChange={this.handleSelectFieldChange.bind(this)} />}
 						{/* <MetapathControl metapath={this.state.metapath} onEntityRemove={this.deleteLast.bind(this)} neighbors={this.state.neighbors} /> */}
-						<Row>
-							<Col md='6' style={{ 'textAlign': 'center' }}>
-								<h5>Current metapath</h5>
-								<InputGroup>
-									<Input placeholder="Select nodes on the graph to define the metapath" value={this.state.metapathStr} disabled={true} />
-									<InputGroupAddon addonType="append">
-										<Button color="danger" title="Delete last node" onClick={this.deleteLast.bind(this)} ><FontAwesomeIcon icon="arrow-left" /></Button>
-									</InputGroupAddon>
-								</InputGroup>
-								{
-									((!validMetapathLength || !validMetapath) && this.state.metapathStr.length !== 0) &&
-									<span className="attribute-type text-danger">Please insert a valid symmetric metapath {(this.state.dataset === 'DBLP' || this.state.dataset === 'Bio') && "e.g."} {this.state.dataset === 'DBLP' && "APA"}{this.state.dataset === 'Bio' && "MGDGM"}</span>
-								}
-							</Col>
-							{
-								(selectedEntity) &&
-								<Col md='6' style={{ 'textAlign': 'center' }}>
-									<h5>Identifier for {selectedEntity} <FontAwesomeIcon style={{ color: '#17a2b8' }} icon="question-circle" title="Entities are presented with this attribute in the results" /></h5>
-									<Input id="select-field-dropdown" type="select" value={this.state.selectField} onChange={this.handleSelectFieldChange.bind(this)} disabled={this.state.metapath.length === 0}>
-										{selectFieldOptions}
-									</Input>
-								</Col>
-							}
-						</Row>
 					</Col>
         </Row>
         <Row className={'justify-content-center'}>
