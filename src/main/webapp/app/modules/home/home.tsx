@@ -6,8 +6,10 @@ import { connect } from 'react-redux';
 import {
 	Row,
 	Col,
-	InputGroup,
-	InputGroupAddon,
+  Modal,
+  ModalBody,
+  ModalHeader,
+  ModalFooter,
 	Input,
 	Button,
 	Spinner,
@@ -828,7 +830,7 @@ export class Home extends React.Component<IHomeProps> {
 							<Col md="12">
 								<Row>
 									<Col md='8'>
-										<h4>Select dataset</h4>
+										<h4>Working dataset</h4>
 									</Col>
 									<Col md='4'>
 										<Button outline color="info" tag={Link} to="/upload" className="float-right" size='sm'>
@@ -843,7 +845,7 @@ export class Home extends React.Component<IHomeProps> {
 						</Row>
 						<br />
 
-						<h4>{(this.state.metapath.length>0 && this.state.metapathStr)?`Current metapath: ${this.state.metapathStr}`:'Select metapath'}</h4>
+						<h4>Dataset schema</h4>
 						<Card className="mx-auto">
 							{schema}
 						</Card>
@@ -879,202 +881,197 @@ export class Home extends React.Component<IHomeProps> {
 										<h4>Select analysis type</h4>
 									</Col>
 									<Col md='4'>
-										<Button outline size='sm' color="info" id="toggler" title="Advanced Options" className="float-right" active={this.state.configurationActive} onClick={this.toggleConfiguration.bind(this)}>
+										<Button outline size='sm' color="info" title="Advanced Options" className="float-right" active={this.state.configurationActive} onClick={this.toggleConfiguration.bind(this)}>
 											<FontAwesomeIcon icon="cogs" /> Configuration
-									</Button>
+									  </Button>
+                    <Modal isOpen={this.state.configurationActive} toggle={this.toggleConfiguration.bind(this)} className={'w-75 mw-100'}>
+                      <ModalHeader>
+                        Analysis configuration
+                      </ModalHeader>
+                      <ModalBody>
+                        <Row>
+                          <Col md='3'>
+                            <Card>
+                              <h5>General</h5>
+
+                              <Label for="edgesThreshold">
+                                Minimum number of instances for a metapath-based connection to be considered <FontAwesomeIcon style={{ color: '#17a2b8' }} icon="question-circle" title="Connections with fewer occurences are not considered in the analysis; it affects the overall efficiency." />
+                              </Label>
+                              <Input id="edgesThreshold" value={this.state.edgesThreshold} bsSize="sm" type='number' onChange={this.handleAdvancedOptions.bind(this)} />
+                              {
+                                (this.state.edgesThreshold === '') &&
+                                <span className="attribute-type text-danger">
+																This field cannot be empty.
+												</span>
+                              }
+                            </Card>
+                          </Col>
+                          <Col md='3'>
+                            <Card>
+                              <h5>Ranking</h5>
+                              <Label for="edgesThreshold">
+                                Alpha <FontAwesomeIcon style={{ color: '#17a2b8' }} icon="question-circle" title="The random reset propability of the PageRank algorithm." />
+                              </Label>
+                              <Input id="prAlpha" value={this.state.prAlpha} bsSize="sm" type='number' onChange={this.handleAdvancedOptions.bind(this)} />
+                              {
+                                (this.state.prAlpha === '') &&
+                                <span className="attribute-type text-danger">
+																This field cannot be empty.
+												</span>
+                              }
+                              <br />
+                              <Label for="edgesThreshold">
+                                Tolerance <FontAwesomeIcon style={{ color: '#17a2b8' }} icon="question-circle" title="The tolerance allowed for convergence." />
+                              </Label>
+                              <Input id="prTol" value={this.state.prTol} bsSize="sm" type='number' onChange={this.handleAdvancedOptions.bind(this)} />
+                              {
+                                (this.state.prTol === '') &&
+                                <span className="attribute-type text-danger">
+																This field cannot be empty.
+												</span>
+                              }
+                            </Card>
+                          </Col>
+                          <Col md='3'>
+                            <Card>
+                              <h5>Similarity Join</h5>
+
+                              <Label for="joinK">
+                                k <FontAwesomeIcon style={{ color: '#17a2b8' }} icon="question-circle" title="Number of retrieved results." />
+                              </Label>
+                              <Input id="joinK" value={this.state.joinK} bsSize="sm" type='number' onChange={this.handleAdvancedOptions.bind(this)} />
+                              {
+                                (this.state.joinK === '') &&
+                                <span className="attribute-type text-danger">
+																This field cannot be empty.
+												</span>
+                              }
+                              <br />
+                              <Label for="joinW">
+                                w <FontAwesomeIcon style={{ color: '#17a2b8' }} icon="question-circle" title="Hamming distance threshold for merging buckets." />
+                              </Label>
+                              <Input id="joinW" value={this.state.joinW} bsSize="sm" type='number' onChange={this.handleAdvancedOptions.bind(this)} />
+                              {
+                                (this.state.joinW === '') &&
+                                <span className="attribute-type text-danger">
+																This field cannot be empty.
+												</span>
+                              }
+                              <br />
+                              <Label for="joinMinValues">
+                                Min. values <FontAwesomeIcon style={{ color: '#17a2b8' }} icon="question-circle" title="Min number of values for each entity." />
+                              </Label>
+                              <Input id="joinMinValues" value={this.state.joinMinValues} bsSize="sm" type='number' onChange={this.handleAdvancedOptions.bind(this)} />
+                              {
+                                (this.state.joinMinValues === '') &&
+                                <span className="attribute-type text-danger">
+																This field cannot be empty.
+												</span>
+                              }
+                            </Card>
+
+                          </Col>
+                          <Col md='3'>
+                            <Card>
+                              <h5>Similarity Search</h5>
+
+                              <Label for="searchK">
+                                k <FontAwesomeIcon style={{ color: '#17a2b8' }} icon="question-circle" title="Number of retrieved results." />
+                              </Label>
+                              <Input id="searchK" value={this.state.searchK} bsSize="sm" type='number' onChange={this.handleAdvancedOptions.bind(this)} />
+                              {
+                                (this.state.searchK === '') &&
+                                <span className="attribute-type text-danger">
+																This field cannot be empty.
+												</span>
+                              }
+                              <br />
+                              <Label for="searchW">
+                                w <FontAwesomeIcon style={{ color: '#17a2b8' }} icon="question-circle" title="Hamming distance threshold for merging buckets." />
+                              </Label>
+                              <Input id="searchW" value={this.state.searchW} bsSize="sm" type='number' onChange={this.handleAdvancedOptions.bind(this)} />
+                              {
+                                (this.state.searchW === '') &&
+                                <span className="attribute-type text-danger">
+																This field cannot be empty.
+												</span>
+                              }
+                              <br />
+                              <Label for="searchMinValues">
+                                Min. values <FontAwesomeIcon style={{ color: '#17a2b8' }} icon="question-circle" title="Min number of values for each entity." />
+                              </Label>
+                              <Input id="searchMinValues" value={this.state.searchMinValues} bsSize="sm" type='number' onChange={this.handleAdvancedOptions.bind(this)} />
+                              {
+                                (this.state.searchMinValues === '') &&
+                                <span className="attribute-type text-danger">
+																This field cannot be empty.
+												</span>
+                              }
+                            </Card>
+
+                          </Col>
+                        </Row>
+                      </ModalBody>
+                      <ModalFooter>
+                        <Button color={'info'} onClick={this.toggleConfiguration.bind(this)}>Save configuration</Button>
+                      </ModalFooter>
+                    </Modal>
 									</Col>
 								</Row>
 							</Col>
 						</Row>
-						<Col md='12'>
-							<Row>
-								<CustomInput type="switch" id="rankingSwith" onChange={() => this.onCheckboxBtnClick("Ranking")} checked={this.state.analysis.includes("Ranking")} label={rankingLabel} />
-							</Row>
-							<Row>
-								<CustomInput type="switch" id="simJoinSwitch" onChange={() => this.onCheckboxBtnClick("Similarity Join")} checked={this.state.analysis.includes("Similarity Join")} label={simJoinLabel} />
-							</Row>
-							<Row>
-								<Col md='6'>
-									<Row>
-										<CustomInput type="switch" id="simSearchSwitch" onChange={() => this.onCheckboxBtnClick("Similarity Search")} checked={this.state.analysis.includes("Similarity Search")} label={simSearchLabel} />
-									</Row>
-								</Col>
-								{
-									(this.state.analysis.includes("Similarity Search")) &&
-									<span>
-										<AutocompleteInput
-											id="targetEntityInput"
-											placeholder={_.isEmpty(this.state.metapath) ? "First, select a metapath" : `Search for ${selectedEntity} entities`}
-											onChange={this.handleTargetEntity.bind(this)}
-											entity={selectedEntity}
-											field={this.state.selectField}
-											folder={datasetFolder}
-											disabled={_.isEmpty(this.state.metapath)}
-											size='sm'
-										/>
+            <Row>
+              <Col md='6'>
+                <Row>
+                  <CustomInput type="switch" id="rankingSwith" onChange={() => this.onCheckboxBtnClick("Ranking")} checked={this.state.analysis.includes("Ranking")} label={rankingLabel} />
+                </Row>
+                <Row>
+                  <CustomInput type="switch" id="simJoinSwitch" onChange={() => this.onCheckboxBtnClick("Similarity Join")} checked={this.state.analysis.includes("Similarity Join")} label={simJoinLabel} />
+                </Row>
+              </Col>
+              <Col md={'6'}>
+                <Row>
+                  <Col md='6'>
+                    <Row>
+                      <CustomInput type="switch" id="simSearchSwitch" onChange={() => this.onCheckboxBtnClick("Similarity Search")} checked={this.state.analysis.includes("Similarity Search")} label={simSearchLabel} />
+                    </Row>
+                  </Col>
+                  {
+                    (this.state.analysis.includes("Similarity Search")) &&
+                    <span>
+                      <AutocompleteInput
+                        id="targetEntityInput"
+                        placeholder={_.isEmpty(this.state.metapath) ? "First, select a metapath" : `Search for ${selectedEntity} entities`}
+                        onChange={this.handleTargetEntity.bind(this)}
+                        entity={selectedEntity}
+                        field={this.state.selectField}
+                        folder={datasetFolder}
+                        disabled={_.isEmpty(this.state.metapath)}
+                        size='sm'
+                      />
 
-										{
-											(this.state.targetEntity === '') &&
-											<span className="attribute-type text-danger">
-												This field cannot be empty when Similarity Search is enabled.
-										</span>
-										}
-									</span>
+                      {
+                        (this.state.targetEntity === '') &&
+                        <span className="attribute-type text-danger">
+                          This field cannot be empty when Similarity Search is enabled.
+                      </span>
+                      }
+                    </span>
 
-								}
-							</Row>
-							<Row>
-								<CustomInput type="switch" id="cdSwitch" onChange={() => this.onCheckboxBtnClick("Community Detection")} checked={this.state.analysis.includes("Community Detection")} label={communityLabel} />
-							</Row>
-							{
-								(!validAnalysisType) &&
-								<span className="attribute-type text-danger">
-									Please select at least one type of analysis.
-								</span>
-							}
+                  }
+                </Row>
+                <Row>
+                  <CustomInput type="switch" id="cdSwitch" onChange={() => this.onCheckboxBtnClick("Community Detection")} checked={this.state.analysis.includes("Community Detection")} label={communityLabel} />
+                </Row>
+                {
+                  (!validAnalysisType) &&
+                  <Col md={'6'} className="attribute-type text-danger">
+                    Please select at least one type of analysis.
+                  </Col>
+                }
 
-						</Col>
-					</Col>
-        </Row>
-        <Row>
-					<Col md='12'>
-						<UncontrolledCollapse toggler="#toggler">
-							<br />
-							<Row>
-								<Col md={{ offset: 2, size: 8 }}>
-									<Card outline color='info'>
-										<CardBody>
-
-											<CardTitle><h5>Analysis configuration</h5></CardTitle>
-											<Row>
-												<Col md='3'>
-													<Card>
-														<h5>General</h5>
-
-														<Label for="edgesThreshold">
-															Minimum number of instances for a metapath-based connection to be considered <FontAwesomeIcon style={{ color: '#17a2b8' }} icon="question-circle" title="Connections with fewer occurences are not considered in the analysis; it affects the overall efficiency." />
-														</Label>
-														<Input id="edgesThreshold" value={this.state.edgesThreshold} bsSize="sm" type='number' onChange={this.handleAdvancedOptions.bind(this)} />
-														{
-															(this.state.edgesThreshold === '') &&
-															<span className="attribute-type text-danger">
-																This field cannot be empty.
-												</span>
-														}
-													</Card>
-												</Col>
-												<Col md='3'>
-													<Card>
-														<h5>Ranking</h5>
-														<Label for="edgesThreshold">
-															Alpha <FontAwesomeIcon style={{ color: '#17a2b8' }} icon="question-circle" title="The random reset propability of the PageRank algorithm." />
-														</Label>
-														<Input id="prAlpha" value={this.state.prAlpha} bsSize="sm" type='number' onChange={this.handleAdvancedOptions.bind(this)} />
-														{
-															(this.state.prAlpha === '') &&
-															<span className="attribute-type text-danger">
-																This field cannot be empty.
-												</span>
-														}
-														<br />
-														<Label for="edgesThreshold">
-															Tolerance <FontAwesomeIcon style={{ color: '#17a2b8' }} icon="question-circle" title="The tolerance allowed for convergence." />
-														</Label>
-														<Input id="prTol" value={this.state.prTol} bsSize="sm" type='number' onChange={this.handleAdvancedOptions.bind(this)} />
-														{
-															(this.state.prTol === '') &&
-															<span className="attribute-type text-danger">
-																This field cannot be empty.
-												</span>
-														}
-													</Card>
-												</Col>
-												<Col md='3'>
-													<Card>
-														<h5>Similarity Join</h5>
-
-														<Label for="joinK">
-															k <FontAwesomeIcon style={{ color: '#17a2b8' }} icon="question-circle" title="Number of retrieved results." />
-														</Label>
-														<Input id="joinK" value={this.state.joinK} bsSize="sm" type='number' onChange={this.handleAdvancedOptions.bind(this)} />
-														{
-															(this.state.joinK === '') &&
-															<span className="attribute-type text-danger">
-																This field cannot be empty.
-												</span>
-														}
-														<br />
-														<Label for="joinW">
-															w <FontAwesomeIcon style={{ color: '#17a2b8' }} icon="question-circle" title="Hamming distance threshold for merging buckets." />
-														</Label>
-														<Input id="joinW" value={this.state.joinW} bsSize="sm" type='number' onChange={this.handleAdvancedOptions.bind(this)} />
-														{
-															(this.state.joinW === '') &&
-															<span className="attribute-type text-danger">
-																This field cannot be empty.
-												</span>
-														}
-														<br />
-														<Label for="joinMinValues">
-															Min. values <FontAwesomeIcon style={{ color: '#17a2b8' }} icon="question-circle" title="Min number of values for each entity." />
-														</Label>
-														<Input id="joinMinValues" value={this.state.joinMinValues} bsSize="sm" type='number' onChange={this.handleAdvancedOptions.bind(this)} />
-														{
-															(this.state.joinMinValues === '') &&
-															<span className="attribute-type text-danger">
-																This field cannot be empty.
-												</span>
-														}
-													</Card>
-
-												</Col>
-												<Col md='3'>
-													<Card>
-														<h5>Similarity Search</h5>
-
-														<Label for="searchK">
-															k <FontAwesomeIcon style={{ color: '#17a2b8' }} icon="question-circle" title="Number of retrieved results." />
-														</Label>
-														<Input id="searchK" value={this.state.searchK} bsSize="sm" type='number' onChange={this.handleAdvancedOptions.bind(this)} />
-														{
-															(this.state.searchK === '') &&
-															<span className="attribute-type text-danger">
-																This field cannot be empty.
-												</span>
-														}
-														<br />
-														<Label for="searchW">
-															w <FontAwesomeIcon style={{ color: '#17a2b8' }} icon="question-circle" title="Hamming distance threshold for merging buckets." />
-														</Label>
-														<Input id="searchW" value={this.state.searchW} bsSize="sm" type='number' onChange={this.handleAdvancedOptions.bind(this)} />
-														{
-															(this.state.searchW === '') &&
-															<span className="attribute-type text-danger">
-																This field cannot be empty.
-												</span>
-														}
-														<br />
-														<Label for="searchMinValues">
-															Min. values <FontAwesomeIcon style={{ color: '#17a2b8' }} icon="question-circle" title="Min number of values for each entity." />
-														</Label>
-														<Input id="searchMinValues" value={this.state.searchMinValues} bsSize="sm" type='number' onChange={this.handleAdvancedOptions.bind(this)} />
-														{
-															(this.state.searchMinValues === '') &&
-															<span className="attribute-type text-danger">
-																This field cannot be empty.
-												</span>
-														}
-													</Card>
-
-												</Col>
-											</Row>
-										</CardBody>
-									</Card>
-
-								</Col>
-							</Row>
-							<br />
-						</UncontrolledCollapse>
+              </Col>
+            </Row>
 					</Col>
         </Row>
         <Row>
