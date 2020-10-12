@@ -110,7 +110,7 @@ class MetapathPanel extends React.Component<MetapathPanelProps> {
         }
       });
       return (
-        <Row ref={this.handleRef} className={'overflow-auto flex-nowrap align-items-center metapath-constructor'}>
+        <Row className={'overflow-auto flex-nowrap align-items-center metapath-constructor'}>
           {metapathEntityBoxes}
           <MetapathControl schema={this.props.schema} metapath={this.props.metapath}
                            onNewEntity={this.props.onNewEntity} onDelete={this.props.onDelete} />
