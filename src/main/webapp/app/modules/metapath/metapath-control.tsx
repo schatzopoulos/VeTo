@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 
 import './metapath.css';
 
-import { Button, Modal, ModalHeader, ModalBody , Dropdown, DropdownToggle, DropdownMenu, DropdownItem} from 'reactstrap';
+import { Button, ButtonDropdown, Modal, ModalHeader, ModalBody , Dropdown, DropdownToggle, DropdownMenu, DropdownItem} from 'reactstrap';
 
 // const testEntities = [
 //     'Topic',
@@ -40,11 +40,18 @@ const getNeighborsFromSchema = (currentNodeId, schema) => {
 const MetapathControl = (props) => {
     const currentEntity = props.metapath[props.metapath.length - 1];
     const neighbors = getNeighborsFromSchema(currentEntity.data('id'), props.schema)
+    const tooltipRef = useRef(null)
 
     const [modal, setModal] = useState(false);
 
+    const scrollIntoView = () => {
+      tooltipRef.current.scrollIntoView({ behavior: "smooth" })
+    }
+
     const toggle = () => setModal(!modal);
-    const openMenu = () => setModal(true);
+    const openMenu = () => {
+      setModal(true);
+    };
     const closeMenu = () => setModal(false);
 
     const availableEntities = []
@@ -55,18 +62,17 @@ const MetapathControl = (props) => {
         }} block>{item[1]}</Button>);
     })
 
+    useEffect(scrollIntoView);
 
     return (
         <div className="d-flex flex-column justify-content-center">
-            <div className="pl-2px">
-                <div onMouseEnter={openMenu} onMouseLeave={closeMenu} className={'position-relative'}>
-                  <Button color="success" className="btn-circle circle-button-character-container" on>
-                    +
-                  </Button>
-                  <div className={'overflow-scroll metapath-control-options '+ (modal ? 'd-block' : 'd-none')}>
+            <div className="pl-2px position-relative">
+                <Button color="success" className="btn-circle circle-button-character-container" onMouseEnter={openMenu} onMouseLeave={closeMenu}>
+                  <span>+</span>
+                  <div className={'overflow-scroll metapath-control-options position-absolute '+ (modal ? 'd-block' : 'd-none')} ref={tooltipRef}>
                     {availableEntities}
                   </div>
-                </div>
+                </Button>
             </div>
             <div className="pl-2px">
                 <Button color="danger" className="btn-circle circle-button-character-container" onClick={() => {

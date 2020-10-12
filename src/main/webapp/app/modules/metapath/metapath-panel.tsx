@@ -110,7 +110,7 @@ class MetapathPanel extends React.Component<MetapathPanelProps> {
         }
       });
       return (
-        <Row className={'overflow-auto flex-nowrap py-4'}>
+        <Row ref={this.handleRef} className={'overflow-auto flex-nowrap align-items-center metapath-constructor'}>
           {metapathEntityBoxes}
           <MetapathControl schema={this.props.schema} metapath={this.props.metapath}
                            onNewEntity={this.props.onNewEntity} onDelete={this.props.onDelete} />
@@ -122,12 +122,12 @@ class MetapathPanel extends React.Component<MetapathPanelProps> {
       );
     } else if (this.nodes) {
       return (
-        <div>
+        <Row className={'overflow-auto flex-nowrap align-items-center metapath-constructor'}>
           <Button outline color="dark" size="lg" onClick={this.toggleModal.bind(this)}>Select starting entity</Button>
           {(this.state.modalOpen) &&
           <EntityInsertionModal entities={this.nodes} onSelection={this.props.onNewEntity}
                                 onDismiss={this.toggleModal.bind(this)} />}
-        </div>
+        </Row>
       );
     } else {
       return <div></div>;
