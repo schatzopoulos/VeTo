@@ -26,14 +26,40 @@ class EntityBox extends React.Component<any, any> {
     });
   }
 
-  numberOfConstraints() {
+  numberOfConditions() {
     if (this.props.constraints) {
-      const reducer = (constrainedFields, currentFieldConstraints) => {
-        return (currentFieldConstraints.enabled && currentFieldConstraints.conditions[0].value) ? constrainedFields + 1 : constrainedFields;
+      const conditionsReducer = (setConditions, currentCondition) => {
+        return currentCondition.value ? setConditions + 1 : setConditions;
       };
-      return Object.values(this.props.constraints).reduce(reducer, 0);
+      const fieldsReducer = (constrainedFieldConditions, currentFieldConstraints) => {
+        return (currentFieldConstraints.enabled) ? constrainedFieldConditions+currentFieldConstraints.conditions.reduce(conditionsReducer, 0) : constrainedFieldConditions;
+      };
+      return Object.values(this.props.constraints).reduce(fieldsReducer, 0);
     } else {
       return 0;
+    }
+  }
+
+  numberOfConstraints() {
+    if (this.props.constraints) {
+      const fieldsReducer = (constrainedFields, currentField) => {
+        return (currentField.enabled && currentField.conditions.some(condition=> !!condition.value))? constrainedFields+1 : constrainedFields;
+      };
+      return Object.values(this.props.constraints).reduce(fieldsReducer, 0);
+    } else {
+      return 0;
+    }
+  }
+
+  constraintSummary() {
+    if (this.props.constraints) {
+      const constaintStrings = Object.keys(this.props.constraints).filter(key => key!=='id').map(key => {
+        const conditionStrings= this.props.constraints[key].conditions.map(conditionObject => {
+          return `\t\t- ${conditionObject.logicOp? conditionObject.logicOp+' ':' '}${key} ${conditionObject.operation} ${conditionObject.value}`;
+        })
+        return `\t* for field '${key}':\n`+conditionStrings.join('\n');
+      })
+      return `The following constraints have been set:\n`+constaintStrings.join('\n');
     }
   }
 
@@ -48,9 +74,11 @@ class EntityBox extends React.Component<any, any> {
           {
             this.props.primaryEntity &&
             <div className={'d-inline-block'}>
-              <Button color="link" onClick={this.toggleReferenceKeyModal.bind(this)}>
+              <Button color="link" onClick={this.toggleReferenceKeyModal.bind(this)}
+                      title={'Show/edit entity identifier'}
+                      className="btn-circle circle-button-svg-container mx-1">
                 <svg width="1em" height="1em" viewBox="0 0 16 16"
-                     className={this.numberOfConstraints() === 0 ? 'bi bi-key-fill unset' : 'bi bi-key-fill text-secondary'}
+                     className={'bi bi-key-fill text-secondary'}
                      fill={'currentColor'}
                      xmlns="http://www.w3.org/2000/svg">
                   <path fillRule="evenodd"
@@ -65,9 +93,10 @@ class EntityBox extends React.Component<any, any> {
                 <ModalBody>
                   <Row>
                     <Col md='12' style={{ 'textAlign': 'center' }}>
-                      <h5>Identifier for {this.props.idIndexedSchema[this.props.entity]} <FontAwesomeIcon style={{ color: '#17a2b8' }}
-                                                                           icon="question-circle"
-                                                                           title="Entities are presented with this attribute in the results" />
+                      <h5>Identifier for {this.props.idIndexedSchema[this.props.entity]} <FontAwesomeIcon
+                        style={{ color: '#17a2b8' }}
+                        icon="question-circle"
+                        title="Entities are presented with this attribute in the results" />
                       </h5>
                       <Input id="select-field-dropdown" type="select" value={this.state.selectField}
                              onChange={this.props.handleSelectFieldChange}>
@@ -86,7 +115,8 @@ class EntityBox extends React.Component<any, any> {
             this.props.constraints && this.props.datasetFolder &&
             <div className={'d-inline-block'}>
               <Button color="link" onClick={this.toggleConstraintsModal.bind(this)}
-                      className="btn-circle circle-button-svg-container mx-1">
+                      className="btn-circle circle-button-svg-container mx-1"
+                title={'Show/edit entity filters'}>
                 <svg width="1em" height="1em" viewBox="0 0 16 16"
                      className={this.numberOfConstraints() === 0 ? 'bi bi-funnel-fill unset' : 'bi bi-funnel-fill text-secondary'}
                      fill="currentColor" xmlns="http://www.w3.org/2000/svg">
@@ -96,9 +126,7 @@ class EntityBox extends React.Component<any, any> {
               </Button>
               <Modal isOpen={this.state.constraintsModal} toggle={this.toggleConstraintsModal.bind(this)}
                      className={'w-75 mw-100'}>
-                <ModalHeader
-                  toggle={this.toggleConstraintsModal.bind(this)}>{`Constraints for '${this.props.idIndexedSchema[this.props.entity]}'`}
-                </ModalHeader>
+                <ModalHeader>{`${this.numberOfConstraints()} constraints, ${this.numberOfConditions()} conditions`}</ModalHeader>
                 <ModalBody>
                   <ConstraintItem
                     key={this.props.idIndexedSchema[this.props.entity]}
@@ -114,13 +142,13 @@ class EntityBox extends React.Component<any, any> {
                   />
                 </ModalBody>
                 <ModalFooter>
-                  <Button color={'dark'} onClick={this.toggleConstraintsModal.bind(this)}>Close</Button>
+                  <Button color={'dark'} onClick={this.toggleConstraintsModal.bind(this)}>Save</Button>
                 </ModalFooter>
               </Modal>
             </div>
           }
           {this.numberOfConstraints() > 0 &&
-          <div className={'d-inline-block text-muted'}>{`(${this.numberOfConstraints()})`}</div>
+          <div title={this.constraintSummary()} className={'d-inline-block text-muted'}>{`(${this.numberOfConstraints()})`}</div>
           }
         </div>
       </div>
