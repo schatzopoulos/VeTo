@@ -56,7 +56,7 @@ const MetapathControl = (props) => {
 
     const availableEntities = []
     neighbors.forEach(item => {
-        availableEntities.push(<Button color="dark" onClick={() => {
+        availableEntities.push(<Button size={'sm'} className={'my-1 text-nowrap'} color="dark" onClick={() => {
             toggle();
             props.onNewEntity(item[0]);
         }} block>{item[1]}</Button>);
