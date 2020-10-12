@@ -147,8 +147,8 @@ class EntityBox extends React.Component<any, any> {
               </Modal>
             </div>
           }
-          {this.numberOfConstraints() > 0 &&
-          <div title={this.constraintSummary()} className={'d-inline-block text-muted'}>{`(${this.numberOfConstraints()})`}</div>
+          {this.numberOfConditions() > 0 &&
+          <div title={this.constraintSummary()} className={'d-inline-block text-muted'}>{`(${this.numberOfConditions()})`}</div>
           }
         </div>
       </div>
