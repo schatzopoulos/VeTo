@@ -1,13 +1,13 @@
 import './constraint-item.scss';
 
 import React from 'react';
-import { 
-	Row, 
-	Col, 
-	Input, 
-	Label,
+import {
+    Row,
+    Col,
+    Input,
+    Label,
     CustomInput,
-    Button,
+    Button
 } from 'reactstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import AutocompleteInput from '../datasets/autocomplete-input';
@@ -22,6 +22,7 @@ export interface IConstraintItemFieldProps {
     type: string,
     enabled: boolean,
     lastFieldCondition: boolean,
+    numberOfConditions: number,
 
     // functions
     handleSwitch: any,
@@ -33,6 +34,11 @@ export interface IConstraintItemFieldProps {
 }
 
 export class ConstraintItemField extends React.Component<IConstraintItemFieldProps> {
+    readonly state = {
+        logicOperation: this.props.data.logicOp,
+        conditionOperation: this.props.data.operation,
+        value: this.props.data.value
+    };
 
     constructor(props) {
         super(props);
@@ -44,62 +50,92 @@ export class ConstraintItemField extends React.Component<IConstraintItemFieldPro
         this.handleRemoval = this.handleRemoval.bind(this);
     }
 
-    handleSwitch() {        
-        this.props.handleSwitch({ 
+    handleSwitch() {
+        this.props.handleSwitch({
             entity: this.props.entity,
-            field: this.props.field,
+            field: this.props.field
         });
     }
 
     handleDropdown(e) {
-        this.props.handleDropdown({
-            entity: this.props.entity,
-            field: this.props.field,
-            index: this.props.data.index,
-        }, 
-        e.target.value);
+        const operation = e.target.value;
+        this.setState({
+            conditionOperation: operation
+        });
+        if (this.props.data.index > 0) {
+            this.props.handleDropdown({
+                    entity: this.props.entity,
+                    field: this.props.field,
+                    index: this.props.data.index
+                },
+                e.target.value);
+        }
     }
 
     handleLogicDropdown(e) {
-        this.props.handleLogicDropdown({
-            entity: this.props.entity,
-            field: this.props.field,
-            index: this.props.data.index,
-        }, 
-        e.target.value);
+        const logicOp = e.target.value;
+        this.setState({
+            logicOperation: logicOp
+        });
+        if (this.props.data.index > 0) {
+            this.props.handleLogicDropdown({
+                    entity: this.props.entity,
+                    field: this.props.field,
+                    index: this.props.data.index
+                },
+                e.target.value);
+        }
     }
 
     handleInput(e) {
-        
-        let value = '';
+
+        let val = '';
 
         // autocomplete input
         if (Array.isArray(e) && !_.isEmpty(e)) {
-            [value] = e;
-            value = value['name'];
-        } 
+            [val] = e;
+            val = val['name'];
+        }
 
         // input for numeric fields
         if (!Array.isArray(e)) {
-            value = e.target.value;
+            val = e.target.value;
         }
-
-        this.props.handleInput({
-            entity: this.props.entity,
-            field: this.props.field,
-            index: this.props.data.index,
-        }, 
-        value);
+        this.setState({
+            value: val
+        });
+        if (this.props.data.index > 0) {
+            this.props.handleInput({
+                    entity: this.props.entity,
+                    field: this.props.field,
+                    index: this.props.data.index
+                },
+                val);
+        }
     }
 
     handleAddition(e) {
         e.preventDefault();
 
+        const logicOp = this.state.logicOperation;
+        const conditionOp = this.state.conditionOperation;
+        const value = this.state.value;
+
         this.props.handleAddition({
-            entity: this.props.entity,
-            field: this.props.field,
-            index: this.props.data.index,
-        });
+                entity: this.props.entity,
+                field: this.props.field
+            },
+            logicOp,
+            conditionOp,
+            value
+        );
+        // console.log(this.props);
+        // console.log(this.state);
+        // this.setState({
+        //     logicOperation:this.props.data.logicOp,
+        //     conditionOperation:this.props.data.operation,
+        //     value:this.props.data.value
+        // })
     }
 
     handleRemoval(e) {
@@ -108,7 +144,7 @@ export class ConstraintItemField extends React.Component<IConstraintItemFieldPro
         this.props.handleRemoval({
             entity: this.props.entity,
             field: this.props.field,
-            index: this.props.data.index,
+            index: this.props.data.index
         });
     }
 
@@ -119,7 +155,8 @@ export class ConstraintItemField extends React.Component<IConstraintItemFieldPro
         }
         return example;
     }
-	render() {
+
+    render() {
         const entity = this.props.entity;
         const field = this.props.field;
         const type = this.props.type;
@@ -127,91 +164,117 @@ export class ConstraintItemField extends React.Component<IConstraintItemFieldPro
         const data = this.props.data;
         const index = data.index;
 
-        let inputField =  <AutocompleteInput 
+        let inputField = <AutocompleteInput
             id="targetEntityInput"
-            onChange={this.handleInput}								
+            onChange={this.handleInput}
             entity={entity}
             field={field}
             folder={this.props.datasetFolder}
             disabled={!enabled}
             placeholder={''}
             size="sm"
-            value={data.value}
-        />
+            value={this.state.value || ''}
+        />;
         if (type === 'numeric') {
-            inputField = <Input disabled={ !enabled } value={data.value || ''} bsSize="sm" type='number' onChange={this.handleInput}/>;
-        } 
+            inputField = (index === 0)
+                ? <Input disabled={!enabled} defaultValue={''} onChange={this.handleInput} bsSize="sm"
+                         type='number' />
+                : <Input disabled={!enabled} value={data.value} onChange={this.handleInput} bsSize="sm"
+                         type='number' />;
+        }
 
-        let opOptions = [ <option key='1' value="=">=</option> ];
+        let opOptions = [<option key='1' value="=">=</option>];
         if (type === 'numeric') {
             opOptions = opOptions.concat([
-            <option key='2' value=">">&gt;</option>,
-            <option key='3' value="<">&lt;</option>,
-            <option key='4' value=">=">&ge;</option>,
-            <option key='5' value="<=">&le;</option>]);
+                <option key='2' value=">">&gt;</option>,
+                <option key='3' value="<">&lt;</option>,
+                <option key='4' value=">=">&ge;</option>,
+                <option key='5' value="<=">&le;</option>]);
         }
-        
+
         const example = this.getExample(entity, field);
 
         return (
-            <Row form key={`${entity}_${field}_${index}`}>
+            <Row form key={`${entity}_${field}_${index}`} className={index === 0 ? 'mb-3' : ''}>
                 <Col md='1'>
                     {
-                        (index === 0) && <CustomInput type="switch" id={entity + '.' + field + '_switch'} onChange={this.handleSwitch} checked={enabled}/>
+                        (index === 0) &&
+                        <CustomInput type="switch" id={entity + '.' + field + '_switch'}
+                                     onChange={this.handleSwitch}
+                                     checked={enabled} />
                     }
                 </Col>
                 <Col md='2'>
                     {
                         (index === 0)
                             ? <div>
-                                <Label>{ field }</Label> <span className='attribute-type'>(:{type})</span>
+                                <Label>{field}</Label> <span className='attribute-type'>(:{type})</span>
                             </div>
+                            : (index === 1)
+                            ? <div className="">Set conditions:</div>
                             : <div className="">
                                 <Label className="white">&#9656;</Label>
                             </div>
                     }
                 </Col>
                 <Col md='1'>
-                    {
-                        (index !== 0) &&
-                        <Input disabled={ !enabled } value={data.logicOp} type="select" name="andOrDropdown" id={`${ entity }_${ field }_${index}`} bsSize="sm" onChange={this.handleLogicDropdown}>
-                            <option value="or">or</option>
-                            { (type === 'numeric') && 
+                    {index === 0
+                        ? this.props.numberOfConditions>0
+                            ? <Input disabled={!enabled} defaultValue={data.logicOp} type="select" name="andOrDropdown"
+                                     id={`${entity}_${field}_${index}`} bsSize="sm" onChange={this.handleLogicDropdown}>
+                                <option value="or">or</option>
+                                {(type === 'numeric') &&
                                 <option value="and">and</option>
-                            }
-                        </Input>
-                    }        
+                                }
+                            </Input>
+                            : <span></span>
+                        : index === 1
+                            ? <span></span>
+                            : <Input disabled={!enabled} value={data.logicOp} type="select" name="andOrDropdown"
+                                     id={`${entity}_${field}_${index}`} bsSize="sm"
+                                     onChange={this.handleLogicDropdown}>
+                                <option value="or">or</option>
+                                {(type === 'numeric') &&
+                                <option value="and">and</option>
+                                }
+                            </Input>
+                    }
                 </Col>
                 <Col md='1'>
-                    <Input disabled={ !enabled } value={data.operation} type="select" name="opDropdown" id={`${entity}_${field}_${index}`} bsSize="sm" onChange={this.handleDropdown}>
-                        { opOptions }
-                    </Input>
+                    {index === 0
+                        ? <Input disabled={!enabled} defaultValue={data.operation} type="select" name="opDropdown"
+                                 id={`${entity}_${field}_${index}`} bsSize="sm" onChange={this.handleDropdown}>
+                            {opOptions}
+                        </Input>
+                        : <Input disabled={!enabled} value={data.operation} type="select" name="opDropdown"
+                                 id={`${entity}_${field}_${index}`} bsSize="sm" onChange={this.handleDropdown}>
+                            {opOptions}
+                        </Input>
+                    }
                 </Col>
                 <Col md='6'>
-                    { inputField }
-                    
+                    {inputField}
+
                 </Col>
                 <Col md='1'>
                     {
-                        (index !== 0) &&
-                          <Button disabled={ !enabled } color="danger" outline size="sm" title="Remove constraint" onClick={this.handleRemoval}><FontAwesomeIcon icon="minus" /></Button>
+                        (index !== 0)
+                            ? <Button disabled={!enabled} color="danger" outline size="sm" title="Remove constraint"
+                                      onClick={this.handleRemoval}><FontAwesomeIcon icon="minus" /></Button>
+                            : <Button color={'success'} outline size={'sm'} title={'Add condition'}
+                                      onClick={this.handleAddition}><FontAwesomeIcon
+                                icon={'plus'} /></Button>
                     }
                 </Col>
-                <Col md={{ offset: 4, size: 5}}>
+                <Col md={{ offset: 4, size: 5 }}>
                     {
-                        (example && this.props.lastFieldCondition) && <span className='attribute-type'>e.g. { example }</span>
-                    }
-                </Col>
-                <Col md='2'>
-                    {
-                        (this.props.lastFieldCondition) && 
-                            <Button className="float-right" disabled={ !enabled } color="info" outline size="sm" title="Add constraint" onClick={this.handleAddition}><FontAwesomeIcon icon="plus" /> Add new</Button>
+                        (example && this.props.lastFieldCondition) &&
+                        <span className='attribute-type'>e.g. {example}</span>
                     }
                 </Col>
             </Row>
-            
         );
-	}
+    }
 };
 
 export default ConstraintItemField;

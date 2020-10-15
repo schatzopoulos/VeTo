@@ -331,7 +331,7 @@ export class Home extends React.Component<IHomeProps> {
 		});
 	}
 
-	checkAndCreateConstraints(constraints, { entity, field }, type = null) {
+	checkAndCreateConstraints(constraints, { entity, field }, type = null, logicOp=undefined, conditionOp='=', val=null) {
 		if (!(entity in constraints)) {
 			constraints[entity] = {};
 		}
@@ -353,9 +353,9 @@ export class Home extends React.Component<IHomeProps> {
 		if (!found) {
 			constraints[entity][field]['conditions'].push({
 				index,
-				value: null,
-				operation: '=',
-				logicOp: (index > 0) ? 'or' : undefined,
+				value: val,
+				operation: conditionOp,
+				logicOp: logicOp? logicOp: (index > 0) ? 'or' : undefined,
 			});
 		}
 	}
@@ -417,10 +417,10 @@ export class Home extends React.Component<IHomeProps> {
 		});
 	}
 
-	handleConstraintAddition({ entity, field, index }) {
+	handleConstraintAddition({ entity, field}, logicOp, conditionOp, value) {
 		const constraints = { ...this.state.constraints };
 
-		this.checkAndCreateConstraints(constraints, { entity, field });
+		this.checkAndCreateConstraints(constraints, { entity, field }, null, logicOp, conditionOp, value);
 		this.setState({
 			constraints,
 		});
@@ -429,9 +429,23 @@ export class Home extends React.Component<IHomeProps> {
 	handleConstraintRemoval({ entity, field, index }) {
 		const constraints = { ...this.state.constraints };
 
-		constraints[entity][field]['conditions'] = constraints[entity][field]['conditions'].filter(n => n.index !== index);
+		// constraints[entity][field]['conditions'] = constraints[entity][field]['conditions'].filter(n => n.index !== index);
+		const newConditions = []
+        let deleted=false;
+        constraints[entity][field]['conditions'].forEach(constraintObject =>{
+            if (constraintObject.index!==index) {
+                if (deleted) {
+                    constraintObject.index--;
+                }
+                newConditions.push(constraintObject)
+            } else {
+                deleted=true;
+            }
+        })
+        constraints[entity][field]['conditions']=newConditions
+        constraints[entity][field]['nextIndex']=constraints[entity][field]['conditions'].length;
 		this.setState({
-			constraints,
+			constraints
 		});
 	}
 
