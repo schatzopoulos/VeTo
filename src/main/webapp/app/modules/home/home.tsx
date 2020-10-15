@@ -4,44 +4,32 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
 import {
-    Row,
+    Button,
+    Card,
     Col,
+    Container,
+    CustomInput,
+    Input,
+    Label,
+    ListGroup,
     Modal,
     ModalBody,
-    ModalHeader,
     ModalFooter,
-    Input,
-    Button,
-    Spinner,
-    ListGroup,
+    ModalHeader,
     Progress,
-    Container,
-    Card,
-    UncontrolledCollapse,
-    CustomInput,
-    CardBody,
-    Label,
-    CardTitle
+    Row,
+    Spinner
 } from 'reactstrap';
-
-import MetapathControl from '../metapath/metapath-control';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { IRootState } from 'app/shared/reducers';
 import CytoscapeComponent from 'react-cytoscapejs';
 import _ from 'lodash';
-import {
-    analysisRun,
-    getStatus,
-    getResults,
-    getMoreResults
-} from '../analysis/analysis.reducer';
+import { analysisRun, getMoreResults, getResults, getStatus } from '../analysis/analysis.reducer';
 import { getDatasetSchemas } from '../datasets/datasets.reducer';
 import ResultsPanel from '../analysis/results/results';
 import ConstraintItem from '../constraints/constraint-item';
 import MetapathPanel from '../metapath/metapath-panel';
-import { __metadata } from 'tslib';
 import AutocompleteInput from '../datasets/autocomplete-input';
-import { NavLink } from 'reactstrap';
 
 export interface IHomeProps extends StateProps, DispatchProps {
     loading: boolean;
@@ -359,7 +347,7 @@ export class Home extends React.Component<IHomeProps> {
                 index,
                 value: val,
                 operation: conditionOp,
-                logicOp: logicOp ? logicOp : (index > 0) ? 'or' : undefined
+                logicOp: logicOp ? logicOp : (index > 1) ? 'or' : undefined
             });
         }
     }
@@ -570,6 +558,10 @@ export class Home extends React.Component<IHomeProps> {
         this.setState({
             configurationActive: !this.state.configurationActive
         });
+    }
+
+    checkMetapathDefined() {
+        return this.state.metapathStr.length > 0;
     }
 
     checkMetapathLength() {
@@ -791,8 +783,48 @@ export class Home extends React.Component<IHomeProps> {
         }
     }
 
-    render() {
+    generateNotification() {
+        if (this.checkMetapathDefined()) {
+            if (this.checkMetapathLength()) {
+                if (this.checkSymmetricMetapath()) {
+                    if (this.checkConstraints()) {
+                        return <p className={'m-0'}><small className={'text-success'}>Valid metapath!</small></p>;
+                    }
+                    return <p className={'m-0'}><small className={'text-danger'}>At least one constraint must be defined</small></p>;
+                }
+                return <p className={'m-0'}><small className={'text-danger'}>Metapath must be symmetric</small></p>;
+            }
+            return <p className={'m-0'}><small className={'text-danger'}>Metapath must contain at least 3 entities</small></p>;
+        }
+        return <div></div>;
+    }
 
+    getCrudeInterpretation() {
+        if (this.checkSymmetricMetapath()) {
+            const targetEntity = this.state.metapath[0].data('label');
+            if (this.state.metapath.length === 3) {
+                const relatingEntity = this.state.metapath[1].data('label');
+                return <strong>Metapath will retrieve <strong>{targetEntity}</strong> entities, that are connected with
+                    one <strong>{relatingEntity}</strong> entity.</strong>;
+            } else {
+                const relatingMetapathElements = [];
+                this.state.metapath.slice(1, this.state.metapath.length - 1).map((entity, index) => {
+                    const entityLabel = entity.data('label');
+                    return <strong key={`${entityLabel}-${index}`}>{entityLabel}</strong>;
+                }).forEach((element, index) => {
+                    if (index > 0) {
+                        relatingMetapathElements.push(<span> <FontAwesomeIcon icon={'play'} /> </span>);
+                    }
+                    relatingMetapathElements.push(element);
+                });
+                return <strong>Metapath will retrieve <strong>{targetEntity}</strong> entities, that are connected with
+                    the metapath {relatingMetapathElements}.</strong>;
+            }
+        }
+        return <div></div>;
+    }
+
+    render() {
         const datasetOptions = this.getDatasetOptions();
         const schema = this.getSchema();
         const validMetapathLength = this.checkMetapathLength();
@@ -922,6 +954,28 @@ export class Home extends React.Component<IHomeProps> {
                         {/* <MetapathControl metapath={this.state.metapath} onEntityRemove={this.deleteLast.bind(this)} neighbors={this.state.neighbors} /> */}
                     </Col>
                 </Row>
+                {this.checkMetapathDefined() &&
+                <Row className={'justify-content-center'}>
+                    <Col xs={'6'}>
+                        <Card className={'pt-0'}>
+                            <div>
+                                {this.generateNotification()}
+                            </div>
+                            {this.checkSymmetricMetapath() &&
+                            <div>
+                                <hr className={'mt-0'}/>
+                                <div>
+                                    <h5>Metapath interpretation</h5>
+                                    <p>
+                                        {this.getCrudeInterpretation()}
+                                    </p>
+                                </div>
+                            </div>
+                            }
+                        </Card>
+                    </Col>
+                </Row>
+                }
                 <Row className={'justify-content-center'}>
                     <Col md="6">
                         <br />
@@ -1207,39 +1261,53 @@ export class Home extends React.Component<IHomeProps> {
                 <Row>
                     <Col md='12'>
                         <Container>
-                            <br />
-                            {
-                                ((this.props.description || '').startsWith('Warning')) &&
-                                <Row className="small-red text-center">
-                                    <Col>
-                                        {this.props.description}
-                                    </Col>
+                            {this.props.uuid &&
+                            <Card className={'my-4 pt-0'}>
+                                <Row className={'justify-content-end'}>
+                                    <h5 className={'p-2'}><strong className={'text-muted'}>Job
+                                        ID: {this.props.uuid}</strong></h5>
                                 </Row>
+                                <br />
+                                { this.props.error &&
+                                    <Row>
+                                        <Col xs={'12'} className={'text-danger'}>{this.props.error}</Col>
+                                    </Row>
+                                }
+                                {
+                                    ((this.props.description || '').startsWith('Warning')) &&
+                                    <Row className="small-red text-center">
+                                        <Col>
+                                            {this.props.description}
+                                        </Col>
+                                    </Row>
+                                }
+                                {
+                                    (this.props.loading) &&
+                                    <Row className="small-grey text-center">
+                                        <Col>
+                                            The analysis may take some time, you can check its progress in the
+                                            following <Link to={`/jobs/${this.props.uuid}`}
+                                                            target="_blank">link</Link> (job
+                                            id = {this.props.uuid}).<br />
+                                            {this.getDescriptionString()}
+                                        </Col>
+                                    </Row>
+                                }
+                                {
+                                    (this.props.loading) && <Progress animated color="info"
+                                                                      value={this.props.progress}>{this.props.progressMsg}</Progress>
+                                }
+                                <ResultsPanel
+                                    uuid={this.props.uuid}
+                                    description={this.getDescriptionString()}
+                                    results={this.props.results}
+                                    analysis={this.props.analysis}
+                                    analysisId={this.props.uuid}
+                                    loadMore={this.loadMoreResults.bind(this)}
+                                    rerun={this.execute.bind(this)}
+                                />
+                            </Card>
                             }
-                            {
-                                (this.props.loading) &&
-                                <Row className="small-grey text-center">
-                                    <Col>
-                                        The analysis may take some time, you can check its progress in the
-                                        following <Link to={`/jobs/${this.props.uuid}`} target="_blank">link</Link> (job
-                                        id = {this.props.uuid}).<br />
-                                        {this.getDescriptionString()}
-                                    </Col>
-                                </Row>
-                            }
-                            {
-                                (this.props.loading) && <Progress animated color="info"
-                                                                  value={this.props.progress}>{this.props.progressMsg}</Progress>
-                            }
-                            <ResultsPanel
-                                uuid={this.props.uuid}
-                                description={this.getDescriptionString()}
-                                results={this.props.results}
-                                analysis={this.props.analysis}
-                                analysisId={this.props.uuid}
-                                loadMore={this.loadMoreResults.bind(this)}
-                                rerun={this.execute.bind(this)}
-                            />
                         </Container>
                     </Col>
                 </Row>

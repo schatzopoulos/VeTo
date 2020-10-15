@@ -61,7 +61,6 @@ export default (state: AnalysisState = initialState, action): AnalysisState => {
         progressMsg: null,
         description: null,
         error: errorMsg,
-        uuid: null,
         analysis: null,
         results: {}
       };
