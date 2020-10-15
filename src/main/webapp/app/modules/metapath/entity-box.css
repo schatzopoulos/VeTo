@@ -6,6 +6,10 @@
   line-height: 0.8;
 }
 
+.constraints-number {
+  margin-left: -0.5rem;
+}
+
 .unset {
   color: #bbbbbb;
 }

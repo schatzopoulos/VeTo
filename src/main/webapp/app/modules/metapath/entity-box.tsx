@@ -29,7 +29,7 @@ class EntityBox extends React.Component<any, any> {
   numberOfConditions() {
     if (this.props.constraints) {
       const conditionsReducer = (setConditions, currentCondition) => {
-        return currentCondition.value ? setConditions + 1 : setConditions;
+        return (currentCondition.value && currentCondition.index!==0) ? setConditions + 1 : setConditions;
       };
       const fieldsReducer = (constrainedFieldConditions, currentFieldConstraints) => {
         return (currentFieldConstraints.enabled) ? constrainedFieldConditions+currentFieldConstraints.conditions.reduce(conditionsReducer, 0) : constrainedFieldConditions;
@@ -43,7 +43,7 @@ class EntityBox extends React.Component<any, any> {
   numberOfConstraints() {
     if (this.props.constraints) {
       const fieldsReducer = (constrainedFields, currentField) => {
-        return (currentField.enabled && currentField.conditions.some(condition=> !!condition.value))? constrainedFields+1 : constrainedFields;
+        return (currentField.enabled && currentField.conditions.some(condition=> (condition.value && condition.index!==0)))? constrainedFields+1 : constrainedFields;
       };
       return Object.values(this.props.constraints).reduce(fieldsReducer, 0);
     } else {
@@ -54,7 +54,7 @@ class EntityBox extends React.Component<any, any> {
   constraintSummary() {
     if (this.props.constraints) {
       const constaintStrings = Object.keys(this.props.constraints).filter(key => key!=='id').map(key => {
-        const conditionStrings= this.props.constraints[key].conditions.map(conditionObject => {
+        const conditionStrings= this.props.constraints[key].conditions.filter(conditionObject => conditionObject.index!==0).map(conditionObject => {
           return `\t\t- ${conditionObject.logicOp? conditionObject.logicOp+' ':' '}${key} ${conditionObject.operation} ${conditionObject.value}`;
         })
         return `\t* for field '${key}':\n`+conditionStrings.join('\n');
@@ -106,7 +106,7 @@ class EntityBox extends React.Component<any, any> {
                   </Row>
                 </ModalBody>
                 <ModalFooter>
-                  <Button color={'dark'} onClick={this.toggleReferenceKeyModal.bind(this)}>Close</Button>
+                  <Button color={'info'} onClick={this.toggleReferenceKeyModal.bind(this)}><FontAwesomeIcon icon={'save'}/> Save</Button>
                 </ModalFooter>
               </Modal>
             </div>
@@ -142,13 +142,13 @@ class EntityBox extends React.Component<any, any> {
                   />
                 </ModalBody>
                 <ModalFooter>
-                  <Button color={'dark'} onClick={this.toggleConstraintsModal.bind(this)}>Save</Button>
+                  <Button color={'info'} onClick={this.toggleConstraintsModal.bind(this)}><FontAwesomeIcon icon={'save'}/> Save</Button>
                 </ModalFooter>
               </Modal>
             </div>
           }
           {this.numberOfConditions() > 0 &&
-          <div title={this.constraintSummary()} className={'d-inline-block text-muted'}>{`(${this.numberOfConditions()})`}</div>
+          <div title={this.constraintSummary()} className={'d-inline-block text-muted constraints-number'}>{`(${this.numberOfConditions()})`}</div>
           }
         </div>
       </div>
