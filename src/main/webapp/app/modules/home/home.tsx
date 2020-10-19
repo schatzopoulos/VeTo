@@ -804,8 +804,8 @@ export class Home extends React.Component<IHomeProps> {
             const targetEntity = this.state.metapath[0].data('label');
             if (this.state.metapath.length === 3) {
                 const relatingEntity = this.state.metapath[1].data('label');
-                return <strong>Metapath will retrieve <strong>{targetEntity}</strong> entities, that are connected with
-                    one <strong>{relatingEntity}</strong> entity.</strong>;
+                return <strong><small>Metapath will retrieve <strong>{targetEntity}</strong> entities, that are connected with
+                    one <strong>{relatingEntity}</strong> entity.</small></strong>;
             } else {
                 const relatingMetapathElements = [];
                 this.state.metapath.slice(1, this.state.metapath.length - 1).map((entity, index) => {
@@ -817,8 +817,8 @@ export class Home extends React.Component<IHomeProps> {
                     }
                     relatingMetapathElements.push(element);
                 });
-                return <strong>Metapath will retrieve <strong>{targetEntity}</strong> entities, that are connected with
-                    the metapath {relatingMetapathElements}.</strong>;
+                return <strong><small>Metapath will retrieve <strong>{targetEntity}</strong> entities, that are connected with
+                    the metapath {relatingMetapathElements}.</small></strong>;
             }
         }
         return <div></div>;
@@ -927,13 +927,13 @@ export class Home extends React.Component<IHomeProps> {
                         </Row>
                         <br />
 
-                        <h5>Dataset schema</h5>
+                        <h5 className={'text-secondary my-0'}>Dataset schema</h5>
                         <Card className="mx-auto">
                             {schema}
                         </Card>
 
                         <br />
-                        <h5>Select metapath</h5>
+                        <h4>Select metapath</h4>
                         {(this.props.schemas) &&
                         <MetapathPanel
                             metapath={this.state.metapath}
@@ -955,24 +955,23 @@ export class Home extends React.Component<IHomeProps> {
                     </Col>
                 </Row>
                 {this.checkMetapathDefined() &&
-                <Row className={'justify-content-center'}>
-                    <Col xs={'6'}>
-                        <Card className={'pt-0'}>
+                <Row className={'justify-content-center mt-1'}>
+                    <Col md={'6'}>
+                        <div className={'balloon bg-light-grey'}>
                             <div>
                                 {this.generateNotification()}
                             </div>
                             {this.checkSymmetricMetapath() &&
                             <div>
-                                <hr className={'mt-0'}/>
+                                <hr className={'m-0'}/>
                                 <div>
-                                    <h5>Metapath interpretation</h5>
-                                    <p>
+                                    <p className={'m-0'}>
                                         {this.getCrudeInterpretation()}
                                     </p>
                                 </div>
                             </div>
                             }
-                        </Card>
+                        </div>
                     </Col>
                 </Row>
                 }

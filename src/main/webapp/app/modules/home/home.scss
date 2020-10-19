@@ -32,3 +32,27 @@ Main page styles
 .configuration-card {
   padding: 1rem;
 }
+
+.bg-light-grey {
+  background-color: #e3e3e3;
+}
+
+.balloon {
+  padding: 0.5rem 2rem;
+  border-radius: 1rem;
+  position: relative;
+}
+
+.balloon:after {
+  position: absolute;
+  display: block;
+  top: -40px;
+  left: 2rem;
+  content: ' ';
+  border-style: solid;
+  border-width: 0px;
+  border-left-width: 10px;
+  border-right-width: 10px;
+  border-color: transparent;
+  border-bottom: solid 40px #e3e3e3;
+}
