@@ -126,7 +126,6 @@ class EntityBox extends React.Component<any, any> {
               </Button>
               <Modal isOpen={this.state.constraintsModal} toggle={this.toggleConstraintsModal.bind(this)}
                      className={'w-75 mw-100'}>
-                <ModalHeader>{this.numberOfConstraints()>0 ? `${this.numberOfConstraints()} constraints, ${this.numberOfConditions()} conditions` : 'No selected constraints'}</ModalHeader>
                 <ModalBody>
                   <ConstraintItem
                     key={this.props.idIndexedSchema[this.props.entity]}
@@ -142,7 +141,8 @@ class EntityBox extends React.Component<any, any> {
                   />
                 </ModalBody>
                 <ModalFooter>
-                  <Button color={'info'} onClick={this.toggleConstraintsModal.bind(this)}><FontAwesomeIcon icon={'save'}/> Save</Button>
+                    <em className={'text-muted'}>{this.numberOfConstraints()>0 ? `${this.numberOfConstraints()} constraints, ${this.numberOfConditions()} conditions` : ''}</em>
+                    <Button color={'info'} onClick={this.toggleConstraintsModal.bind(this)}><FontAwesomeIcon icon={'save'}/> Save</Button>
                 </ModalFooter>
               </Modal>
             </div>

@@ -835,6 +835,8 @@ export class Home extends React.Component<IHomeProps> {
         const { selectedEntity, selectFieldOptions }: any = this.getSelectFieldOptions();
         let datasetFolder = '';
         let datasetToUse;
+        console.log('Home: render() - watching state.constraints: ')
+        console.log(this.state.constraints);
         if (this.props.schemas) {
             if (this.state.dataset === null) {
                 datasetToUse = Object.keys(this.props.schemas)[0];

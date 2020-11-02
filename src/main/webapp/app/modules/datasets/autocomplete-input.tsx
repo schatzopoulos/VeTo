@@ -3,87 +3,219 @@ import './upload.scss';
 import React from 'react';
 import { connect } from 'react-redux';
 import { IRootState } from 'app/shared/reducers';
-import  _  from 'lodash';
-import { __metadata } from 'tslib';
 import { AsyncTypeahead } from 'react-bootstrap-typeahead';
 import axios from 'axios';
 import 'react-bootstrap-typeahead/css/Typeahead.css';
 
 export interface IAutocompleteInputProps extends StateProps, DispatchProps {
     id: string,
-    placeholder: string, 
+    index: number,
+    placeholder: string,
 
-    entity: string, 
-    field: string, 
-    folder: string, 
+    entity: string,
+    field: string,
+    folder: string,
     size?: string,
     value?: string,
 
-    disabled: boolean, 
+    disabled: boolean,
     onChange: any,
-
+    hasValidValue: any
+    additionTriggerCallback: any
 };
 
 export class AutocompleteInput extends React.Component<IAutocompleteInputProps> {
-	readonly state:any = {
+
+    ref = null;
+    index = 0;
+
+    readonly state: any = {
+        menuOpen: false,
+        blurValue: '',
         isLoading: false,
         options: [],
+        current: ''
     };
 
-    onSearch(query) {
-        this.setState({ isLoading: true }, () => {
-            axios.get(`api/datasets/autocomplete`, {
-                params: {
-                    entity: this.props.entity,
-                    field: this.props.field,
-                    folder: this.props.folder,
-                    term: query
-                }
-            }).then( (response) => {
-                this.setState({
-                    isLoading: false,
-                    options: response.data,
-                });
+    constructor(props) {
+        super(props);
+        this.ref = React.createRef();
+    }
+
+    componentDidUpdate(prevProps: Readonly<IAutocompleteInputProps>, prevState: Readonly<{}>, snapshot?: any) {
+        console.log('AutocompleteInput: componentDidUpdate() - watching this.index: '+this.index);
+        console.log('AutocompleteInput: componentDidUpdate() - watching props.index: '+this.props.index);
+        if (this.index !== this.props.index) {
+            this.setState({
+                current:''
+            },()=>{
+                this.clearField();
+                this.index = this.props.index;
             });
+        }
+    }
+
+    emitValidity() {
+        const currentFieldValue = this.state.current;
+        if (currentFieldValue) {
+            return this.props.hasValidValue(this.validateCurrentValue());
+        } else {
+            this.props.hasValidValue(false);
+        }
+    }
+
+    emitValue(callback = () => {
+    }) {
+        const currentFieldValueLC = this.state.current.toLowerCase();
+        if (currentFieldValueLC) {
+            const validOption = this.state.options.find(option => option.name.toLowerCase() === currentFieldValueLC);
+            console.log('AutocompleteInput: emitValue() - watching state.current in lowercase: ' + currentFieldValueLC);
+            console.log('AutocompleteInput: emitValue() - watching state.options: ' + this.state.options);
+            console.log('AutocompleteInput: emitValue() - watching validOptionIndex: ' + validOption);
+            if (validOption !== undefined) {
+                this.props.onChange(validOption.name, callback);
+            } else {
+                this.props.onChange('', callback);
+            }
+        } else {
+            this.props.onChange('', callback);
+        }
+    }
+
+    onBlur() {
+        console.log('AutocompleteInput: entering onBlur()');
+        if (this.state.isLoading) {
+            console.log('AutocompleteInput: onBlur(): Blur event before response');
+            this.setState({
+                blurValue: this.state.current
+            });
+        } else {
+            this.emitValue();
+        }
+        console.log('AutocompleteInput: exiting onBlur()');
+    }
+
+    onInput(currentValue) {
+        if (currentValue) {
+            const isLoading = true; // change for looking in cache
+            this.setState({
+                isLoading,
+                current: currentValue
+            }, () => this.props.hasValidValue(false));
+        } else {
+            this.setState({
+                current: ''
+            }, () => this.props.hasValidValue(false));
+        }
+    }
+
+    onSearch(query) {
+        console.log('AutocompleteInput: onSearch() - Searching for ' + query);
+        axios.get(`api/datasets/autocomplete`, {
+            params: {
+                entity: this.props.entity,
+                field: this.props.field,
+                folder: this.props.folder,
+                term: query
+            }
+        }).then((response) => {
+            console.log('AutocompleteInput: onSearch() - got response from API for: ' + query);
+            console.log('AutocompleteInput: onSearch() - watching state.current: ' + this.state.current);
+            console.log('AutocompleteInput: onSearch() - watching state.blurValue: ' + this.state.blurValue);
+            if (this.state.current === query) {
+                if (this.state.blurValue && this.state.blurValue === this.state.current) {
+                    this.setState({
+                        isLoading: false,
+                        options: response.data,
+                        blurValue: ''
+                    }, () => {
+                        this.emitValue();
+                        this.emitValidity();
+                    });
+                } else {
+                    this.setState({
+                        isLoading: false,
+                        options: response.data
+                    }, () => {
+                        this.emitValidity();
+                    });
+                }
+            }
         });
     }
-    onChange(e) {
-        this.props.onChange(e);
+
+    validateCurrentValue() {
+        const currentFieldValueLC = this.state.current.toLowerCase();
+        if (currentFieldValueLC) {
+            return (this.state.options.some(option => option.name.toLowerCase() === currentFieldValueLC));
+        }
     }
-	render() {
 
-        return (
-			<AsyncTypeahead
-                allowNew={false}
-                isLoading={this.state.isLoading}
-                multiple={false}
-                options={this.state.options}
-                id={this.props.id}
-                labelKey="name"
-                minLength={1}
-                onSearch={this.onSearch.bind(this)}
-                onChange={this.onChange.bind(this)}
-                placeholder={this.props.placeholder}
-                disabled={this.props.disabled}
-                bsSize={this.props.size}
-                defaultInputValue={this.props.value || ''}
-            />
-		);
-	}
+    clearField() {
+        if ((this.ref) && (this.ref.current)) {
+            console.log(this.ref.current);
+            this.ref.current.getInstance().clear();
+        }
+    }
+
+    onKeyDown(e) {
+        if (e.key === 'Enter' && !this.state.menuOpen) {
+            this.emitValue(this.props.additionTriggerCallback);
+        }
+    }
+
+    onMenuToggle(isOpen) {
+        this.setState({
+            menuOpen: isOpen
+        });
+    }
+
+    onChange(e) {
+        if (e.length > 0) {
+            this.setState({
+                current: e[0].name
+            }, this.emitValidity);
+        }
+    }
+
+    render() {
+        console.log('Autocomplete-Input: render() - watching "state.current": ' + this.state.current);
+        console.log('Autocomplete-Input: render() - watching "state.options": ' + this.state.options.map(option => option.name));
+        const asyncTypeaheadJsx=<AsyncTypeahead
+            allowNew={false}
+            isLoading={this.state.isLoading}
+            multiple={false}
+            options={this.state.options || this.state.lastOptions || [this.state.current]}
+            id={this.props.id}
+            labelKey="name"
+            minLength={1}
+            onInputChange={this.onInput.bind(this)}
+            onSearch={this.onSearch.bind(this)}
+            onChange={this.onChange.bind(this)}
+            onBlur={this.onBlur.bind(this)}
+            onMenuToggle={this.onMenuToggle.bind(this)}
+            onKeyDown={this.onKeyDown.bind(this)}
+            placeholder={this.props.placeholder}
+            disabled={this.props.disabled}
+            bsSize={this.props.size}
+            useCache={false}
+            ref={this.ref}
+        />
+        return asyncTypeaheadJsx;
+    }
 };
 
-const mapStateToProps = (storeState: IRootState) => ({  
-});
 
-const mapDispatchToProps = { 
-};
+const mapStateToProps = (storeState: IRootState) => ({});
+
+const mapDispatchToProps = {};
 
 type StateProps = ReturnType<typeof mapStateToProps>;
 type DispatchProps = typeof mapDispatchToProps;
 
 export default connect(
-	mapStateToProps,
-	mapDispatchToProps,
+    mapStateToProps,
+    mapDispatchToProps
 )(AutocompleteInput);
 
 
