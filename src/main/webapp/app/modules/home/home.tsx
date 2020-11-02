@@ -808,7 +808,7 @@ export class Home extends React.Component<IHomeProps> {
                     one <strong>{relatingEntity}</strong> entity.</small></strong>;
             } else {
                 const relatingMetapathElements = [];
-                this.state.metapath.slice(1, this.state.metapath.length - 1).map((entity, index) => {
+                this.state.metapath.map((entity, index) => {
                     const entityLabel = entity.data('label');
                     return <strong key={`${entityLabel}-${index}`}>{entityLabel}</strong>;
                 }).forEach((element, index) => {
@@ -929,7 +929,7 @@ export class Home extends React.Component<IHomeProps> {
                         </Row>
                         <br />
 
-                        <h5 className={'text-secondary my-0'}>Dataset schema</h5>
+                        <span className={'text-secondary my-0'}>Dataset schema</span>
                         <Card className="mx-auto">
                             {schema}
                         </Card>
