@@ -142,7 +142,7 @@ class EntityBox extends React.Component<any, any> {
                   />
                 </ModalBody>
                 <ModalFooter>
-                    <em className={'text-muted'}>{this.numberOfConstraints()>0 ? `${this.numberOfConstraints()} constraints, ${this.numberOfConditions()} conditions` : ''}</em>
+                    <em className={'text-muted'}>{this.numberOfConstraints()>0 ? ((this.numberOfConstraints()>1? `${this.numberOfConstraints()} constraints`:'1 constraint')+' having '+(this.numberOfConditions()>1? `${this.numberOfConditions()} conditions`:'1 condition')): ''}</em>
                     <Button color={'info'} onClick={this.toggleConstraintsModal.bind(this)}><FontAwesomeIcon icon={'save'}/> Save</Button>
                 </ModalFooter>
               </Modal>
