@@ -410,6 +410,20 @@ export class Home extends React.Component<IHomeProps> {
         });
     }
 
+    handleMultipleConditionsAddition({ entity, field }, conditionsList) {
+        const constraints = { ...this.state.constraints };
+
+        conditionsList.forEach(condition => {
+            this.checkAndCreateConstraints(constraints, {
+                entity,
+                field
+            }, null, condition.logicOp, condition.operation, condition.value);
+        });
+        this.setState({
+            constraints
+        });
+    }
+
     handleConstraintAddition({ entity, field }, logicOp, conditionOp, value) {
         const constraints = { ...this.state.constraints };
 
@@ -790,11 +804,13 @@ export class Home extends React.Component<IHomeProps> {
                     if (this.checkConstraints()) {
                         return <p className={'m-0'}><small className={'text-success'}>Valid metapath!</small></p>;
                     }
-                    return <p className={'m-0'}><small className={'text-danger'}>At least one constraint must be defined</small></p>;
+                    return <p className={'m-0'}><small className={'text-danger'}>At least one constraint must be
+                        defined</small></p>;
                 }
                 return <p className={'m-0'}><small className={'text-danger'}>Metapath must be symmetric</small></p>;
             }
-            return <p className={'m-0'}><small className={'text-danger'}>Metapath must contain at least 3 entities</small></p>;
+            return <p className={'m-0'}><small className={'text-danger'}>Metapath must contain at least 3
+                entities</small></p>;
         }
         return <div></div>;
     }
@@ -804,7 +820,8 @@ export class Home extends React.Component<IHomeProps> {
             const targetEntity = this.state.metapath[0].data('label');
             if (this.state.metapath.length === 3) {
                 const relatingEntity = this.state.metapath[1].data('label');
-                return <strong><small>Metapath will retrieve <strong>{targetEntity}</strong> entities, that are connected with
+                return <strong><small>Metapath will retrieve <strong>{targetEntity}</strong> entities, that are
+                    connected with
                     one <strong>{relatingEntity}</strong> entity.</small></strong>;
             } else {
                 const relatingMetapathElements = [];
@@ -817,7 +834,8 @@ export class Home extends React.Component<IHomeProps> {
                     }
                     relatingMetapathElements.push(element);
                 });
-                return <strong><small>Metapath will retrieve <strong>{targetEntity}</strong> entities, that are connected with
+                return <strong><small>Metapath will retrieve <strong>{targetEntity}</strong> entities, that are
+                    connected with
                     the metapath {relatingMetapathElements}.</small></strong>;
             }
         }
@@ -835,7 +853,7 @@ export class Home extends React.Component<IHomeProps> {
         const { selectedEntity, selectFieldOptions }: any = this.getSelectFieldOptions();
         let datasetFolder = '';
         let datasetToUse;
-        console.log('Home: render() - watching state.constraints: ')
+        console.log('Home: render() - watching state.constraints: ');
         console.log(this.state.constraints);
         if (this.props.schemas) {
             if (this.state.dataset === null) {
@@ -850,42 +868,42 @@ export class Home extends React.Component<IHomeProps> {
             datasetFolder = this.props.schemas[datasetToUse]['folder'];
         }
 
-        const constraintsPanel = <Row>
-            <Col md="12">
-                <h4>Select constraints</h4>
-            </Col>
-            <Col md="12">
-                {
-                    <ListGroup>
-                        {
-                            (this.state.metapathStr.length > 0) ?
-                                _.map(this.state.constraints, (entityConstraints, entity) => {
-                                    return <ConstraintItem
-                                        key={entity}
-                                        datasetFolder={datasetFolder}
-                                        entity={entity}
-                                        entityConstraints={entityConstraints}
-                                        handleSwitch={this.handleConstraintSwitch.bind(this)}
-                                        handleDropdown={this.handleConstraintOpDropdown.bind(this)}
-                                        handleLogicDropdown={this.handleConstraintLogicOpDropdown.bind(this)}
-                                        handleInput={this.handleConstraintInputChange.bind(this)}
-                                        handleAddition={this.handleConstraintAddition.bind(this)}
-                                        handleRemoval={this.handleConstraintRemoval.bind(this)}
-
-                                    />;
-                                })
-                                : 'No constraints can be applied'
-                        }
-                    </ListGroup>
-                }
-                {
-                    (!validConstraints && (this.state.metapathStr.length !== 0)) &&
-                    <span className="attribute-type text-danger">
-						Please provide at least one constraint.
-				</span>
-                }
-            </Col>
-        </Row>;
+        // const constraintsPanel = <Row>
+        //     <Col md="12">
+        //         <h4>Select constraints</h4>
+        //     </Col>
+        //     <Col md="12">
+        //         {
+        //             <ListGroup>
+        //                 {
+        //                     (this.state.metapathStr.length > 0) ?
+        //                         _.map(this.state.constraints, (entityConstraints, entity) => {
+        //                             return <ConstraintItem
+        //                                 key={entity}
+        //                                 datasetFolder={datasetFolder}
+        //                                 entity={entity}
+        //                                 entityConstraints={entityConstraints}
+        //                                 handleSwitch={this.handleConstraintSwitch.bind(this)}
+        //                                 handleDropdown={this.handleConstraintOpDropdown.bind(this)}
+        //                                 handleLogicDropdown={this.handleConstraintLogicOpDropdown.bind(this)}
+        //                                 handleInput={this.handleConstraintInputChange.bind(this)}
+        //                                 handleAddition={this.handleConstraintAddition.bind(this)}
+        //                                 handleRemoval={this.handleConstraintRemoval.bind(this)}
+        //
+        //                             />;
+        //                         })
+        //                         : 'No constraints can be applied'
+        //                 }
+        //             </ListGroup>
+        //         }
+        //         {
+        //             (!validConstraints && (this.state.metapathStr.length !== 0)) &&
+        //             <span className="attribute-type text-danger">
+        // 				Please provide at least one constraint.
+        // 		</span>
+        //         }
+        //     </Col>
+        // </Row>;
         const rankingLabel = <span>
 			Ranking <FontAwesomeIcon style={{ color: '#17a2b8' }} icon="question-circle"
                                      title="Ranking analysis is perfomed using PageRank." />
@@ -952,7 +970,9 @@ export class Home extends React.Component<IHomeProps> {
                             handleInput={this.handleConstraintInputChange.bind(this)}
                             handleAddition={this.handleConstraintAddition.bind(this)}
                             handleRemoval={this.handleConstraintRemoval.bind(this)}
-                            handleSelectFieldChange={this.handleSelectFieldChange.bind(this)} />}
+                            handleSelectFieldChange={this.handleSelectFieldChange.bind(this)}
+                            handleMultipleAddition={this.handleMultipleConditionsAddition.bind(this)} />
+                        }
                         {/* <MetapathControl metapath={this.state.metapath} onEntityRemove={this.deleteLast.bind(this)} neighbors={this.state.neighbors} /> */}
                     </Col>
                 </Row>
@@ -965,7 +985,7 @@ export class Home extends React.Component<IHomeProps> {
                             </div>
                             {this.checkSymmetricMetapath() &&
                             <div>
-                                <hr className={'m-0'}/>
+                                <hr className={'m-0'} />
                                 <div>
                                     <p className={'m-0'}>
                                         {this.getCrudeInterpretation()}
@@ -1269,10 +1289,10 @@ export class Home extends React.Component<IHomeProps> {
                                         ID: {this.props.uuid}</strong></h5>
                                 </Row>
                                 <br />
-                                { this.props.error &&
-                                    <Row>
-                                        <Col xs={'12'} className={'text-danger'}>{this.props.error}</Col>
-                                    </Row>
+                                {this.props.error &&
+                                <Row>
+                                    <Col xs={'12'} className={'text-danger'}>{this.props.error}</Col>
+                                </Row>
                                 }
                                 {
                                     ((this.props.description || '').startsWith('Warning')) &&

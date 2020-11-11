@@ -22,6 +22,7 @@ export interface IConstraintItemProps {
 	handleInput: any,
 	handleAddition: any,
 	handleRemoval: any,
+    handleMultipleAddition: any
 }
 
 export class ConstraintItem extends React.Component<IConstraintItemProps> {
@@ -57,6 +58,7 @@ export class ConstraintItem extends React.Component<IConstraintItemProps> {
                         handleDropdown={this.props.handleDropdown.bind(this)}
                         handleLogicDropdown={this.props.handleLogicDropdown.bind(this)}
                         handleAddition={this.props.handleAddition.bind(this)}
+                        handleMultipleAddition={this.props.handleMultipleAddition}
                     />
                     : <ConstraintItemDescription
                         entity={entity}

@@ -30,10 +30,10 @@ const ConstraintItemDescription = (props) => {
             <Col md='1'>
                 {operation}
             </Col>
-            <Col md='6'>
+            <Col md='5'>
                 {value}
             </Col>
-            <Col md='1'>
+            <Col md='2'>
                 <Button disabled={!enabled} color="danger" outline size="sm" title="Remove constraint"
                                   onClick={handleRemoval}><FontAwesomeIcon icon="minus" /></Button>
             </Col>

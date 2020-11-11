@@ -1,17 +1,10 @@
 import './constraint-item.scss';
 
 import React from 'react';
-import {
-    Row,
-    Col,
-    Input,
-    Label,
-    CustomInput,
-    Button
-} from 'reactstrap';
+import { Button, Col, CustomInput, Input, Label, Row } from 'reactstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import AutocompleteInput from '../datasets/autocomplete-input';
-import _ from 'lodash';
+import ConditionFileSelector from 'app/modules/constraints/condition-file-selector';
 import { examples } from './constraint-examples';
 
 export interface IConstraintItemFieldProps {
@@ -28,7 +21,8 @@ export interface IConstraintItemFieldProps {
     handleSwitch: any,
     handleDropdown: any,
     handleLogicDropdown: any,
-    handleAddition: any
+    handleAddition: any,
+    handleMultipleAddition: any
 }
 
 export class ConstraintItemField extends React.Component<IConstraintItemFieldProps> {
@@ -87,16 +81,17 @@ export class ConstraintItemField extends React.Component<IConstraintItemFieldPro
         }
     }
 
-    handleInput(val, callback=()=>{}) {
-        console.log('ConstraintItemField: handleInput - watching val: '+val);
+    handleInput(val, callback = () => {
+    }) {
+        console.log('ConstraintItemField: handleInput - watching val: ' + val);
         if (val) {
             this.setState({
                 value: val
-            },callback);
+            }, callback);
         } else {
             this.setState({
                 value: ''
-            },callback)
+            }, callback);
         }
     }
 
@@ -104,6 +99,12 @@ export class ConstraintItemField extends React.Component<IConstraintItemFieldPro
         this.setState({
             additionActive: isValid
         });
+    }
+
+    handleMultipleAddition(conditionList) {
+        conditionList[0].logicOp=this.state.logicOperation;
+        console.log(conditionList);
+        this.props.handleMultipleAddition({entity:this.props.entity, field:this.props.field}, conditionList);
     }
 
     submitCurrentValue() {
@@ -124,9 +125,9 @@ export class ConstraintItemField extends React.Component<IConstraintItemFieldPro
             );
 
             this.setState({
-                additionActive:false,
+                additionActive: false,
                 value: this.props.data.value,
-                fieldIndex: this.state.fieldIndex+1
+                fieldIndex: this.state.fieldIndex + 1
             });
         }
     }
@@ -148,9 +149,9 @@ export class ConstraintItemField extends React.Component<IConstraintItemFieldPro
 
     handleNumericalInput(e) {
         const numberString = e.target.value;
-        console.log('ConstraintItemField: handleNumericalInput() - watching numberString: '+numberString);
+        console.log('ConstraintItemField: handleNumericalInput() - watching numberString: ' + numberString);
         if (numberString) {
-            const number = Number.parseInt(numberString,10);
+            const number = Number.parseInt(numberString, 10);
             this.setState({
                 value: number,
                 additionActive: true
@@ -163,8 +164,8 @@ export class ConstraintItemField extends React.Component<IConstraintItemFieldPro
         }
     }
 
-    handleNumericalInputEnter(e){
-        if (e.key==='Enter') {
+    handleNumericalInputEnter(e) {
+        if (e.key === 'Enter') {
             this.submitCurrentValue();
         }
     }
@@ -181,11 +182,12 @@ export class ConstraintItemField extends React.Component<IConstraintItemFieldPro
         console.log(this.props.data);
         console.log('ConstaintItemField: render() - watching state: ');
         console.log(this.state);
-        console.log('ConstraintItemField: render() - watching index: '+index);
+        console.log('ConstraintItemField: render() - watching index: ' + index);
 
         const inputField = (type === 'numeric')
             ? <Input disabled={!enabled} defaultValue={''} onChange={this.handleNumericalInput.bind(this)} bsSize="sm"
-                         type='number' value={this.state.value || ''} onKeyDown={this.handleNumericalInputEnter.bind(this)}/>
+                     type='number' value={this.state.value || ''}
+                     onKeyDown={this.handleNumericalInputEnter.bind(this)} />
             : <AutocompleteInput
                 id="targetEntityInput"
                 onChange={this.handleInput} // callback used to register the value of the field each time
@@ -217,7 +219,7 @@ export class ConstraintItemField extends React.Component<IConstraintItemFieldPro
 
         return (
             <Row form key={`${entity}_${field}_${index}`} className={index === 0 ? 'mb-3' : ''}>
-                <Col md='1'>
+                <Col xs='1'>
                     {
                         (index === 0) &&
                         <CustomInput type="switch" id={entity + '.' + field + '_switch'}
@@ -225,7 +227,7 @@ export class ConstraintItemField extends React.Component<IConstraintItemFieldPro
                                      checked={enabled} />
                     }
                 </Col>
-                <Col md='2'>
+                <Col xs='11' lg={'2'}>
                     {
                         (index === 0)
                             ? <div>
@@ -238,10 +240,12 @@ export class ConstraintItemField extends React.Component<IConstraintItemFieldPro
                             </div>
                     }
                 </Col>
+                <Col xs={'2'} className={'d-lg-none'}></Col>
                 <Col md='1'>
                     {index === 0
-                        ? this.props.numberOfConditions>0
-                            ? <Input disabled={!enabled} value={this.state.logicOperation || 'or'} type="select" name="andOrDropdown"
+                        ? this.props.numberOfConditions > 0
+                            ? <Input disabled={!enabled} value={this.state.logicOperation || 'or'} type="select"
+                                     name="andOrDropdown"
                                      id={`${entity}_${field}_${index}`} bsSize="sm" onChange={this.handleLogicDropdown}>
                                 <option value="or">or</option>
                                 {(type === 'numeric') &&
@@ -273,10 +277,10 @@ export class ConstraintItemField extends React.Component<IConstraintItemFieldPro
                         </Input>
                     }
                 </Col>
-                <Col md='6'>
+                <Col md='5'>
                     {inputField}
                 </Col>
-                <Col md='1'>
+                <Col md='auto'>
                     <Button
                         disabled={!enabled || !this.state.additionActive}
                         color={'success'}
@@ -286,6 +290,15 @@ export class ConstraintItemField extends React.Component<IConstraintItemFieldPro
                         onClick={this.handleAddition}><FontAwesomeIcon
                         icon={'plus'} />
                     </Button>
+                    <ConditionFileSelector
+                        folder={this.props.datasetFolder}
+                        entity={this.props.entity}
+                        field={this.props.field}
+                        disabled={!enabled}
+                        id={'some-id'}
+                        isString={type !== 'numeric'}
+                        handleMultipleAddition={this.handleMultipleAddition.bind(this)}
+                    />
                 </Col>
                 <Col md={{ offset: 4, size: 5 }}>
                     {

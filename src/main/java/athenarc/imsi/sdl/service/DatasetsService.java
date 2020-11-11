@@ -9,6 +9,10 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.Iterator;
 
 import org.bson.Document;
 import org.slf4j.Logger;
@@ -32,7 +36,7 @@ public class DatasetsService {
     }
 
     public Document getSchemas() throws FileNotFoundException, IOException {
-        Document response = new Document(); 
+        Document response = new Document();
 
         String [] datasetDirs = FileUtil.findSubdirectories(Constants.DATA_DIR);
 
@@ -52,7 +56,7 @@ public class DatasetsService {
         BufferedReader reader;
         String filename = Constants.DATA_DIR + folder + "/nodes/" + entity + ".csv";
         reader = new BufferedReader(new FileReader(filename));
-        
+
         // read header line and find column of specified field
         String line = reader.readLine();
 
@@ -79,7 +83,42 @@ public class DatasetsService {
 
         }
         reader.close();
-		
+
         return docs;
+    }
+
+    public String[] findFiveNonExistent(String folder, String entity, String field, String[] terms) throws IOException {
+        List<Document> docs = new ArrayList<>();
+        BufferedReader reader;
+        String filename = Constants.DATA_DIR + folder + "/nodes/" + entity + ".csv";
+        Set<String> termSet = new HashSet<>(Arrays.asList(terms));
+        reader = new BufferedReader(new FileReader(filename));
+
+        // read header line and find column of specified field
+        String line = reader.readLine();
+
+        String [] columnNames = line.split("\t");
+        int i;
+        for (i=0; i<columnNames.length; i++) {
+            if (columnNames[i].startsWith(field))
+                break;
+        }
+
+        while( ( ( line = reader.readLine() ) != null) && (termSet.size()>0)) {
+            String [] attrs = line.split("\t");
+            termSet.remove(attrs[i].toLowerCase());
+        }
+
+        if (termSet.size()>0) {
+            String[] result = new String[Math.min(termSet.size(),5)];
+            Iterator<String> iter = termSet.iterator();
+            i=0;
+            while(iter.hasNext() && i<5) {
+                result[i++]=(String)iter.next();
+            }
+            return result;
+        } else {
+            return null;
+        }
     }
 }

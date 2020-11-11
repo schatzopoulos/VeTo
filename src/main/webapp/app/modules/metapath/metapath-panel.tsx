@@ -22,6 +22,7 @@ interface MetapathPanelProps {
     handleAddition: any
     handleRemoval: any
     handleSelectFieldChange: any
+    handleMultipleAddition: any
 };
 
 class MetapathPanel extends React.Component<MetapathPanelProps> {
@@ -99,7 +100,8 @@ class MetapathPanel extends React.Component<MetapathPanelProps> {
                                    handleLogicDropdown={this.props.handleLogicDropdown}
                                    handleInput={this.props.handleInput}
                                    handleAddition={this.props.handleAddition}
-                                   handleRemoval={this.props.handleRemoval} />
+                                   handleRemoval={this.props.handleRemoval}
+                                   handleMultipleAddition={this.props.handleMultipleAddition}/>
                     );
                     delete tempConstraints[element];
                 } else {

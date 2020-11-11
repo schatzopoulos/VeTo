@@ -138,6 +138,7 @@ class EntityBox extends React.Component<any, any> {
                     handleInput={this.props.handleInput}
                     handleAddition={this.props.handleAddition}
                     handleRemoval={this.props.handleRemoval}
+                    handleMultipleAddition={this.props.handleMultipleAddition}
                   />
                 </ModalBody>
                 <ModalFooter>
