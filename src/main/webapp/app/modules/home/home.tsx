@@ -953,7 +953,7 @@ export class Home extends React.Component<IHomeProps> {
                         </Card>
 
                         <br />
-                        <h4>Select metapath</h4>
+                        <h4>Query metapath</h4>
                         {(this.props.schemas) &&
                         <MetapathPanel
                             metapath={this.state.metapath}
