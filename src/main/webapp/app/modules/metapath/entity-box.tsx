@@ -2,6 +2,7 @@ import React from 'react';
 import { Button, Col, Input, Modal, ModalBody, ModalFooter, ModalHeader, Row } from 'reactstrap';
 
 import './entity-box.css';
+import { generateGroupsOfDisjunctions } from 'app/shared/util/constraint-utils';
 import ConstraintItem from 'app/modules/constraints/constraint-item';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
@@ -53,63 +54,27 @@ class EntityBox extends React.Component<any, any> {
 
     constraintSummary() {
         if (this.props.constraints) {
-            const constaintStrings = Object.keys(this.props.constraints).filter(key => key !== 'id').map(key => {
-                // const conditionStrings= this.props.constraints[key].conditions.filter(conditionObject => conditionObject.index!==0).map(conditionObject => {
-                //     return `\t\t- ${conditionObject.logicOp ? conditionObject.logicOp + ' ' : ' '}${key} ${conditionObject.operation} ${conditionObject.value}`;
-                // });
-                let lastOperation = '';
-                const andSegments = [];
-                const targetConditions = this.props.constraints[key].conditions.slice(1);
-                targetConditions.forEach((condition, index) => {
-                    if (index > 0) {
-                        if (lastOperation !== condition.logicOp) {
-                            if (condition.logicOp === 'and') {
-                                andSegments.push([index - 1, null]);
-                            } else {
-                                if (andSegments.length > 0) {
-                                    andSegments[andSegments.length - 1][1] = index - 1;
-                                }
-                            }
-                            lastOperation = condition.logicOp;
+            const entityDisjunctions = generateGroupsOfDisjunctions(this.props.constraints);
+            const entityExpressions = entityDisjunctions.map(fieldDisjunctions => {
+                const fieldExpressions = fieldDisjunctions.map(disjunction => {
+                    if (disjunction.length > 1) {
+                        const subconjuctions = disjunction.map(conjunctionMember => {
+                            return conjunctionMember.field + conjunctionMember.condition;
+                        });
+                        if (fieldDisjunctions.length>1) {
+                            return `(${subconjuctions.join(' and ')})`;
+                        } else {
+                            return `${subconjuctions.join(' and ')}`;
                         }
+                    } else {
+                        return disjunction[0].field + disjunction[0].condition;
                     }
                 });
-                if (targetConditions.length > 0) {
-                    if (andSegments.length > 0 && andSegments[andSegments.length - 1][1] === null) {
-                        andSegments[andSegments.length - 1][1] = targetConditions.length - 1;
-                    }
-                    const tempConditions = JSON.parse(JSON.stringify(targetConditions));
-                    andSegments.forEach(andSegment => {
-                        tempConditions[andSegment[0]].start = true;
-                        tempConditions[andSegment[1]].end = true;
-                    });
-                    const conditionString = tempConditions.reduce((stringUpToNow, condition) => {
-                        const logicOp = condition.logicOp || '';
-                        const entity = key;
-                        const operation = condition.operation;
-                        const value = condition.value;
-                        let constructedString = '';
-                        if (condition.start && !condition.end) {
-                            constructedString += ` ${logicOp} (`;
-                        } else {
-                            constructedString += ` ${logicOp} `;
-                        }
-                        constructedString += ` ${entity}${operation}`;
-                        if (condition.end && !condition.start) {
-                            constructedString += `${value})`;
-                        } else {
-                            constructedString += value;
-                        }
-
-                        return stringUpToNow+constructedString;
-                    }, '');
-                    return `\t* for field '${key}':\n\t\t` + conditionString.trim();
-                } else {
-                    return '';
-                }
+                return fieldExpressions.join(' or ');
             });
-            return `The following constraints have been set:\n` + constaintStrings.join('\n');
+            return entityExpressions.join(', ');
         }
+        return '';
     }
 
     render() {
@@ -196,10 +161,26 @@ class EntityBox extends React.Component<any, any> {
                                     />
                                 </ModalBody>
                                 <ModalFooter>
-                                    <em className={'text-muted'}>{this.numberOfConstraints() > 0 ? ((this.numberOfConstraints() > 1 ? `${this.numberOfConstraints()} constraints` : '1 constraint') + ' having ' + (this.numberOfConditions() > 1 ? `${this.numberOfConditions()} conditions` : '1 condition')) : ''}</em>
-                                    <Button color={'info'}
-                                            onClick={this.toggleConstraintsModal.bind(this)}><FontAwesomeIcon
-                                        icon={'save'} /> Save</Button>
+                                    <Col xs={'8'}>
+                                        <em className={'text-muted'}>
+                                            <span className={'font-weight-bold'}>
+                                            {
+                                                this.numberOfConstraints() > 0
+                                                    ? ((this.numberOfConstraints() > 1
+                                                    ? `${this.numberOfConstraints()} constraints`
+                                                    : '1 constraint') + ' having ' + (this.numberOfConditions() > 1 ? `${this.numberOfConditions()} conditions`
+                                                    : '1 condition')) : ''}
+                                            </span>
+                                            <br />
+                                            {this.constraintSummary()}
+
+                                        </em>
+                                    </Col>
+                                    <Col xs={'4'} className={'text-right'}>
+                                        <Button color={'info'}
+                                                onClick={this.toggleConstraintsModal.bind(this)}><FontAwesomeIcon
+                                            icon={'save'} /> Save</Button>
+                                    </Col>
                                 </ModalFooter>
                             </Modal>
                         </div>

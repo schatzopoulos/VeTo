@@ -58,6 +58,7 @@ public class AnalysisResource {
                 config.getMetapath(),
                 config.getJoinpath(),
                 config.getConstraints(),
+                config.getConstraintsExpression(),
                 config.getJoinK(),
                 config.getSearchK(),
                 config.getT(),
@@ -113,6 +114,9 @@ public class AnalysisResource {
 
             Document analysesParameters = null;
             analysesParameters = FileUtil.getAnalysesParameters(config);
+
+            Document query = (Document) config.get("query");
+            analysesParameters.append("constraintsExpression",(String)query.get("constraintsExpression"));
 
             String[] tokens = lastLine.split("\t");
 

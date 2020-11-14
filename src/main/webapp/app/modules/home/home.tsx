@@ -22,6 +22,7 @@ import {
 } from 'reactstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { IRootState } from 'app/shared/reducers';
+import { generateGroupsOfDisjunctions } from 'app/shared/util/constraint-utils';
 import CytoscapeComponent from 'react-cytoscapejs';
 import _ from 'lodash';
 import { analysisRun, getMoreResults, getResults, getStatus } from '../analysis/analysis.reducer';
@@ -466,11 +467,18 @@ export class Home extends React.Component<IHomeProps> {
             datasetToUse = this.state.dataset;
         }
 
+        const constaintDescriptions = {};
+        Object.keys(this.state.constraints).forEach((entity, index) => {
+            constaintDescriptions[entity] = generateGroupsOfDisjunctions(this.state.constraints[entity], `${entity}.`);
+        });
+        const constraintsExpression = this.constraintsSummary(constaintDescriptions);
+
         this.props.analysisRun(
             analysisType,
             this.state.metapathStr,
             this.getJoinPath(),
             this.state.constraints,
+            constraintsExpression,
             this.props.schemas[datasetToUse]['folder'],
             this.state.selectField,
             this.state.targetEntity,
@@ -777,7 +785,11 @@ export class Home extends React.Component<IHomeProps> {
         if (this.props.analysesParameters) {
             const metapath = this.props.analysesParameters.metapath;
             const analyses = this.props.analysesParameters.analyses.join(', ');
-            const constraints = this.props.analysesParameters.constraints.join(', ');
+            const constaintDescriptions = {};
+            Object.keys(this.state.constraints).forEach((entity, index) => {
+                constaintDescriptions[entity] = generateGroupsOfDisjunctions(this.state.constraints[entity], `${entity}.`);
+            });
+            const constraints = this.constraintsSummary(constaintDescriptions);
 
             let statusString = '';
             switch (this.props.analysesParameters.status) {
@@ -791,7 +803,7 @@ export class Home extends React.Component<IHomeProps> {
                     statusString = 'Unknown state when';
             }
 
-            return `${statusString} ${analyses} for metapath ${metapath} and constraint(s) ${constraints}.`;
+            return `${statusString} ${analyses} for metapath ${metapath} and constraint(s): ${constraints}.`;
         } else {
             return '';
         }
@@ -840,6 +852,35 @@ export class Home extends React.Component<IHomeProps> {
             }
         }
         return <div></div>;
+    }
+
+    constraintsSummary(constraintSegments) {
+        const constraintExpressions = Object.keys(constraintSegments).map(entity => {
+            const entityFields = constraintSegments[entity];
+            const fieldExpressions=entityFields.map(field => {
+                console.log('For: ')
+                console.log(field);
+                const disjunctionExpressions = field.map(disjunction => {
+                    if (disjunction.length>1) {
+                        const conjunctionExpressions = disjunction.map(conjunctionElement=>{
+                            console.log(conjunctionElement);
+                            return conjunctionElement.field+conjunctionElement.condition;
+                        })
+                        if (field.length>1) {
+                            return `(${conjunctionExpressions.join(' and ')})`;
+                        } else {
+                            return `${conjunctionExpressions.join(' and ')}`;
+                        }
+                    } else{
+                        return disjunction[0].field+disjunction[0].condition;
+                    }
+
+                });
+                return disjunctionExpressions.join(' or ');
+            });
+            return fieldExpressions.filter(expression=>!!expression).join(', ');
+        });
+        return constraintExpressions.filter(expression=>!!expression).join(', ');
     }
 
     render() {

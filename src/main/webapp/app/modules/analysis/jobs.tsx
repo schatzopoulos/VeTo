@@ -78,7 +78,7 @@ export class Jobs extends React.Component<IHomeProps> {
         if (this.props.analysesParameters) {
             const metapath = this.props.analysesParameters.metapath;
             const analyses = this.props.analysesParameters.analyses.join(', ');
-            const constraints = this.props.analysesParameters.constraints.join(', ');
+            const constraints = this.props.analysesParameters.constraintsExpression;
 
             let statusString = '';
             switch (this.props.analysesParameters.status) {
@@ -92,7 +92,7 @@ export class Jobs extends React.Component<IHomeProps> {
                     statusString = 'Unknown state when';
             }
 
-            return `${statusString} ${analyses} for metapath ${metapath} and constraint(s) ${constraints}.`;
+            return `${statusString} ${analyses} for metapath ${metapath} and constraint(s): ${constraints}.`;
         } else {
             return '';
         }

@@ -31,7 +31,7 @@ public class AnalysisService {
 
     @Async
     public void submit(String id, ArrayList<String> analysis, String metapath, String joinpath, Document constraints,
-            int joinK, int searchK, int t, int joinW, int searchW, int minValues, int targetId, String folder,
+            String constraintsExpression, int joinK, int searchK, int t, int joinW, int searchW, int minValues, int targetId, String folder,
             String selectField, int edgesThreshold, double prAlpha, double prTol, int joinMinValues,
             int searchMinValues) throws java.io.IOException, InterruptedException {
 
@@ -39,7 +39,7 @@ public class AnalysisService {
         String outputDir = FileUtil.createDir(id);
         String outputLog = FileUtil.getLogfile(id);
 
-        String config = FileUtil.writeConfig(analysis, outputDir, metapath, joinpath, constraints, joinK, searchK, t,
+        String config = FileUtil.writeConfig(analysis, outputDir, metapath, joinpath, constraints, constraintsExpression, joinK, searchK, t,
                 joinW, searchW, minValues, targetId, folder, selectField, edgesThreshold, prAlpha, prTol, joinMinValues,
                 searchMinValues);
 

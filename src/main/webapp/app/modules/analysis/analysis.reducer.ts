@@ -199,6 +199,7 @@ export const analysisRun = (
   metapath,
   joinpath,
   constraints,
+  constraintsExpression,
   folder,
   selectField,
   targetId,
@@ -217,6 +218,7 @@ export const analysisRun = (
   const payload = {
     searchK,
     joinK,
+    constraintsExpression,
     t: 1,
     minValues: 5,
     targetId,

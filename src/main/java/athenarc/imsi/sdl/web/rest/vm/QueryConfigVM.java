@@ -15,22 +15,24 @@ public class QueryConfigVM {
     @NotNull
     @Size(min = 1, max = 50)
     private String metapath;
-    
+
     @NotNull
     @Size(min = 1, max = 50)
     private String joinpath;
 
     @NotNull
     private String folder;
-    
+
     @NotNull
     private Document constraints;
 
     @NotNull
     private String selectField;
-    
+
     @NotNull
     private ArrayList<String> analysis;
+
+    private String constraintsExpression;
 
     private int searchK;
     private int joinK;
@@ -44,6 +46,14 @@ public class QueryConfigVM {
     private int edgesThreshold;
     private double prAlpha;
     private double prTol;
+
+    public void setConstraintsExpression(String constraintsExpression) {
+        this.constraintsExpression=constraintsExpression;
+    }
+
+    public String getConstraintsExpression() {
+        return this.constraintsExpression;
+    }
 
     public double getPrAlpha() {
         return this.prAlpha;
@@ -194,7 +204,7 @@ public class QueryConfigVM {
         StringBuilder sb = new StringBuilder();
         sb.append("RankingParamsVM {");
         sb.append("\tmetapath: " + this.metapath);
-        sb.append("\tconstraint: " + this.constraints.toString());       
+        sb.append("\tconstraint: " + this.constraints.toString());
         sb.append("\tfolder: " + this.folder);
         sb.append("}");
         return sb.toString();

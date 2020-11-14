@@ -114,6 +114,7 @@ public final class FileUtil {
         String metapath,
         String joinpath,
         Document constraints,
+        String constraintsExpression,
         int joinK,
         int searchK,
         int t,
@@ -178,6 +179,7 @@ public final class FileUtil {
         query.put("metapath", metapath);
         query.put("joinpath", joinpath);
         query.put("constraints", constraints);
+        query.put("constraintsExpression", constraintsExpression);
 
         config.put("query", query);
 
