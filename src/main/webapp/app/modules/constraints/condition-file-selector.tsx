@@ -20,8 +20,7 @@ class ConditionFileSelector extends React.Component<any, any> {
                 const reader = new FileReader();
 
                 reader.onload = (ev) => {
-                    const content = ev.target.result;
-
+                    const content = String(reader.result);
                     if (content) {
                         const conditions = JSON.parse(content);
                         this.validateType(conditions);
@@ -103,8 +102,6 @@ class ConditionFileSelector extends React.Component<any, any> {
                 field: this.props.field,
                 terms: values.join(',')
             }
-        }).catch(response => {
-            alert('An error occured while trying to validate conditions. Please try again.');
         }).then(response => {
             const responseData = response.data;
             if (responseData.result) {
@@ -121,6 +118,18 @@ class ConditionFileSelector extends React.Component<any, any> {
                 } else {
                     alert('Some of the values contained in the conditions file, do not exist:\n\ne.g. ' + nonExistentString);
                 }
+            }
+        }).catch(err => {
+            if (err.response) {
+                if (err.response.status >= 500) {
+                    alert("A server error occurred while attempting to validate the given file conditions.\n\nPlease try again.");
+                } else {
+                    alert("An error occurred while requesting the validation of the given file's conditions.\n\nPlease refresh your page and try again");
+                }
+            } else if (err.request) {
+                alert("Cannot validate file conditions because validation service is unavailable");
+            } else {
+                alert("An unknown error occurred while attempting to validate the given file conditions");
             }
         });
     };

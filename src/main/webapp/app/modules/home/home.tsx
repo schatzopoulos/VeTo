@@ -11,7 +11,6 @@ import {
     CustomInput,
     Input,
     Label,
-    ListGroup,
     Modal,
     ModalBody,
     ModalFooter,
@@ -28,7 +27,6 @@ import _ from 'lodash';
 import { analysisRun, getMoreResults, getResults, getStatus } from '../analysis/analysis.reducer';
 import { getDatasetSchemas } from '../datasets/datasets.reducer';
 import ResultsPanel from '../analysis/results/results';
-import ConstraintItem from '../constraints/constraint-item';
 import MetapathPanel from '../metapath/metapath-panel';
 import AutocompleteInput from '../datasets/autocomplete-input';
 

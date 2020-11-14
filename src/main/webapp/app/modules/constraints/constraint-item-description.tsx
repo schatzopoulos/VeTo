@@ -18,7 +18,7 @@ const ConstraintItemDescription = (props) => {
             <Col md='2'>
                 {
                     (index === 1)
-                        ? <div className="">Set conditions:</div>
+                        ? <div className="">Selected conditions:</div>
                         : <div className="">
                             <Label className="white">&#9656;</Label>
                         </div>

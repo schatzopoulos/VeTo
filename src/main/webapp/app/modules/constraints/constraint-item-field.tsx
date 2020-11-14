@@ -83,7 +83,6 @@ export class ConstraintItemField extends React.Component<IConstraintItemFieldPro
 
     handleInput(val, callback = () => {
     }) {
-        console.log('ConstraintItemField: handleInput - watching val: ' + val);
         if (val) {
             this.setState({
                 value: val
@@ -103,7 +102,6 @@ export class ConstraintItemField extends React.Component<IConstraintItemFieldPro
 
     handleMultipleAddition(conditionList) {
         conditionList[0].logicOp=this.state.logicOperation;
-        console.log(conditionList);
         this.props.handleMultipleAddition({entity:this.props.entity, field:this.props.field}, conditionList);
     }
 
@@ -112,8 +110,6 @@ export class ConstraintItemField extends React.Component<IConstraintItemFieldPro
             const logicOp = this.state.logicOperation;
             const conditionOp = this.state.conditionOperation;
             const value = this.state.value;
-
-            console.log(`New condition: ${logicOp} ${conditionOp} ${value}`);
 
             this.props.handleAddition({
                     entity: this.props.entity,
@@ -149,7 +145,6 @@ export class ConstraintItemField extends React.Component<IConstraintItemFieldPro
 
     handleNumericalInput(e) {
         const numberString = e.target.value;
-        console.log('ConstraintItemField: handleNumericalInput() - watching numberString: ' + numberString);
         if (numberString) {
             const number = Number.parseInt(numberString, 10);
             this.setState({
@@ -177,12 +172,6 @@ export class ConstraintItemField extends React.Component<IConstraintItemFieldPro
         const enabled = this.props.enabled;
         const data = this.props.data;
         const index = data.index;
-
-        console.log('ConstaintItemField: render() - watching props.data: ');
-        console.log(this.props.data);
-        console.log('ConstaintItemField: render() - watching state: ');
-        console.log(this.state);
-        console.log('ConstraintItemField: render() - watching index: ' + index);
 
         const inputField = (type === 'numeric')
             ? <Input disabled={!enabled} defaultValue={''} onChange={this.handleNumericalInput.bind(this)} bsSize="sm"
