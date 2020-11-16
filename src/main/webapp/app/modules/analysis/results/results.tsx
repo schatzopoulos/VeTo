@@ -65,24 +65,24 @@ export class ResultsPanel extends React.Component<IResultsPanelProps> {
     downloadConditions() {
         const results=this.props.results[this.state.activeAnalysis]
         const conditionValues={};
-        this.state.selectedEntries.forEach((entry, index)=>{
+        this.state.selectedEntries.sort((a,b)=>a-b).forEach((entry, index)=>{
             const entryValue = entry[results.meta.headers[0]]
             if (!Object.prototype.hasOwnProperty.call(conditionValues,entryValue)) {
-                if (index > 0) {
-                    conditionValues[entryValue] = {
-                        logicOp: 'or',
-                        operation: '=',
-                        value: entryValue
-                    };
-                } else {
-                    conditionValues[entryValue] = {
-                        operation: '=',
-                        value: entryValue
-                    };
-                }
+                conditionValues[entryValue] = {
+                    logicOp: 'or',
+                    operation: '=',
+                    value: entryValue
+                };
             }
         });
-        const jsonArray = Object.keys(conditionValues).map(key=>conditionValues[key]);
+        const jsonArray = Object.keys(conditionValues).map((key,index)=>{
+            if (index===0){
+                const conditionObject={...conditionValues[key]}
+                delete conditionObject['logicOp'];
+                return conditionObject
+            }
+            return conditionValues[key];
+        });
         const jsonArrayString = JSON.stringify(jsonArray, null, 4);
         const conditionsBlob = new Blob([jsonArrayString]);
         FileSaver.saveAs(conditionsBlob, 'conditions.json');
