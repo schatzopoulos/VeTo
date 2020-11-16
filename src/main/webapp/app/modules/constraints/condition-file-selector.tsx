@@ -56,7 +56,12 @@ class ConditionFileSelector extends React.Component<any, any> {
             if (!Object.prototype.hasOwnProperty.call(condition, 'value')) {
                 throw `Undefined value in condition ${index + 1}`;
             } else if (typeof condition.value !== 'number') {
-                throw `Value is not a number, in condition ${index + 1}`;
+                const value = Number.parseInt(condition.value,10);
+                if (isNaN(value)) {
+                    throw `Value is not a number, in condition ${index + 1}`;
+                } else {
+                    values.push(condition.value);
+                }
             } else {
                 values.push(condition.value);
             }
