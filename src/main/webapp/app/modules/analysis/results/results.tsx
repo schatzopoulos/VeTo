@@ -27,6 +27,7 @@ export interface IResultsPanelProps {
 export class ResultsPanel extends React.Component<IResultsPanelProps> {
 	readonly state: any = {
         activeAnalysis: "",
+        selectedEntries: []
     };
 
 	constructor(props) {
@@ -55,8 +56,38 @@ export class ResultsPanel extends React.Component<IResultsPanelProps> {
                 id: this.props.analysisId,
             },
             responseType: 'blob',
-        }).then( response => FileSaver.saveAs(response.data, "results.csv"));
+        }).then( response =>{
+            console.log(response.data);
+            FileSaver.saveAs(response.data, "results.csv")
+        });
     }
+
+    downloadConditions() {
+        const results=this.props.results[this.state.activeAnalysis]
+        const conditionValues={};
+        this.state.selectedEntries.forEach((entry, index)=>{
+            const entryValue = entry[results.meta.headers[0]]
+            if (!Object.prototype.hasOwnProperty.call(conditionValues,entryValue)) {
+                if (index > 0) {
+                    conditionValues[entryValue] = {
+                        logicOp: 'or',
+                        operation: '=',
+                        value: entryValue
+                    };
+                } else {
+                    conditionValues[entryValue] = {
+                        operation: '=',
+                        value: entryValue
+                    };
+                }
+            }
+        });
+        const jsonArray = Object.keys(conditionValues).map(key=>conditionValues[key]);
+        const jsonArrayString = JSON.stringify(jsonArray, null, 4);
+        const conditionsBlob = new Blob([jsonArrayString]);
+        FileSaver.saveAs(conditionsBlob, 'conditions.json');
+    }
+
     tryAgain() {
         this.props.rerun(null, this.props.analysis);
     }
@@ -67,6 +98,17 @@ export class ResultsPanel extends React.Component<IResultsPanelProps> {
             });
         }
     }
+
+    handleSelectionChange(selections) {
+        const result = this.props.results[this.state.activeAnalysis];
+	    const selectedEntries = selections.map(selectionIndex=>{
+            return result.docs[selectionIndex];
+        });
+	    this.setState({
+            selectedEntries
+        });
+    }
+
 	render() {
         let resultPanel;
 
@@ -80,6 +122,7 @@ export class ResultsPanel extends React.Component<IResultsPanelProps> {
                 hasMore={result.meta.links.hasNext}
                 communityCounts={result.meta.community_counts}
                 loadMore={this.props.loadMore.bind(this, this.state.activeAnalysis, result.meta.page+1)}
+                handleSelectionChange={this.handleSelectionChange.bind(this)}
             /> : '';
 
             const totalCommunities = (_.get(result, "meta.community_counts")) ? <span>/ {result.meta.community_counts['total']} communities found in total</span> : '';
@@ -122,11 +165,16 @@ export class ResultsPanel extends React.Component<IResultsPanelProps> {
                                     <br/>
 
                                     <Row>
-                                        <Col md='10' className="small-grey">
+                                        <Col md={this.state.selectedEntries.length>0 ? '6':'10'} className="small-grey">
                                             Displaying {docs.length} out of {meta.totalRecords} results { totalCommunities }
                                         </Col>
+                                        {(this.state.selectedEntries.length > 0) &&
+                                        <Col md={'4'}>
+                                            <Button color={'info'} size={'sm'} className={'text-nowrap'} outline onClick={this.downloadConditions.bind(this)} ><FontAwesomeIcon icon="download" /> Download conditions file</Button>
+                                        </Col>
+                                        }
                                         <Col md='2' style={{textAlign: 'right'}}>
-                                            <Button color="info" size='sm' outline onClick={this.downloadResults.bind(this)}><FontAwesomeIcon icon="download" /> Download</Button>
+                                            <Button color="info" size='sm' className={'text-nowrap'} outline onClick={this.downloadResults.bind(this)}><FontAwesomeIcon icon="download" /> Download</Button>
                                         </Col>
                                     </Row>
                                     <br/>
