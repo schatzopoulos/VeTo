@@ -12,7 +12,7 @@ public final class Constants {
     public static final String DEFAULT_LANGUAGE = "en";
     public static final String ANONYMOUS_USER = "anonymoususer";
     
-    public static final String BASE_PATH = "/dataX/SciNeM-results";
+    public static final String BASE_PATH = "/data/SciNeM/SciNeM-results";
     public static final String HIN_OUT = "HIN";
     public static final String JOIN_HIN_OUT = "JOIN_HIN";
 
@@ -32,8 +32,8 @@ public final class Constants {
 
     public static final String CONFIG_FILE = "config.json";
 
-    public static final String DATA_DIR = "/dataX/SciNeM-data/";
-    public static final String WORKFLOW_DIR = "/opt/SciNeM-workflows/";
+    public static final String DATA_DIR = "/data/SciNeM/SciNeM-data/";
+    public static final String WORKFLOW_DIR = "/data/SciNeM/SciNeM-workflows/";
     public static final int MAX_THREADS = 10;
 
     public static final int PAGE_SIZE = 50;
