@@ -54,6 +54,7 @@ class EntityBox extends React.Component<any, any> {
 
     constraintSummary() {
         if (this.props.constraints) {
+            console.log(this.props.constraints);
             const entityDisjunctions = generateGroupsOfDisjunctions(this.props.constraints);
             const entityExpressions = entityDisjunctions.map(fieldDisjunctions => {
                 const fieldExpressions = fieldDisjunctions.map(disjunction => {

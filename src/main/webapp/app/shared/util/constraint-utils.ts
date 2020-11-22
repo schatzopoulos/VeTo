@@ -2,7 +2,7 @@ export const generateGroupsOfDisjunctions = (entityConstraintsObj, fieldPrefix =
   if (entityConstraintsObj) {
     // Get access to all the fields of the entity
     return Object.keys(entityConstraintsObj)
-      .filter(key => key !== 'id')
+      .filter(key => key !== 'id' && entityConstraintsObj[key].enabled)
       .map(key => {
         if (entityConstraintsObj[key].conditions.length > 2) {
           const targetConditions = entityConstraintsObj[key].conditions.slice(2);

@@ -1,0 +1,64 @@
+.spoiler-control {
+  --transition-duration: 0.35s;
+}
+
+.spoiler-control {
+  display: inline-block;
+  cursor: pointer;
+  transition-property: transform;
+  transition-duration: var(--transition-duration);
+  -moz-transition-duration: var(--transition-duration);
+  -o-transition-duration: var(--transition-duration);
+  -webkit-transition-duration: var(--transition-duration);
+}
+
+.spoiler-control > span {
+  display: inline-block;
+  cursor: pointer;
+  transition: transform var(--transition-duration) ease-out;
+  -moz-transition: transform var(--transition-duration) ease-out;
+  -o-transition: transform var(--transition-duration) ease-out;
+  -webkit-transition: transform var(--transition-duration) ease-out;
+}
+
+.spoiler-control.expanded {
+  transform: rotate(180deg);
+  -moz-transform: rotate(180deg);
+  -o-transform: rotate(180deg);
+  -webkit-transform: rotate(180deg);
+}
+
+.spoiler-container {
+  transition: all 0.5s ease-in-out;
+  padding: 0 1em;
+  line-height: 0;
+  overflow: hidden;
+  color: transparent;
+}
+
+.spoiler-container.expanded {
+  line-height: 1.5;
+  padding-top: 1em;
+  padding-bottom: 1em;
+  color: black;
+}
+
+.hidden-table-row.expanded {
+  height: auto;
+}
+
+.hidden-table-row {
+  height: 0;
+}
+
+.hidden-table-row td {
+  padding: 0;
+  border: 0;
+}
+
+/*.hidden-table-row.expanded .collapse,*/
+.hidden-table-row .collapsing,
+.hidden-table-row.expanded .collapsing,
+.hidden-table-row.expanded .collapse.show {
+  padding: 0.5em 2em;
+}
