@@ -1275,6 +1275,7 @@ export class Home extends React.Component<IHomeProps> {
                                                 folder={datasetFolder}
                                                 disabled={_.isEmpty(this.state.metapath)}
                                                 size='sm'
+                                                index={0}
                                             />
                                             {
                                                 (this.state.targetEntity === '') &&

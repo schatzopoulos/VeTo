@@ -57,10 +57,12 @@ export class AutocompleteInput extends React.Component<IAutocompleteInputProps> 
 
     emitValidity() {
         const currentFieldValue = this.state.current;
-        if (currentFieldValue) {
-            return this.props.hasValidValue(this.validateCurrentValue());
-        } else {
-            this.props.hasValidValue(false);
+        if (this.props.hasValidValue) {
+            if (currentFieldValue) {
+                return this.props.hasValidValue(this.validateCurrentValue());
+            } else {
+                this.props.hasValidValue(false);
+            }
         }
     }
 
@@ -96,16 +98,25 @@ export class AutocompleteInput extends React.Component<IAutocompleteInputProps> 
     }
 
     onInput(currentValue) {
+        console.debug('got: '+currentValue);
         if (currentValue) {
             const isLoading = true; // change for looking in cache
             this.setState({
                 isLoading,
                 current: currentValue
-            }, () => this.props.hasValidValue(false));
+            }, () => {
+                if (this.props.hasValidValue) {
+                    this.props.hasValidValue(false);
+                }
+            });
         } else {
             this.setState({
                 current: ''
-            }, () => this.props.hasValidValue(false));
+            }, () => {
+                if (this.props.hasValidValue) {
+                    this.props.hasValidValue(false)
+                }
+            });
         }
     }
 
