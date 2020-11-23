@@ -85,7 +85,7 @@ export class ConstraintItemField extends React.Component<IConstraintItemFieldPro
     }) {
         if (val) {
             this.setState({
-                value: val
+                value: val.name
             }, callback);
         } else {
             this.setState({

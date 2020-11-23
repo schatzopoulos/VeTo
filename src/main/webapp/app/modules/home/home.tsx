@@ -758,14 +758,13 @@ export class Home extends React.Component<IHomeProps> {
     }
 
     handleTargetEntity(e) {
-
         let selected;
 
         if (_.isEmpty(e)) {
             selected = '';
         } else {
-            [selected] = e;
-            selected = selected.id;
+            // [selected] = e;
+            selected = e.id;
         }
 
         this.setState({
