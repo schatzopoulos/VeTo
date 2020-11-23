@@ -111,6 +111,7 @@ public final class FileUtil {
     public static String writeConfig(
         ArrayList<String> analyses,
         String outputDir,
+				String hdfsOutputDir,
         String metapath,
         String joinpath,
         Document constraints,
@@ -134,13 +135,17 @@ public final class FileUtil {
         Document config = new Document();
 
         // Input & Output files configuration
-        config.put("indir", Constants.DATA_DIR + folder + "/nodes/");
-        config.put("irdir", Constants.DATA_DIR + folder + "/relations/");
-        config.put("hin_out", outputDir + "/" + Constants.HIN_OUT);
-        config.put("join_hin_out", outputDir + "/" + Constants.JOIN_HIN_OUT);
+        config.put("indir", Constants.HDFS_DATA_DIR + folder + "/nodes/");
+        config.put("irdir", Constants.HDFS_DATA_DIR + folder + "/relations/");
+				config.put("indir_local", Constants.DATA_DIR + folder + "/nodes/");
 
-        // config.put("final_out", outputDir + "/" + Constants.FINAL_OUT);
-        config.put("ranking_out", outputDir + "/" + Constants.RANKING_OUT);
+        config.put("hin_out", hdfsOutputDir + "/" + Constants.HIN_OUT);
+        config.put("join_hin_out", hdfsOutputDir + "/" + Constants.JOIN_HIN_OUT);
+
+        config.put("hdfs_out_dir", hdfsOutputDir);
+				config.put("local_out_dir", outputDir);
+			
+        config.put("ranking_out", hdfsOutputDir + "/" + Constants.RANKING_OUT);
         config.put("communities_out", outputDir + "/" + Constants.COMMUNITY_DETECTION_OUT);
         config.put("communities_details", outputDir + "/" + Constants.COMMUNITY_DETAILS);
 

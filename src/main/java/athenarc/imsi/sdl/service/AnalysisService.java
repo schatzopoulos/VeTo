@@ -37,9 +37,10 @@ public class AnalysisService {
 
         // create folder to store results
         String outputDir = FileUtil.createDir(id);
+				String hdfsOutputDir = Constants.HDFS_BASE_PATH + "/" + id;
         String outputLog = FileUtil.getLogfile(id);
 
-        String config = FileUtil.writeConfig(analysis, outputDir, metapath, joinpath, constraints, constraintsExpression, joinK, searchK, t,
+        String config = FileUtil.writeConfig(analysis, outputDir, hdfsOutputDir, metapath, joinpath, constraints, constraintsExpression, joinK, searchK, t,
                 joinW, searchW, minValues, targetId, folder, selectField, edgesThreshold, prAlpha, prTol, joinMinValues,
                 searchMinValues);
 
