@@ -75,7 +75,7 @@ export class AutocompleteInput extends React.Component<IAutocompleteInputProps> 
             console.log('AutocompleteInput: emitValue() - watching state.options: ' + this.state.options);
             console.log('AutocompleteInput: emitValue() - watching validOptionIndex: ' + validOption);
             if (validOption !== undefined) {
-                this.props.onChange(validOption.name, callback);
+                this.props.onChange(validOption, callback);
             } else {
                 this.props.onChange('', callback);
             }
