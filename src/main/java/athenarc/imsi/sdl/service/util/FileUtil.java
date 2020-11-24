@@ -146,7 +146,7 @@ public final class FileUtil {
 				config.put("local_out_dir", outputDir);
 			
         config.put("ranking_out", hdfsOutputDir + "/" + Constants.RANKING_OUT);
-        config.put("communities_out", outputDir + "/" + Constants.COMMUNITY_DETECTION_OUT);
+        config.put("communities_out", hdfsOutputDir + "/" + Constants.COMMUNITY_DETECTION_OUT);
         config.put("communities_details", outputDir + "/" + Constants.COMMUNITY_DETAILS);
 
         config.put("sim_search_out", outputDir + "/" + Constants.SIM_SEARCH_OUT);
@@ -178,6 +178,8 @@ public final class FileUtil {
         config.put("searchW", searchW);
         config.put("joinMinValues", joinMinValues);
         config.put("searchMinValues", searchMinValues);
+
+				config.put("community_detection_iter", 5);
 
         // Query specific params
         Document query = new Document();
