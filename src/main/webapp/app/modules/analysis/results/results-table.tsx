@@ -1,6 +1,6 @@
 import './ranking-results.scss';
 
-import React from 'react';
+import React, { useRef } from 'react';
 import _ from 'lodash';
 import { Table } from 'reactstrap';
 import ResultEntry from './result-entry';
@@ -10,13 +10,15 @@ export interface IResultsTableProps {
     docs: any,
     headers: any,
     communityView: boolean,
-    innerTable?:boolean,
+    selections: any,
+    innerTable?: boolean,
 
     handleSelectionChange: any
 }
 
 export class ResultsTable extends React.Component<IResultsTableProps> {
 
+    tableCheckboxRef=React.createRef();
     state = {
         allSelected: false,
         selectedIndices: []
@@ -28,44 +30,31 @@ export class ResultsTable extends React.Component<IResultsTableProps> {
                 allSelected: false
             });
         }
-    }
 
-    handleSelection(selectionIndex) {
-        const found = this.state.selectedIndices.indexOf(selectionIndex);
-        if (found !== -1) {
-            const updatedSelectedIndices = [].concat(this.state.selectedIndices.slice(0, found), this.state.selectedIndices.slice(found + 1));
-            this.setState({
-                selectedIndices: updatedSelectedIndices,
-                allSelected: false
-            }, this.props.handleSelectionChange(updatedSelectedIndices));
-        } else {
-            const updatedSelectedIndices = [...this.state.selectedIndices];
-            updatedSelectedIndices.push(selectionIndex);
-            updatedSelectedIndices.sort((a, b) => a - b);
-            this.setState({
-                allSelected: updatedSelectedIndices.length === this.props.docs.length,
-                selectedIndices: updatedSelectedIndices
-            }, this.props.handleSelectionChange(updatedSelectedIndices));
+
+        if (this.tableCheckboxRef.current) {
+            this.tableCheckboxRef.current.indeterminate=(!(this.props.selections.length===this.props.docs.length) && this.props.selections.length>0);
         }
     }
 
+    toggleSelected(selections) {
+        console.log('ResultsTable' + (this.props.communityView ? '(Community)' : '') + ': Got triggered selections: ' + selections.join(', '));
+        this.props.handleSelectionChange(_.difference(_.union(selections, this.props.selections), _.intersection(selections, this.props.selections)));
+    }
+
     handleMasterSelectionChange() {
-        if (this.state.allSelected) {
-            this.setState({
-                allSelected: false,
-                selectedIndices: []
-            }, this.props.handleSelectionChange([]));
+        if (this.props.selections.length === this.props.docs.length) {
+            this.props.handleSelectionChange([]);
         } else {
-            const allRowIndices = [...this.props.docs.keys()];
-            this.setState({
-                allSelected: true,
-                selectedIndices: allRowIndices
-            }, this.props.handleSelectionChange(allRowIndices));
+            this.props.handleSelectionChange(_.map(this.props.docs, doc => doc.resultIndex));
         }
     }
 
     render() {
         let rows;
+        const tableHeaders=this.props.communityView?['Community','Members']:this.props.headers;
+        console.log('Table headers: '+this.props.headers.join(', '));
+        console.log('Selecting results with index: ' + this.props.selections.join(', '));
         if (!this.props.communityView) {
             rows = this.props.docs.map((row, index) => {
                 const rowValues = this.props.headers.map(fieldName => {
@@ -73,43 +62,53 @@ export class ResultsTable extends React.Component<IResultsTableProps> {
                 });
                 return (
                     <ResultEntry
-                        key={'result-' + index}
-                        rowIndex={index}
+                        key={'result-' + row.resultIndex}
+                        rowIndex={row.resultIndex}
                         values={rowValues}
-                        checked={this.state.selectedIndices.includes(index)}
-                        handleRowSelect={this.handleSelection.bind(this)}
+                        checked={this.props.selections.includes(row.resultIndex)}
+                        handleResultSelection={this.toggleSelected.bind(this)}
                     />
                 );
             });
         } else {
-            rows=_.map(_.values(_.groupBy(this.props.docs,result=>result.Community)),communityGroup=>
-                <CommunityResultsEntry
-                    key={communityGroup[0].Community}
-                    communityId={communityGroup[0].Community}
-                    headers={_.without(this.props.headers,'Community')}
-                    values={communityGroup}
-                    checked={false}
-                    handleRowSelect={this.handleSelection.bind(this)}
-                />
-            );
+            rows = _.map(_.values(_.groupBy(this.props.docs, result => result.Community)), communityGroup => {
+                const communityIndices = _.map(communityGroup, member => member.resultIndex);
+                return (
+                    <CommunityResultsEntry
+                        key={communityGroup[0].Community}
+                        communityId={communityGroup[0].Community}
+                        headers={_.without(this.props.headers, 'Community')}
+                        docs={communityGroup}
+                        selectedCommunityMembers={_.intersection(this.props.selections,communityIndices)}
+                        handleToggledCommunityMembers={this.toggleSelected.bind(this)}
+                    />
+                );
+            });
         }
 
         return (
-            <Table size="sm" className={this.props.innerTable? 'table-active':''}>
+            <Table size="sm">
                 <thead>
-                <tr className={this.state.allSelected ? 'table-primary' : ''}>
+                <tr className={(!this.props.innerTable && (this.props.selections.length === this.props.docs.length))? 'bg-info' : ''}>
                     <th>
                         <div>
                             {!this.props.innerTable &&
-                            <input type={'checkbox'} onChange={this.handleMasterSelectionChange.bind(this)}
-                                checked={this.state.allSelected} />
+                            <input
+                                type={'checkbox'}
+                                onChange={this.handleMasterSelectionChange.bind(this)}
+                                checked={this.props.selections.length === this.props.docs.length}
+                                ref={this.tableCheckboxRef}/>
                             }
                         </div>
                     </th>
                     {
-                        this.props.headers.map((fieldName, index) => {
+                        tableHeaders.map((fieldName, index) => {
                             return <th key={`header-${index}-${fieldName}`}>{fieldName}</th>;
                         })
+                    }
+                    {
+                        this.props.communityView &&
+                        <th></th>
                     }
                 </tr>
                 </thead>

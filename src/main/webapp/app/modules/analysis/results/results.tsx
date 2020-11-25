@@ -2,6 +2,7 @@ import React from 'react';
 import { Button, ButtonGroup, Col, Nav, NavItem, NavLink, Row, TabContent, TabPane } from 'reactstrap';
 import classnames from 'classnames';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faFile } from '@fortawesome/free-solid-svg-icons';
 import ResultsTable from './results-table';
 import axios from 'axios';
 import FileSaver from 'file-saver';
@@ -43,7 +44,7 @@ export class ResultsPanel extends React.Component<IResultsPanelProps> {
         }
     }
 
-    downloadResults() {
+    downloadResults(onlySelected) {
         axios.get('api/datasets/download', {
             params: {
                 analysisType: this.state.activeAnalysis,
@@ -60,7 +61,7 @@ export class ResultsPanel extends React.Component<IResultsPanelProps> {
         const results = this.props.results[this.state.activeAnalysis];
         const conditionValues = {};
         this.state.selectedEntries.forEach((entry, index) => {
-            const entryValue = entry[results.meta.headers[0]];
+            const entryValue = results.docs[entry][results.meta.headers[0]];
             if (!Object.prototype.hasOwnProperty.call(conditionValues, entryValue)) {
                 if (index > 0) {
                     conditionValues[entryValue] = {
@@ -89,18 +90,23 @@ export class ResultsPanel extends React.Component<IResultsPanelProps> {
     toggle(analysis) {
         if (this.state.activeAnalysis !== analysis) {
             this.setState({
-                activeAnalysis: analysis
+                activeAnalysis: analysis,
+                selectedEntries: []
             });
         }
     }
 
     handleSelectionChange(selections) {
-        const result = this.props.results[this.state.activeAnalysis];
-        const selectedEntries = selections.map(selectionIndex => {
-            return result.docs[selectionIndex];
-        });
+        // const result = this.props.results[this.state.activeAnalysis];
+        // const selectedEntries = selections.map(selectionIndex => {
+        //     return result.docs[selectionIndex];
+        // });
+        // this.setState({
+        //     selectedEntries
+        // });
+        console.log('Results: Updated result selections as: ' + selections.join(', '));
         this.setState({
-            selectedEntries
+            selectedEntries: selections
         });
     }
 
@@ -110,12 +116,12 @@ export class ResultsPanel extends React.Component<IResultsPanelProps> {
         if (!_.isEmpty(this.props.results)) {
 
             const result = this.props.results[this.state.activeAnalysis];
-            console.log(result);
             if (this.state.activeAnalysis) {
                 if (this.state.activeAnalysis === 'Ranking') {
                     resultPanel = <ResultsTable
                         docs={result.docs}
                         headers={result.meta.headers}
+                        selections={this.state.selectedEntries}
                         communityView={false}
                         handleSelectionChange={this.handleSelectionChange.bind(this)}
                     />;
@@ -123,6 +129,7 @@ export class ResultsPanel extends React.Component<IResultsPanelProps> {
                     resultPanel = <ResultsTable
                         docs={result.docs}
                         headers={result.meta.headers}
+                        selections={this.state.selectedEntries}
                         communityView={true}
                         handleSelectionChange={this.handleSelectionChange.bind(this)}
                     />;
@@ -135,7 +142,6 @@ export class ResultsPanel extends React.Component<IResultsPanelProps> {
 
             const totalCommunities = (_.get(result, 'meta.community_counts')) ?
                 <span> / {result.meta.community_counts['total']} communities found in total</span> : '';
-            console.log(result);
             return (<div>
                 <h2>Results</h2>
                 <p>{this.props.description}</p>
@@ -179,7 +185,7 @@ export class ResultsPanel extends React.Component<IResultsPanelProps> {
                                                 <Col xs={'12'} lg={'6'}
                                                      className="small-grey">
                                                     Displaying {docs.length} out
-                                                    of {meta.totalRecords} results{totalCommunities}{this.state.selectedEntries.length>0?`. (${this.state.selectedEntries.length} selected)`:''}
+                                                    of {meta.totalRecords} results{totalCommunities}{this.state.selectedEntries.length > 0 ? `. (${this.state.selectedEntries.length} selected)` : ''}
                                                 </Col>
                                                 <Col xs={'12'} lg={'6'} className={'text-lg-right'}>
                                                     {(this.state.selectedEntries.length > 0) &&
@@ -190,23 +196,24 @@ export class ResultsPanel extends React.Component<IResultsPanelProps> {
                                                             title={'Create a conditions JSON file from selected entities'}
                                                             outline
                                                             onClick={this.downloadConditions.bind(this)}
-                                                        >Create conditions file</Button>
+                                                        ><FontAwesomeIcon icon={faFile} /> Create conditions file</Button>
                                                         <Button
                                                             size={'sm'}
                                                             className={'text-nowrap'}
                                                             title={'Download a CSV file containing the results for the selected entities'}
                                                             outline
-                                                        >Download selected</Button>
+                                                            onClick={this.downloadResults.bind(this, true)}
+                                                        ><FontAwesomeIcon icon="download" /> Download selected</Button>
                                                     </ButtonGroup>
                                                     }
                                                     <Button
                                                         color="info"
                                                         size='sm'
                                                         className={'text-nowrap'}
-                                                        style={{marginLeft:'15px'}}
+                                                        style={{ marginLeft: '15px' }}
                                                         title={'Download all results in a CSV file'}
                                                         outline
-                                                        onClick={this.downloadResults.bind(this)}
+                                                        onClick={this.downloadResults.bind(this, false)}
                                                     ><FontAwesomeIcon icon="download" /> Download all</Button>
                                                 </Col>
                                             </Row>

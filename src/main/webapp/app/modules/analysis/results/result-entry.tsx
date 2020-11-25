@@ -13,7 +13,8 @@ const ResultEntry = (props) => {
                     id={'some-id'}
                     checked={props.checked}
                     onChange={()=>{
-                        props.handleRowSelect(props.rowIndex);
+                        console.log('ResultEntry: Toggling for index '+props.rowIndex);
+                        props.handleResultSelection([props.rowIndex]);
                     }}/>
             </td>
             {resultFields}
