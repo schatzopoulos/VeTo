@@ -13,7 +13,7 @@ const CommunityResultsEntry = props => {
     const wholeCommunitySelected = props.selectedCommunityMembers.length === props.docs.length;
     const [communityCollapsed, toggleCommunity] = useState(true);
     const [focusedSpoilerControl, focusSpoilerControl] = useState(false);
-    const communityCheckboxRef=useRef();
+    const communityCheckboxRef=useRef(null);
     console.log('Selecting community members with indices: '+props.selectedCommunityMembers.join(', '));
     const communityDescription = _.chain(props.docs)
         .map(result => result.Entity)
@@ -23,7 +23,7 @@ const CommunityResultsEntry = props => {
             separator: /, +/
         }).value();
     useEffect(()=>{
-        if (communityCheckboxRef.current) {
+        if (communityCheckboxRef!==null && communityCheckboxRef.current!==undefined) {
             communityCheckboxRef.current.indeterminate = (!wholeCommunitySelected && props.selectedCommunityMembers.length > 0)
         }
     })
