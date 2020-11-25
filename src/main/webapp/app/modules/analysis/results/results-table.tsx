@@ -18,11 +18,16 @@ export interface IResultsTableProps {
 
 export class ResultsTable extends React.Component<IResultsTableProps> {
 
-    tableCheckboxRef=React.createRef();
+    tableCheckboxRef=null;
     state = {
         allSelected: false,
         selectedIndices: []
     };
+
+    constructor(props) {
+        super(props);
+        this.tableCheckboxRef=React.createRef();
+    }
 
     componentDidUpdate(prevProps: Readonly<IResultsTableProps>, prevState: Readonly<{}>, snapshot?: any) {
         if ((prevProps.docs.length < this.props.docs.length) && (this.state.allSelected)) {
