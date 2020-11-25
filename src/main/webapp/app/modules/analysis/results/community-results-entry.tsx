@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import _ from 'lodash';
 import { Button, Collapse, Card } from 'reactstrap';
 import ResultsTable from 'app/modules/analysis/results/results-table';
@@ -9,27 +9,34 @@ import './community-results-entry.css';
 
 const CommunityResultsEntry = props => {
     const MAX_COMMUNITY_DESCRIPTION_LENGTH = 64;
+    const communityMembersIndices = _.map(props.docs, doc=>doc.resultIndex);
+    const wholeCommunitySelected = props.selectedCommunityMembers.length === props.docs.length;
     const [communityCollapsed, toggleCommunity] = useState(true);
     const [focusedSpoilerControl, focusSpoilerControl] = useState(false);
-    const communityDescription = _.chain(props.values)
+    const communityCheckboxRef=useRef();
+    console.log('Selecting community members with indices: '+props.selectedCommunityMembers.join(', '));
+    const communityDescription = _.chain(props.docs)
         .map(result => result.Entity)
         .join(', ')
         .truncate({
             length: MAX_COMMUNITY_DESCRIPTION_LENGTH,
             separator: /, +/
         }).value();
-    const collapseButtonId = `collapse-control-${props.communityId}`;
-    console.log(props.headers);
-
+    useEffect(()=>{
+        if (communityCheckboxRef.current) {
+            communityCheckboxRef.current.indeterminate = (!wholeCommunitySelected && props.selectedCommunityMembers.length > 0)
+        }
+    })
     return (
         <>
-            <tr key={props.communityId} className={props.checked ? 'table-info' : ''}>
+            <tr key={props.communityId} className={wholeCommunitySelected? 'table-info' : ''}>
                 <td>
                     <input
                         type={'checkbox'}
-                        checked={props.checked}
+                        checked={wholeCommunitySelected}
+                        ref={communityCheckboxRef}
                         onChange={() => {
-                            props.handleRowSelect(props.rowIndex);
+                            props.handleToggledCommunityMembers(wholeCommunitySelected?props.selectedCommunityMembers:_.difference(communityMembersIndices,props.selectedCommunityMembers));
                         }} />
                 </td>
                 <td>{props.communityId}</td>
@@ -37,8 +44,6 @@ const CommunityResultsEntry = props => {
                     <span>{communityDescription}</span>
                 </td>
                 <td>
-                    {/*<Button size={'sm'} color={'dark'} outline
-                            onClick={() => toggleCommunity(!communityCollapsed)}>Expand</Button>*/}
                     <div
                         onClick={() => toggleCommunity(!communityCollapsed)}
                         onMouseEnter={() => focusSpoilerControl(true)}
@@ -50,17 +55,18 @@ const CommunityResultsEntry = props => {
             </tr>
             <tr className={communityCollapsed ? 'hidden-table-row' : 'hidden-table-row expanded'}>
                 <td colSpan={4}>
-                    {/*<div className={communityCollapsed?'spoiler-container': 'spoiler-container expanded'}>*/}
                     <Collapse isOpen={!communityCollapsed}>
                         <ResultsTable
-                            docs={props.values}
+                            docs={props.docs}
                             headers={props.headers}
                             communityView={false}
                             innerTable={true}
-                            handleSelectionChange={() => {
+                            selections={props.selectedCommunityMembers}
+                            handleSelectionChange={toggledCommunityMembers => {
+                                console.log('CommunityResultsEntry: Got currently selected community member indices: '+toggledCommunityMembers.join(', '))
+                                props.handleToggledCommunityMembers(_.difference(_.union(toggledCommunityMembers,props.selectedCommunityMembers),_.intersection(toggledCommunityMembers,props.selectedCommunityMembers)));
                             }}
                         />
-                        {/*</div>*/}
                     </Collapse>
                 </td>
             </tr>

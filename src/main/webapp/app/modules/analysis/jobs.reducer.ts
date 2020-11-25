@@ -2,6 +2,7 @@ import axios from 'axios';
 
 import { REQUEST, SUCCESS, FAILURE } from 'app/shared/reducers/action-type.util';
 import _ from 'lodash';
+
 const analysisAPIUrl = 'api/analysis';
 const simjoinAPIUrl = 'api/simjoin';
 const simsearchAPIUrl = 'api/simsearch';
@@ -99,8 +100,11 @@ export default (state: JobState = initialState, action): JobState => {
     case SUCCESS(ACTION_TYPES.GET_RESULTS): {
       const data = action.payload.data;
       const results = { ...state.results };
+      const indexedDocs = _.map(data.docs, (doc, index) => {
+        return { ...doc, resultIndex: index };
+      });
       results[data.analysis] = {
-        docs: data.docs,
+        docs: indexedDocs,
         meta: data._meta
       };
 
@@ -112,10 +116,13 @@ export default (state: JobState = initialState, action): JobState => {
     }
     case SUCCESS(ACTION_TYPES.GET_MORE_RESULTS): {
       const data = action.payload.data;
-
       const results = { ...state.results };
+      const existingDocs = results[data.analysis]['docs'];
+      const indexedDocs = _.map(data.docs, (doc, index) => {
+        return { ...doc, resultIndex: existingDocs.length + index };
+      });
       results[data.analysis] = {
-        docs: [...results[data.analysis]['docs'], ...data.docs],
+        docs: [...existingDocs, ...indexedDocs],
         meta: data._meta
       };
 

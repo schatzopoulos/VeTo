@@ -53,7 +53,14 @@
 
 .hidden-table-row td {
   padding: 0;
-  border: 0;
+}
+
+.table-info + .hidden-table-row > td {
+  background-color: #d8f5f0;
+}
+
+.hidden-table-row th {
+  border-top: 0;
 }
 
 /*.hidden-table-row.expanded .collapse,*/
