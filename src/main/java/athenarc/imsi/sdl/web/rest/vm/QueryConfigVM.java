@@ -34,6 +34,9 @@ public class QueryConfigVM {
 
     private String constraintsExpression;
 
+    @NotNull
+    private String primaryEntity;
+
     private int searchK;
     private int joinK;
     private int searchMinValues;
@@ -53,6 +56,14 @@ public class QueryConfigVM {
 
     public String getConstraintsExpression() {
         return this.constraintsExpression;
+    }
+
+    public String getPrimaryEntity() {
+        return primaryEntity;
+    }
+
+    public void setPrimaryEntity(String primaryEntity) {
+        this.primaryEntity = primaryEntity;
     }
 
     public double getPrAlpha() {

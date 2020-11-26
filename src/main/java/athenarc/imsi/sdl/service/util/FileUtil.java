@@ -115,6 +115,7 @@ public final class FileUtil {
         String joinpath,
         Document constraints,
         String constraintsExpression,
+        String primaryEntity,
         int joinK,
         int searchK,
         int t,
@@ -155,6 +156,8 @@ public final class FileUtil {
         config.put("final_ranking_community_out", outputDir + "/" + Constants.RANKING_COMMUNITY_OUT);
         config.put("final_community_ranking_out", outputDir + "/" + Constants.COMMUNITY_RANKING_OUT);
 
+        config.put("dataset", folder);
+        config.put("primary_entity", primaryEntity);
         config.put("select_field", selectField);
 
         // Ranking params
