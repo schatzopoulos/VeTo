@@ -191,11 +191,16 @@ public class AnalysisResource {
 
             try {
                 Document meta = new Document();
-                List<Document> docs = analysisService.getResults(resultsFile, page, meta);
-                if (analysis.contains("Community")) {
-                    String communityDetailsFile = FileUtil.getCommunityDetailsFile(id);
-                    Document communityCounts = analysisService.getCommunityCounts(communityDetailsFile, docs);
-                    meta.append("community_counts", communityCounts);
+                List<Document> docs;
+                if (analysis.equals("Community Detection") || analysis.equals("Community Detection - Ranking")) {
+                    docs = analysisService.getCommunityResults(resultsFile, page, meta);
+                } else {
+                    docs = analysisService.getResults(resultsFile, page, meta);
+                    if (analysis.contains("Community")) {
+                        String communityDetailsFile = FileUtil.getCommunityDetailsFile(id);
+                        Document communityCounts = analysisService.getCommunityCounts(communityDetailsFile, docs);
+                        meta.append("community_counts", communityCounts);
+                    }
                 }
 
                 String configurationFilePath = FileUtil.getConfFile(id);

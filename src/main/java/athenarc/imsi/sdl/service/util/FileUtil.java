@@ -1,21 +1,10 @@
 package athenarc.imsi.sdl.service.util;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.FilenameFilter;
-import java.io.IOException;
-import java.io.LineNumberReader;
-import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.Map;
-
+import athenarc.imsi.sdl.config.Constants;
 import org.bson.Document;
 
-import athenarc.imsi.sdl.config.Constants;
+import java.io.*;
+import java.util.*;
 
 /**
  * Utility class for file and dir management.
@@ -83,8 +72,8 @@ public final class FileUtil {
 
         BufferedReader br = new BufferedReader(new FileReader(logfile));
 
-        while ((sCurrentLine = br.readLine()) != null)  {
-            String [] tokens = sCurrentLine.split("\\t");
+        while ((sCurrentLine = br.readLine()) != null) {
+            String[] tokens = sCurrentLine.split("\\t");
             lastLine = sCurrentLine;
 
             if (tokens.length != 3) // in case of last line with exit code
@@ -195,10 +184,11 @@ public final class FileUtil {
 
         return configFile;
     }
+
     public static String[] getHeaders(String filename) throws FileNotFoundException, IOException {
         BufferedReader bf = new BufferedReader(new FileReader(filename));
         String firstLine = bf.readLine();
-        String[] headers =  firstLine.split("\t");
+        String[] headers = firstLine.split("\t");
         bf.close();
         return headers;
     }
@@ -206,16 +196,17 @@ public final class FileUtil {
     public static int countLines(String filename) throws FileNotFoundException, IOException {
         FileReader input = new FileReader(filename);
         LineNumberReader count = new LineNumberReader(input);
-        while (count.skip(Long.MAX_VALUE) > 0) { }
+        while (count.skip(Long.MAX_VALUE) > 0) {
+        }
         int result = count.getLineNumber();
         count.close();
-        return result-1;    //remove header
+        return result - 1;    //remove header
     }
 
     public static int totalPages(int totalRecords) {
         int totalPages = (int) (totalRecords / Constants.PAGE_SIZE);
-        if (totalRecords %  Constants.PAGE_SIZE > 0) {
-                totalPages++; // increase totalPages if there's a division remainder
+        if (totalRecords % Constants.PAGE_SIZE > 0) {
+            totalPages++; // increase totalPages if there's a division remainder
         }
         return totalPages;
     }
@@ -237,7 +228,7 @@ public final class FileUtil {
         return new File(rootDir).list(new FilenameFilter() {
             @Override
             public boolean accept(File current, String name) {
-              return new File(current, name).isDirectory();
+                return new File(current, name).isDirectory();
             }
         });
     }
@@ -258,8 +249,8 @@ public final class FileUtil {
         String metapath = (String) query.get("metapath");
 
         ArrayList<String> constraints = new ArrayList<>();
-        for (final Map.Entry<String, Object> entry : ((Document)query.get("constraints")).entrySet()) {
-            constraints.add(entry.getKey() + ": " + ((String)entry.getValue()));
+        for (final Map.Entry<String, Object> entry : ((Document) query.get("constraints")).entrySet()) {
+            constraints.add(entry.getKey() + ": " + ((String) entry.getValue()));
         }
 
         Document analysisParameters = new Document();
@@ -268,5 +259,32 @@ public final class FileUtil {
         analysisParameters.append("constraints", constraints);
 
         return analysisParameters;
+    }
+
+    public static List<Long> getCommunityPositions(String file) throws IOException {
+        Set<String> communityIdsSet = new HashSet<>();
+        List<Long> communityPositions = new ArrayList<>();
+        RandomAccessFile communityFile = new RandomAccessFile(file, "r");
+        String[] headers = communityFile.readLine().split("\t");
+        int communityColumnIndex;
+        for (communityColumnIndex = 0; communityColumnIndex < headers.length; communityColumnIndex++) {
+            if (headers[communityColumnIndex].equals("Community")) break;
+        }
+
+        String line;
+        do {
+            long linePosition = communityFile.getFilePointer();
+            line = communityFile.readLine();
+            if (line != null) {
+                String communityId = line.split("\t")[communityColumnIndex];
+
+                if (!communityIdsSet.contains(communityId)) {
+                    communityIdsSet.add(communityId);
+                    communityPositions.add(linePosition);
+                }
+            }
+        } while (line!=null);
+
+        return communityPositions;
     }
 }
