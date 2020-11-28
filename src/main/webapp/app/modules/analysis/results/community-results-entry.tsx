@@ -78,7 +78,7 @@ const CommunityResultsEntry = props => {
                 </td>
             </tr>
             <tr className={communityCollapsed ? 'hidden-table-row' : 'hidden-table-row expanded'}>
-                <td colSpan={4}>
+                <td colSpan={(props.showAverageOn && props.headers.includes(props.showAverageOn))?5:4}>
                     <Collapse isOpen={!communityCollapsed}>
                         <ResultsTable
                             docs={props.docs}

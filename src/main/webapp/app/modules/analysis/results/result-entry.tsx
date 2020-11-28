@@ -18,7 +18,7 @@ const ResultEntry = (props) => {
                             console.log('ResultEntry: Toggling for index ' + props.rowIndex);
                             props.handleResultSelection([props.rowIndex]);
                         }} />
-                    <label className={'form-check-label'} htmlFor={`result-checkbox-${props.rowIndex}`}>{props.showRank?props.rowIndex+1:''}</label>
+                    <label className={'form-check-label'} htmlFor={`result-checkbox-${props.rowIndex}`}>{props.rank?props.rank:''}</label>
                 </div>
             </td>
             {resultFields}

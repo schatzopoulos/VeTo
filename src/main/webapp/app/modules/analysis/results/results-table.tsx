@@ -79,6 +79,7 @@ export class ResultsTable extends React.Component<IResultsTableProps> {
                     <ResultEntry
                         key={'result-' + row.resultIndex}
                         rowIndex={row.resultIndex}
+                        rank={index+1}
                         selectField={this.props.selectField}
                         showRank={this.props.showRank}
                         values={rowValues}
