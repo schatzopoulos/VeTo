@@ -139,8 +139,8 @@ public final class FileUtil {
         config.put("communities_out", hdfsOutputDir + "/" + Constants.COMMUNITY_DETECTION_OUT);
         config.put("communities_details", outputDir + "/" + Constants.COMMUNITY_DETAILS);
 
-        config.put("sim_search_out", outputDir + "/" + Constants.SIM_SEARCH_OUT);
-        config.put("sim_join_out", outputDir + "/" + Constants.SIM_JOIN_OUT);
+        config.put("sim_search_out", hdfsOutputDir + "/" + Constants.SIM_SEARCH_OUT);
+        config.put("sim_join_out", hdfsOutputDir + "/" + Constants.SIM_JOIN_OUT);
 
         config.put("final_ranking_out", outputDir + "/" + Constants.FINAL_RANKING_OUT);
         config.put("final_communities_out", outputDir + "/" + Constants.FINAL_COMMUNITY_OUT);
@@ -162,14 +162,16 @@ public final class FileUtil {
 
         // Similarity Search & Join params
         config.put("target_id", targetId);
-        config.put("joinK", joinK);
+//         config.put("joinK", joinK);
         config.put("searchK", searchK);
 
         config.put("t", t);
-        config.put("joinW", joinW);
-        config.put("searchW", searchW);
-        config.put("joinMinValues", joinMinValues);
-        config.put("searchMinValues", searchMinValues);
+        config.put("distance", 2);
+
+//         config.put("joinW", joinW);
+//         config.put("searchW", searchW);
+//         config.put("joinMinValues", joinMinValues);
+//         config.put("searchMinValues", searchMinValues);
 
 				config.put("community_detection_iter", 5);
 
