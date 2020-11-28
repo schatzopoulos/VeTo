@@ -73,7 +73,7 @@ class EntityBox extends React.Component<any, any> {
                 });
                 return fieldExpressions.join(' or ');
             });
-            return entityExpressions.join(', ');
+            return entityExpressions.filter(ex=>!!ex).join(', ');
         }
         return '';
     }
@@ -170,7 +170,7 @@ class EntityBox extends React.Component<any, any> {
                                                     ? ((this.numberOfConstraints() > 1
                                                     ? `${this.numberOfConstraints()} constraints`
                                                     : '1 constraint') + ' having ' + (this.numberOfConditions() > 1 ? `${this.numberOfConditions()} conditions`
-                                                    : '1 condition')) : ''}
+                                                    : '1 condition')) : 'No constraints have been selected'}
                                             </span>
                                             <br />
                                             {this.constraintSummary()}
