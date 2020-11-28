@@ -7,6 +7,24 @@ import { faCaretDown } from '@fortawesome/free-solid-svg-icons';
 
 import './community-results-entry.css';
 
+// const COMMUNITY_AGGREGATES = {
+//     'AVG': (docs, field) => {
+//         const sum = docs.reduce((totalSum, doc) => {
+//             const value = Number.parseFloat(doc[field]);
+//             return totalSum + value;
+//         });
+//         return sum / docs.length;
+//     }
+// };
+
+const average = (docs, field) => {
+    const sum = docs.reduce((totalSum, doc) => {
+        const value = Number.parseFloat(doc[field]);
+        return totalSum + value;
+    },0);
+    return sum / docs.length;
+};
+
 const CommunityResultsEntry = props => {
     const MAX_COMMUNITY_DESCRIPTION_LENGTH = 64;
     const communityMembersIndices = _.map(props.docs, doc => doc.resultIndex);
@@ -44,6 +62,11 @@ const CommunityResultsEntry = props => {
                     <span>{communityDescription}</span>
                     <span className={'text-secondary'}> <em>({`${props.docs.filter(res=>!!res).length} members`})</em></span>
                 </td>
+                {props.showAverageOn && props.headers.includes(props.showAverageOn) &&
+                <td>
+                    {average(props.docs, props.showAverageOn)}
+                </td>
+                }
                 <td>
                     <div
                         onClick={() => toggleCommunity(!communityCollapsed)}
@@ -75,5 +98,6 @@ const CommunityResultsEntry = props => {
         </>
     );
 };
+
 
 export default CommunityResultsEntry;
