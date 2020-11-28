@@ -16,7 +16,8 @@ const CommunityResultsEntry = props => {
     const communityCheckboxRef=useRef(null);
     console.log('Selecting community members with indices: '+props.selectedCommunityMembers.join(', '));
     const communityDescription = _.chain(props.docs)
-        .map(result => result.Entity)
+        .map(result => result[props.selectField])
+        .filter(res=>!!res)
         .join(', ')
         .truncate({
             length: MAX_COMMUNITY_DESCRIPTION_LENGTH,
@@ -59,6 +60,7 @@ const CommunityResultsEntry = props => {
                         <ResultsTable
                             docs={props.docs}
                             headers={props.headers}
+                            selectField={props.selectField}
                             communityView={false}
                             innerTable={true}
                             selections={props.selectedCommunityMembers}

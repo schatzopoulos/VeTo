@@ -59,6 +59,7 @@ public class AnalysisResource {
                 config.getJoinpath(),
                 config.getConstraints(),
                 config.getConstraintsExpression(),
+                config.getPrimaryEntity(),
                 config.getJoinK(),
                 config.getSearchK(),
                 config.getT(),
@@ -116,7 +117,7 @@ public class AnalysisResource {
             analysesParameters = FileUtil.getAnalysesParameters(config);
 
             Document query = (Document) config.get("query");
-            analysesParameters.append("constraintsExpression",(String)query.get("constraintsExpression"));
+            analysesParameters.append("constraintsExpression", (String) query.get("constraintsExpression"));
 
             String[] tokens = lastLine.split("\t");
 
@@ -190,12 +191,29 @@ public class AnalysisResource {
 
             try {
                 Document meta = new Document();
-                List<Document> docs = analysisService.getResults(resultsFile, page, meta);
-                if (analysis.contains("Community")) {
-                    String communityDetailsFile = FileUtil.getCommunityDetailsFile(id);
-                    Document communityCounts = analysisService.getCommunityCounts(communityDetailsFile, docs);
-                    meta.append("community_counts", communityCounts);
+                List<Document> docs;
+                if (analysis.equals("Community Detection") || analysis.equals("Community Detection - Ranking")) {
+                    docs = analysisService.getCommunityResults(resultsFile, page, meta);
+                } else {
+                    docs = analysisService.getResults(resultsFile, page, meta);
+                    if (analysis.contains("Community")) {
+                        String communityDetailsFile = FileUtil.getCommunityDetailsFile(id);
+                        Document communityCounts = analysisService.getCommunityCounts(communityDetailsFile, docs);
+                        meta.append("community_counts", communityCounts);
+                    }
                 }
+
+                String configurationFilePath = FileUtil.getConfFile(id);
+                Document configuration = Document.parse(FileUtil.readJsonFile(configurationFilePath));
+                String selectField = (String) configuration.get("select_field");
+                String dataset = (String) configuration.get("dataset");
+                String primaryEntiry = (String) configuration.get("primary_entity");
+                Document analysisDomain = new Document();
+
+                analysisDomain.append("selectField", selectField);
+                analysisDomain.append("dataset", dataset);
+                analysisDomain.append("entity", primaryEntiry);
+                meta.append("analysis_domain",analysisDomain);
 
                 response.append("id", id)
                     .append("analysis", analysis)

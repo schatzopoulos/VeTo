@@ -9,6 +9,7 @@ import CommunityResultsEntry from 'app/modules/analysis/results/community-result
 export interface IResultsTableProps {
     docs: any,
     headers: any,
+    selectField: string,
     communityView: boolean,
     selections: any,
     innerTable?: boolean,
@@ -69,6 +70,7 @@ export class ResultsTable extends React.Component<IResultsTableProps> {
                     <ResultEntry
                         key={'result-' + row.resultIndex}
                         rowIndex={row.resultIndex}
+                        selectField={this.props.selectField}
                         values={rowValues}
                         checked={this.props.selections.includes(row.resultIndex)}
                         handleResultSelection={this.toggleSelected.bind(this)}
@@ -84,6 +86,7 @@ export class ResultsTable extends React.Component<IResultsTableProps> {
                         communityId={communityGroup[0].Community}
                         headers={_.without(this.props.headers, 'Community')}
                         docs={communityGroup}
+                        selectField={this.props.selectField}
                         selectedCommunityMembers={_.intersection(this.props.selections,communityIndices)}
                         handleToggledCommunityMembers={this.toggleSelected.bind(this)}
                     />

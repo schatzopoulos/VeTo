@@ -471,12 +471,15 @@ export class Home extends React.Component<IHomeProps> {
         });
         const constraintsExpression = this.constraintsSummary(constaintDescriptions);
 
+        const primaryEntity = this.state.metapath[0].data('label');
+
         this.props.analysisRun(
             analysisType,
             this.state.metapathStr,
             this.getJoinPath(),
             this.state.constraints,
             constraintsExpression,
+            primaryEntity,
             this.props.schemas[datasetToUse]['folder'],
             this.state.selectField,
             this.state.targetEntity,
@@ -891,8 +894,7 @@ export class Home extends React.Component<IHomeProps> {
         const { selectedEntity, selectFieldOptions }: any = this.getSelectFieldOptions();
         let datasetFolder = '';
         let datasetToUse;
-        console.log('Home: render() - watching state.constraints: ');
-        console.log(this.state.constraints);
+
         if (this.props.schemas) {
             if (this.state.dataset === null) {
                 datasetToUse = Object.keys(this.props.schemas)[0];
