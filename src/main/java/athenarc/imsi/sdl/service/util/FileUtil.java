@@ -1,10 +1,25 @@
 package athenarc.imsi.sdl.service.util;
 
-import athenarc.imsi.sdl.config.Constants;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.FilenameFilter;
+import java.io.IOException;
+import java.io.LineNumberReader;
+import java.io.PrintWriter;
+import java.io.RandomAccessFile;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import org.bson.Document;
 
-import java.io.*;
-import java.util.*;
+import athenarc.imsi.sdl.config.Constants;
 
 /**
  * Utility class for file and dir management.
@@ -100,26 +115,22 @@ public final class FileUtil {
     public static String writeConfig(
         ArrayList<String> analyses,
         String outputDir,
-				String hdfsOutputDir,
+        String hdfsOutputDir,
         String metapath,
         String joinpath,
         Document constraints,
         String constraintsExpression,
         String primaryEntity,
-        int joinK,
         int searchK,
         int t,
-        int joinW,
-        int searchW,
-        int minValues,
         int targetId,
         String folder,
         String selectField,
         int edgesThreshold,
         double prAlpha,
         double prTol,
-        int joinMinValues,
-        int searchMinValues
+        int joinDistance,
+        int lpaIter
     ) throws IOException {
 
         Document config = new Document();
@@ -127,13 +138,13 @@ public final class FileUtil {
         // Input & Output files configuration
         config.put("indir", Constants.HDFS_DATA_DIR + folder + "/nodes/");
         config.put("irdir", Constants.HDFS_DATA_DIR + folder + "/relations/");
-				config.put("indir_local", Constants.DATA_DIR + folder + "/nodes/");
+        config.put("indir_local", Constants.DATA_DIR + folder + "/nodes/");
 
         config.put("hin_out", hdfsOutputDir + "/" + Constants.HIN_OUT);
         config.put("join_hin_out", hdfsOutputDir + "/" + Constants.JOIN_HIN_OUT);
 
         config.put("hdfs_out_dir", hdfsOutputDir);
-				config.put("local_out_dir", outputDir);
+        config.put("local_out_dir", outputDir);
 			
         config.put("ranking_out", hdfsOutputDir + "/" + Constants.RANKING_OUT);
         config.put("communities_out", hdfsOutputDir + "/" + Constants.COMMUNITY_DETECTION_OUT);
@@ -162,18 +173,11 @@ public final class FileUtil {
 
         // Similarity Search & Join params
         config.put("target_id", targetId);
-//         config.put("joinK", joinK);
         config.put("searchK", searchK);
 
         config.put("t", t);
-        config.put("distance", 2);
-
-//         config.put("joinW", joinW);
-//         config.put("searchW", searchW);
-//         config.put("joinMinValues", joinMinValues);
-//         config.put("searchMinValues", searchMinValues);
-
-				config.put("community_detection_iter", 5);
+        config.put("join_distance", joinDistance);
+        config.put("community_detection_iter", lpaIter);
 
         // Query specific params
         Document query = new Document();

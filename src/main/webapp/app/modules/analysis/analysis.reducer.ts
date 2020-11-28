@@ -205,23 +205,20 @@ export const analysisRun = (
   selectField,
   targetId,
   edgesThreshold,
-  prAlpha,
   prTol,
-  joinK,
-  joinW,
-  joinMinValues,
+  prAlpha,
+  joinDistance,
   searchK,
-  searchW,
-  searchMinValues,
+  hashTables,
+  lpaIter,
   w,
   minValues
 ) => {
   const payload = {
     searchK,
-    joinK,
     constraintsExpression,
     primaryEntity,
-    t: 1,
+    t: hashTables,
     minValues: 5,
     targetId,
     analysis,
@@ -232,10 +229,8 @@ export const analysisRun = (
     edgesThreshold,
     prAlpha,
     prTol,
-    joinW,
-    joinMinValues,
-    searchW,
-    searchMinValues
+    joinDistance,
+    lpaIter
   };
 
   formatConstraints(payload, constraints);

@@ -1,6 +1,12 @@
 package athenarc.imsi.sdl.service;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.RandomAccessFile;
+import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -28,17 +34,17 @@ public class AnalysisService {
 
     @Async
     public void submit(String id, ArrayList<String> analysis, String metapath, String joinpath, Document constraints,
-                       String constraintsExpression, String primaryEntity, int joinK, int searchK, int t, int joinW, int searchW, int minValues, int targetId, String folder,
-                       String selectField, int edgesThreshold, double prAlpha, double prTol, int joinMinValues,
-                       int searchMinValues) throws java.io.IOException, InterruptedException {
+                       String constraintsExpression, String primaryEntity, int searchK, int t, int targetId, String folder,
+                       String selectField, int edgesThreshold, double prAlpha, double prTol, int joinDistance,
+                       int lpaIter) throws java.io.IOException, InterruptedException {
 
         // create folder to store results
         String outputDir = FileUtil.createDir(id);
 				String hdfsOutputDir = Constants.HDFS_BASE_PATH + "/" + id;
         String outputLog = FileUtil.getLogfile(id);
 
-        String config = FileUtil.writeConfig(analysis, outputDir, hdfsOutputDir, metapath, joinpath, constraints, constraintsExpression, primaryEntity, joinK, searchK, t,
-                joinW, searchW, minValues, targetId, folder, selectField, edgesThreshold, prAlpha, prTol, joinMinValues, searchMinValues);
+        String config = FileUtil.writeConfig(analysis, outputDir, hdfsOutputDir, metapath, joinpath, constraints, constraintsExpression, primaryEntity, searchK, t,
+                targetId, folder, selectField, edgesThreshold, prAlpha, prTol, joinDistance, lpaIter);
 
         // prepare ranking script arguments
         ProcessBuilder pb = new ProcessBuilder();

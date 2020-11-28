@@ -60,20 +60,16 @@ public class AnalysisResource {
                 config.getConstraints(),
                 config.getConstraintsExpression(),
                 config.getPrimaryEntity(),
-                config.getJoinK(),
                 config.getSearchK(),
                 config.getT(),
-                config.getJoinW(),
-                config.getSearchW(),
-                config.getMinValues(),
                 config.getTargetId(),
                 config.getFolder(),
                 config.getSelectField(),
                 config.getEdgesThreshold(),
                 config.getPrAlpha(),
                 config.getPrTol(),
-                config.getJoinMinValues(),
-                config.getSearchMinValues()
+                config.getJoinDistance(),
+                config.getLpaIter()
             );
 
         } catch (java.io.IOException | InterruptedException e) {

@@ -55,12 +55,11 @@ export class Home extends React.Component<IHomeProps> {
         edgesThreshold: 5,
         prTol: 0.000001,
         prAlpha: 0.5,
-        joinK: 100,
-        joinW: 0,
-        joinMinValues: 5,
+
+        joinDistance: 2,
         searchK: 100,
-        searchW: 10,
-        searchMinValues: 5
+        hashTables: 1,
+        lpaIter: 20,
     };
     cy: any;
     polling: any;
@@ -484,14 +483,12 @@ export class Home extends React.Component<IHomeProps> {
             this.state.selectField,
             this.state.targetEntity,
             this.state.edgesThreshold,
-            this.state.prAlpha,
             this.state.prTol,
-            this.state.joinK,
-            this.state.joinW,
-            this.state.joinMinValues,
+            this.state.prAlpha,
+            this.state.joinDistance,
             this.state.searchK,
-            this.state.searchW,
-            this.state.searchMinValues,
+            this.state.hashTables,
+            this.state.lpaIter,
             (rerunAnalysis) ? 15 : undefined,
             (rerunAnalysis) ? 1 : undefined
         );
@@ -1120,62 +1117,10 @@ export class Home extends React.Component<IHomeProps> {
                                                         </Col>
                                                         <Col md='3'>
                                                             <Card className={'configuration-card'}>
-                                                                <h5>Similarity Join</h5>
-
-                                                                <Label for="joinK">
-                                                                    k <FontAwesomeIcon style={{ color: '#17a2b8' }}
-                                                                                       icon="question-circle"
-                                                                                       title="Number of retrieved results." />
-                                                                </Label>
-                                                                <Input id="joinK" value={this.state.joinK} bsSize="sm"
-                                                                       type='number'
-                                                                       onChange={this.handleAdvancedOptions.bind(this)} />
-                                                                {
-                                                                    (this.state.joinK === '') &&
-                                                                    <span className="attribute-type text-danger">
-																This field cannot be empty.
-												</span>
-                                                                }
-                                                                <br />
-                                                                <Label for="joinW">
-                                                                    w <FontAwesomeIcon style={{ color: '#17a2b8' }}
-                                                                                       icon="question-circle"
-                                                                                       title="Hamming distance threshold for merging buckets." />
-                                                                </Label>
-                                                                <Input id="joinW" value={this.state.joinW} bsSize="sm"
-                                                                       type='number'
-                                                                       onChange={this.handleAdvancedOptions.bind(this)} />
-                                                                {
-                                                                    (this.state.joinW === '') &&
-                                                                    <span className="attribute-type text-danger">
-																This field cannot be empty.
-												</span>
-                                                                }
-                                                                <br />
-                                                                <Label for="joinMinValues">
-                                                                    Min. values <FontAwesomeIcon
-                                                                    style={{ color: '#17a2b8' }} icon="question-circle"
-                                                                    title="Min number of values for each entity." />
-                                                                </Label>
-                                                                <Input id="joinMinValues"
-                                                                       value={this.state.joinMinValues}
-                                                                       bsSize="sm" type='number'
-                                                                       onChange={this.handleAdvancedOptions.bind(this)} />
-                                                                {
-                                                                    (this.state.joinMinValues === '') &&
-                                                                    <span className="attribute-type text-danger">
-																This field cannot be empty.
-												</span>
-                                                                }
-                                                            </Card>
-
-                                                        </Col>
-                                                        <Col md='3'>
-                                                            <Card className={'configuration-card'}>
-                                                                <h5>Similarity Search</h5>
+                                                                <h5>Similarity Analyses</h5>
 
                                                                 <Label for="searchK">
-                                                                    k <FontAwesomeIcon style={{ color: '#17a2b8' }}
+                                                                    k (for Similarity Search) <FontAwesomeIcon style={{ color: '#17a2b8' }}
                                                                                        icon="question-circle"
                                                                                        title="Number of retrieved results." />
                                                                 </Label>
@@ -1190,33 +1135,33 @@ export class Home extends React.Component<IHomeProps> {
 												</span>
                                                                 }
                                                                 <br />
-                                                                <Label for="searchW">
-                                                                    w <FontAwesomeIcon style={{ color: '#17a2b8' }}
+                                                                <Label for="joinDistance">
+                                                                    Distance (for Similarity Join) <FontAwesomeIcon style={{ color: '#17a2b8' }}
                                                                                        icon="question-circle"
-                                                                                       title="Hamming distance threshold for merging buckets." />
+                                                                                       title="Euclidean Distance threshold." />
                                                                 </Label>
-                                                                <Input id="searchW" value={this.state.searchW}
+                                                                <Input id="joinDistance" value={this.state.joinDistance}
                                                                        bsSize="sm"
                                                                        type='number'
                                                                        onChange={this.handleAdvancedOptions.bind(this)} />
                                                                 {
-                                                                    (this.state.searchW === '') &&
+                                                                    (this.state.joinDistance === '') &&
                                                                     <span className="attribute-type text-danger">
 																This field cannot be empty.
 												</span>
                                                                 }
                                                                 <br />
-                                                                <Label for="searchMinValues">
-                                                                    Min. values <FontAwesomeIcon
-                                                                    style={{ color: '#17a2b8' }} icon="question-circle"
-                                                                    title="Min number of values for each entity." />
+                                                                <Label for="hashTables">
+                                                                    Hash Tables <FontAwesomeIcon style={{ color: '#17a2b8' }}
+                                                                                       icon="question-circle"
+                                                                                       title="Number of hash tables used for LSH." />
                                                                 </Label>
-                                                                <Input id="searchMinValues"
-                                                                       value={this.state.searchMinValues} bsSize="sm"
+                                                                <Input id="hashTables" value={this.state.hashTables}
+                                                                       bsSize="sm"
                                                                        type='number'
                                                                        onChange={this.handleAdvancedOptions.bind(this)} />
                                                                 {
-                                                                    (this.state.searchMinValues === '') &&
+                                                                    (this.state.hashTables === '') &&
                                                                     <span className="attribute-type text-danger">
 																This field cannot be empty.
 												</span>
@@ -1224,6 +1169,27 @@ export class Home extends React.Component<IHomeProps> {
                                                             </Card>
 
                                                         </Col>
+                                                        <Col md='3'>
+                                                            <Card className={'configuration-card'}>
+                                                                <h5>Community Detection</h5>
+
+                                                                <Label for="lpaIter">
+                                                                    Iterations <FontAwesomeIcon style={{ color: '#17a2b8' }}
+                                                                                       icon="question-circle"
+                                                                                       title="Number of iterations for LPA." />
+                                                                </Label>
+                                                                <Input id="lpaIter" value={this.state.lpaIter} bsSize="sm"
+                                                                       type='number'
+                                                                       onChange={this.handleAdvancedOptions.bind(this)} />
+                                                                {
+                                                                    (this.state.lpaIter === '') &&
+                                                                    <span className="attribute-type text-danger">
+																This field cannot be empty.
+												</span>
+                                                                }
+                                                               </Card>
+                                                        </Col>
+                      
                                                     </Row>
                                                 </Container>
                                             </ModalBody>

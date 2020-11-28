@@ -38,17 +38,14 @@ public class QueryConfigVM {
     private String primaryEntity;
 
     private int searchK;
-    private int joinK;
-    private int searchMinValues;
-    private int joinMinValues;
     private int t;
-    private int searchW;
-    private int joinW;
     private int minValues;
     private int targetId;
     private int edgesThreshold;
     private double prAlpha;
     private double prTol;
+    private int joinDistance;
+    private int lpaIter;
 
     public void setConstraintsExpression(String constraintsExpression) {
         this.constraintsExpression=constraintsExpression;
@@ -56,6 +53,22 @@ public class QueryConfigVM {
 
     public String getConstraintsExpression() {
         return this.constraintsExpression;
+    }
+
+    public int getJoinDistance() {
+        return this.joinDistance;
+    }
+
+    public void setJoinDistance(int joinDistance) {
+        this.joinDistance = joinDistance;
+    }
+
+    public int getLpaIter() {
+        return this.lpaIter;
+    }
+
+    public void setLpaIter(int lpaIter) {
+        this.lpaIter = lpaIter;
     }
 
     public String getPrimaryEntity() {
@@ -101,53 +114,12 @@ public class QueryConfigVM {
     public void setSearchK(int searchK) {
         this.searchK = searchK;
     }
-
-    public int getJoinK() {
-        return this.joinK;
-    }
-
-    public void setJoinK(int joinK) {
-        this.joinK = joinK;
-    }
-
-    public int getSearchMinValues() {
-        return this.searchMinValues;
-    }
-
-    public void setSearchMinValues(int searchMinValues) {
-        this.searchMinValues = searchMinValues;
-    }
-
-    public int getJoinMinValues() {
-        return this.joinMinValues;
-    }
-
-    public void setJoinMinValues(int joinMinValues) {
-        this.joinMinValues = joinMinValues;
-    }
-
     public int getT() {
         return this.t;
     }
 
     public void setT(int t) {
         this.t = t;
-    }
-
-    public int getSearchW() {
-        return this.searchW;
-    }
-
-    public void setSearchW(int searchW) {
-        this.searchW = searchW;
-    }
-
-    public int getJoinW() {
-        return this.joinW;
-    }
-
-    public void setJoinW(int joinW) {
-        this.joinW = joinW;
     }
 
     public int getMinValues() {
