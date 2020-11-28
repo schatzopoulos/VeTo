@@ -117,25 +117,63 @@ export class ResultsPanel extends React.Component<IResultsPanelProps> {
 
             const result = this.props.results[this.state.activeAnalysis];
             if (this.state.activeAnalysis) {
-                if (this.state.activeAnalysis === 'Ranking') {
-                    resultPanel = <ResultsTable
-                        docs={result.docs}
-                        headers={result.meta.headers}
-                        selections={this.state.selectedEntries}
-                        communityView={false}
-                        handleSelectionChange={this.handleSelectionChange.bind(this)}
-                    />;
-                } else if (this.state.activeAnalysis === 'Community Detection' || this.state.activeAnalysis === 'Community Detection - Ranking') {
-                    resultPanel = <ResultsTable
-                        docs={result.docs}
-                        headers={result.meta.headers}
-                        selections={this.state.selectedEntries}
-                        communityView={true}
-                        handleSelectionChange={this.handleSelectionChange.bind(this)}
-                    />;
-                } else {
-                    resultPanel = '';
+                let assignedHeaders = [...result.meta.headers];
+                const selectField = result.meta.analysis_domain.selectField;
+                console.log(selectField);
+                let assignedDocs = result.docs;
+                switch(this.state.activeAnalysis) {
+                    case 'Ranking':
+                    case 'Ranking - Community Detection':
+                        assignedHeaders=["Rank"].concat(assignedHeaders);
+                        assignedDocs=_.map(assignedDocs,(doc,index)=>{
+                            return {...doc, "Rank":index};
+                        });
+                        // falls through
+                    case 'Similarity Search':
+                    case 'Similarity Join':
+                        resultPanel = <ResultsTable
+                            docs={assignedDocs}
+                            headers={assignedHeaders}
+                            selectField={selectField}
+                            selections={this.state.selectedEntries}
+                            communityView={false}
+                            handleSelectionChange={this.handleSelectionChange.bind(this)}
+                        />;
+                        break;
+                    case 'Community Detection - Ranking':
+                    case 'Community Detection':
+                        resultPanel = <ResultsTable
+                            docs={result.docs}
+                            headers={result.meta.headers}
+                            selectField={selectField}
+                            selections={this.state.selectedEntries}
+                            communityView={true}
+                            handleSelectionChange={this.handleSelectionChange.bind(this)}
+                        />;
+                        break;
+                    default:
+                        resultPanel='';
+                        break;
                 }
+                // if (this.state.activeAnalysis === 'Ranking') {
+                //     resultPanel = <ResultsTable
+                //         docs={result.docs}
+                //         headers={result.meta.headers}
+                //         selections={this.state.selectedEntries}
+                //         communityView={false}
+                //         handleSelectionChange={this.handleSelectionChange.bind(this)}
+                //     />;
+                // } else if (this.state.activeAnalysis === 'Community Detection' || this.state.activeAnalysis === 'Community Detection - Ranking') {
+                //     resultPanel = <ResultsTable
+                //         docs={result.docs}
+                //         headers={result.meta.headers}
+                //         selections={this.state.selectedEntries}
+                //         communityView={true}
+                //         handleSelectionChange={this.handleSelectionChange.bind(this)}
+                //     />;
+                // } else {
+                //     resultPanel = '';
+                // }
             } else {
                 resultPanel = '';
             }
