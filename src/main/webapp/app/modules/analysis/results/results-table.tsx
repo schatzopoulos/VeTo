@@ -87,7 +87,9 @@ export class ResultsTable extends React.Component<IResultsTableProps> {
                         headers={_.without(this.props.headers, 'Community')}
                         docs={communityGroup}
                         selectField={this.props.selectField}
-                        selectedCommunityMembers={_.intersection(this.props.selections,communityIndices)}
+                        selectedCommunityMembers={_.intersection(this.props.selections, communityIndices)}
+                        showAverageOn={'Ranking Score'}
+                        showRank={this.props.showRank}
                         handleToggledCommunityMembers={this.toggleSelected.bind(this)}
                     />
                 );
