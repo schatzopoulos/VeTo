@@ -8,14 +8,18 @@ const ResultEntry = (props) => {
     return (
         <tr key={props.rowIndex} className={props.checked ? 'table-info' : ''}>
             <td>
-                <input
-                    type={'checkbox'}
-                    id={'some-id'}
-                    checked={props.checked}
-                    onChange={()=>{
-                        console.log('ResultEntry: Toggling for index '+props.rowIndex);
-                        props.handleResultSelection([props.rowIndex]);
-                    }}/>
+                <div className={'form-check form-check-inline'}>
+                    <input
+                        type={'checkbox'}
+                        id={`result-checkbox-${props.rowIndex}`}
+                        checked={props.checked}
+                        className={'form-check-input'}
+                        onChange={() => {
+                            console.log('ResultEntry: Toggling for index ' + props.rowIndex);
+                            props.handleResultSelection([props.rowIndex]);
+                        }} />
+                    <label className={'form-check-label'} htmlFor={`result-checkbox-${props.rowIndex}`}>{props.rank?props.rank:''}</label>
+                </div>
             </td>
             {resultFields}
         </tr>
