@@ -29,6 +29,7 @@ import { getDatasetSchemas } from '../datasets/datasets.reducer';
 import ResultsPanel from '../analysis/results/results';
 import MetapathPanel from '../metapath/metapath-panel';
 import AutocompleteInput from '../datasets/autocomplete-input';
+import { faTimes } from '@fortawesome/free-solid-svg-icons';
 
 export interface IHomeProps extends StateProps, DispatchProps {
     loading: boolean;
@@ -882,6 +883,16 @@ console.warn("edw");
         return constraintExpressions.filter(expression=>!!expression).join(', ');
     }
 
+    clearMetapath() {
+        const newState={
+            constraints:{},
+            metapathStr:'',
+            metapath:[],
+            selectField:''
+        };
+        this.setState(newState,()=>{this.animateNeighbors(undefined)})
+    }
+
     render() {
         const datasetOptions = this.getDatasetOptions();
         const schema = this.getSchema();
@@ -992,13 +1003,21 @@ console.warn("edw");
                         </Card>
 
                         <br />
-                        <h4>Query metapath</h4>
+                        <Row>
+                            <Col xs={8}>
+                                <h4>Query metapath</h4>
+                            </Col>
+                            <Col xs={4} className={'text-right'}>
+                                {this.state.metapathStr && <Button color={'danger'} onClick={this.clearMetapath.bind(this)} size={'sm'}>Clear metapath</Button>}
+                            </Col>
+                        </Row>
                         {(this.props.schemas) &&
                         <MetapathPanel
                             metapath={this.state.metapath}
                             schema={this.props.schemas[datasetToUse]}
                             datasetFolder={datasetFolder}
                             constraints={this.state.constraints}
+                            selectField = {this.state.selectField}
                             selectFieldOptions={selectFieldOptions}
                             onNewEntity={this.simulateClickOnNode.bind(this)}
                             onRecommendationAccept={this.addMultiple.bind(this)}
@@ -1317,6 +1336,7 @@ console.warn("edw");
                                     <Row className="small-grey text-center">
                                         <Col>
                                             {this.getDescriptionString()}
+                                            {this.props.progress && this.props.progress<100?<Button size={'sm'} className={'badge btn-danger'}><FontAwesomeIcon icon={faTimes}/> Cancel analysis</Button>:''}
                                         </Col>
                                     </Row>
                                 }

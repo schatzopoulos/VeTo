@@ -11,6 +11,7 @@ interface MetapathPanelProps {
     datasetFolder: string,
     metapath: any
     schema: any
+    selectField: string,
     selectFieldOptions: any
     onNewEntity: any
     onDelete: any
@@ -93,6 +94,7 @@ class MetapathPanel extends React.Component<MetapathPanelProps> {
                                    idIndexedSchema={idIndexedSchema}
                                    datasetFolder={this.props.datasetFolder}
                                    primaryEntity={metapathEntityBoxes.length === 0}
+                                   selectField = {this.props.selectField}
                                    selectFieldOptions={metapathEntityBoxes.length === 0 ? this.props.selectFieldOptions : null}
                                    handleSelectFieldChange={this.props.handleSelectFieldChange}
                                    handleSwitch={this.props.handleSwitch}
