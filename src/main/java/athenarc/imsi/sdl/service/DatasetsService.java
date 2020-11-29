@@ -8,11 +8,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Set;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 
 import org.bson.Document;
 import org.slf4j.Logger;
@@ -70,6 +70,8 @@ public class DatasetsService {
         // loop in lines until find 5 results to return
         while ( ( line = reader.readLine() ) != null) {
             String [] attrs = line.split("\t");
+            
+            if (i >= attrs.length) continue;
 
             if (attrs[i].toLowerCase().contains(term)) {
                 Document doc = new Document();
