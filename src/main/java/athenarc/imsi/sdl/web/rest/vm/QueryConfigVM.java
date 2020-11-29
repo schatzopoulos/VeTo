@@ -44,7 +44,7 @@ public class QueryConfigVM {
     private int edgesThreshold;
     private double prAlpha;
     private double prTol;
-    private int joinDistance;
+    private int simMinValues;
     private int lpaIter;
 
     public void setConstraintsExpression(String constraintsExpression) {
@@ -55,12 +55,12 @@ public class QueryConfigVM {
         return this.constraintsExpression;
     }
 
-    public int getJoinDistance() {
-        return this.joinDistance;
+    public int getSimMinValues() {
+        return this.simMinValues;
     }
 
-    public void setJoinDistance(int joinDistance) {
-        this.joinDistance = joinDistance;
+    public void setSimMinValues(int simMinValues) {
+        this.simMinValues = simMinValues;
     }
 
     public int getLpaIter() {

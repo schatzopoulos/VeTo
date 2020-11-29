@@ -56,7 +56,7 @@ export class Home extends React.Component<IHomeProps> {
         prTol: 0.000001,
         prAlpha: 0.5,
 
-        joinDistance: 2,
+        simMinValues: 5,
         searchK: 100,
         hashTables: 1,
         lpaIter: 20,
@@ -485,7 +485,7 @@ export class Home extends React.Component<IHomeProps> {
             this.state.edgesThreshold,
             this.state.prTol,
             this.state.prAlpha,
-            this.state.joinDistance,
+            this.state.simMinValues,
             this.state.searchK,
             this.state.hashTables,
             this.state.lpaIter,
@@ -1120,7 +1120,7 @@ export class Home extends React.Component<IHomeProps> {
                                                                 <h5>Similarity Analyses</h5>
 
                                                                 <Label for="searchK">
-                                                                    k (for Similarity Search) <FontAwesomeIcon style={{ color: '#17a2b8' }}
+                                                                    k <FontAwesomeIcon style={{ color: '#17a2b8' }}
                                                                                        icon="question-circle"
                                                                                        title="Number of retrieved results." />
                                                                 </Label>
@@ -1134,22 +1134,7 @@ export class Home extends React.Component<IHomeProps> {
 																This field cannot be empty.
 												</span>
                                                                 }
-                                                                <br />
-                                                                <Label for="joinDistance">
-                                                                    Distance (for Similarity Join) <FontAwesomeIcon style={{ color: '#17a2b8' }}
-                                                                                       icon="question-circle"
-                                                                                       title="Euclidean Distance threshold." />
-                                                                </Label>
-                                                                <Input id="joinDistance" value={this.state.joinDistance}
-                                                                       bsSize="sm"
-                                                                       type='number'
-                                                                       onChange={this.handleAdvancedOptions.bind(this)} />
-                                                                {
-                                                                    (this.state.joinDistance === '') &&
-                                                                    <span className="attribute-type text-danger">
-																This field cannot be empty.
-												</span>
-                                                                }
+                                                                
                                                                 <br />
                                                                 <Label for="hashTables">
                                                                     Hash Tables <FontAwesomeIcon style={{ color: '#17a2b8' }}
@@ -1162,6 +1147,22 @@ export class Home extends React.Component<IHomeProps> {
                                                                        onChange={this.handleAdvancedOptions.bind(this)} />
                                                                 {
                                                                     (this.state.hashTables === '') &&
+                                                                    <span className="attribute-type text-danger">
+																This field cannot be empty.
+												</span>
+                                                                }
+                                                                <br />
+                                                                <Label for="simMinValues">
+                                                                    Min. values <FontAwesomeIcon style={{ color: '#17a2b8' }}
+                                                                                       icon="question-circle"
+                                                                                       title="Min number of values for each entity." />
+                                                                </Label>
+                                                                <Input id="simMinValues" value={this.state.simMinValues}
+                                                                       bsSize="sm"
+                                                                       type='number'
+                                                                       onChange={this.handleAdvancedOptions.bind(this)} />
+                                                                {
+                                                                    (this.state.simMinValues === '') &&
                                                                     <span className="attribute-type text-danger">
 																This field cannot be empty.
 												</span>

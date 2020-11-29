@@ -35,7 +35,7 @@ public class AnalysisService {
     @Async
     public void submit(String id, ArrayList<String> analysis, String metapath, String joinpath, Document constraints,
                        String constraintsExpression, String primaryEntity, int searchK, int t, int targetId, String folder,
-                       String selectField, int edgesThreshold, double prAlpha, double prTol, int joinDistance,
+                       String selectField, int edgesThreshold, double prAlpha, double prTol, int simMinValues,
                        int lpaIter) throws java.io.IOException, InterruptedException {
 
         // create folder to store results
@@ -44,7 +44,7 @@ public class AnalysisService {
         String outputLog = FileUtil.getLogfile(id);
 
         String config = FileUtil.writeConfig(analysis, outputDir, hdfsOutputDir, metapath, joinpath, constraints, constraintsExpression, primaryEntity, searchK, t,
-                targetId, folder, selectField, edgesThreshold, prAlpha, prTol, joinDistance, lpaIter);
+                targetId, folder, selectField, edgesThreshold, prAlpha, prTol, simMinValues, lpaIter);
 
         // prepare ranking script arguments
         ProcessBuilder pb = new ProcessBuilder();

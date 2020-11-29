@@ -207,7 +207,7 @@ export const analysisRun = (
   edgesThreshold,
   prTol,
   prAlpha,
-  joinDistance,
+  simMinValues,
   searchK,
   hashTables,
   lpaIter,
@@ -229,7 +229,7 @@ export const analysisRun = (
     edgesThreshold,
     prAlpha,
     prTol,
-    joinDistance,
+    simMinValues,
     lpaIter
   };
 

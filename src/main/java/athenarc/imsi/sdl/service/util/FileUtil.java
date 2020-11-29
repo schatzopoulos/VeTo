@@ -129,7 +129,7 @@ public final class FileUtil {
         int edgesThreshold,
         double prAlpha,
         double prTol,
-        int joinDistance,
+        int simMinValues,
         int lpaIter
     ) throws IOException {
 
@@ -176,7 +176,7 @@ public final class FileUtil {
         config.put("searchK", searchK);
 
         config.put("t", t);
-        config.put("join_distance", joinDistance);
+        config.put("sim_min_values", simMinValues);
         config.put("community_detection_iter", lpaIter);
 
         // Query specific params

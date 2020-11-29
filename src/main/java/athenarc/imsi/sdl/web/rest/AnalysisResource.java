@@ -68,7 +68,7 @@ public class AnalysisResource {
                 config.getEdgesThreshold(),
                 config.getPrAlpha(),
                 config.getPrTol(),
-                config.getJoinDistance(),
+                config.getSimMinValues(),
                 config.getLpaIter()
             );
 
