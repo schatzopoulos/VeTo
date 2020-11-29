@@ -45,23 +45,39 @@ export class ResultsPanel extends React.Component<IResultsPanelProps> {
     }
 
     downloadResults(onlySelected) {
-        axios.get('api/datasets/download', {
-            params: {
-                analysisType: this.state.activeAnalysis,
-                id: this.props.analysisId
-            },
-            responseType: 'blob'
-        }).then(response => {
-            console.log(response.data);
-            FileSaver.saveAs(response.data, 'results.csv');
-        });
+        if (!onlySelected) {
+            axios.get('api/datasets/download', {
+                params: {
+                    analysisType: this.state.activeAnalysis,
+                    id: this.props.analysisId
+                },
+                responseType: 'blob'
+            }).then(response => {
+                console.log(response.data);
+                FileSaver.saveAs(response.data, 'results.csv');
+            });
+        } else {
+            console.log('Phoebe Buffey')
+            const results = this.props.results[this.state.activeAnalysis];
+            const headers = results.meta.headers.filter(header=>header!=='resultIndex');
+            const tsvRows = [headers];
+            this.state.selectedEntries.forEach(entry => {
+                const docObject = results.docs.find(doc => doc.resultIndex === entry);
+                const docRow = headers.map(header=>docObject[header]);
+                tsvRows.push(docRow);
+            });
+            const tsvContent = tsvRows.map(e => e.join('\t')).join("\n");
+            const conditionsBlob = new Blob([tsvContent]);
+            FileSaver.saveAs(conditionsBlob, 'results.csv');
+        }
     }
 
     downloadConditions() {
         const results = this.props.results[this.state.activeAnalysis];
+        const selectField = results.meta.analysis_domain.selectField;
         const conditionValues = {};
         this.state.selectedEntries.forEach((entry, index) => {
-            const entryValue = results.docs[entry][results.meta.headers[0]];
+            const entryValue = results.docs.find(doc => doc.resultIndex === entry)[selectField];
             if (!Object.prototype.hasOwnProperty.call(conditionValues, entryValue)) {
                 if (index > 0) {
                     conditionValues[entryValue] = {
@@ -119,13 +135,13 @@ export class ResultsPanel extends React.Component<IResultsPanelProps> {
                 const assignedHeaders = [...result.meta.headers];
                 const selectField = result.meta.analysis_domain.selectField;
                 const assignedDocs = result.docs;
-                let showRank=false;
-                switch(this.state.activeAnalysis) {
+                let showRank = false;
+                switch (this.state.activeAnalysis) {
                     case 'Similarity Search':
                     case 'Similarity Join':
                     case 'Ranking':
                     case 'Ranking - Community Detection':
-                        showRank=true;
+                        showRank = true;
                         resultPanel = <ResultsTable
                             docs={assignedDocs}
                             headers={assignedHeaders}
@@ -137,8 +153,8 @@ export class ResultsPanel extends React.Component<IResultsPanelProps> {
                         />;
                         break;
                     case 'Community Detection - Ranking':
-                        showRank=true;
-                        // falls through
+                        showRank = true;
+                    // falls through
                     case 'Community Detection':
                         resultPanel = <ResultsTable
                             docs={result.docs}
@@ -151,7 +167,7 @@ export class ResultsPanel extends React.Component<IResultsPanelProps> {
                         />;
                         break;
                     default:
-                        resultPanel='';
+                        resultPanel = '';
                         break;
                 }
                 // if (this.state.activeAnalysis === 'Ranking') {
