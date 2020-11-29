@@ -131,6 +131,7 @@ export class ResultsPanel extends React.Component<IResultsPanelProps> {
         if (!_.isEmpty(this.props.results)) {
 
             const result = this.props.results[this.state.activeAnalysis];
+            let areCommunityResults = false;
             if (this.state.activeAnalysis) {
                 const assignedHeaders = [...result.meta.headers];
                 const selectField = result.meta.analysis_domain.selectField;
@@ -156,6 +157,7 @@ export class ResultsPanel extends React.Component<IResultsPanelProps> {
                         showRank = true;
                     // falls through
                     case 'Community Detection':
+                        areCommunityResults=true;
                         resultPanel = <ResultsTable
                             docs={result.docs}
                             headers={result.meta.headers}
@@ -193,8 +195,8 @@ export class ResultsPanel extends React.Component<IResultsPanelProps> {
                 resultPanel = '';
             }
 
-            const totalCommunities = (_.get(result, 'meta.community_counts')) ?
-                <span> / {result.meta.community_counts['total']} communities found in total</span> : '';
+            // const totalCommunities = (_.get(result, 'meta.community_counts')) ?
+            //     <span> / {result.meta.community_counts} communities found in total</span> : '';
             return (<div>
                 <h2>Results</h2>
                 <p>{this.props.description}</p>
@@ -237,8 +239,8 @@ export class ResultsPanel extends React.Component<IResultsPanelProps> {
                                             <Row>
                                                 <Col xs={'12'} lg={'6'}
                                                      className="small-grey">
-                                                    Displaying {docs.length} out
-                                                    of {meta.totalRecords} results{totalCommunities}{this.state.selectedEntries.length > 0 ? `. (${this.state.selectedEntries.length} selected)` : ''}
+                                                    Displaying {areCommunityResults?_.keys(_.groupBy(docs,doc=>doc.Community)).length:docs.length} out
+                                                    of {meta.totalRecords} {areCommunityResults?'communities':'results'}{this.state.selectedEntries.length > 0 ? `. (${this.state.selectedEntries.length} ${areCommunityResults?'members ':''}selected)` : ''}
                                                 </Col>
                                                 <Col xs={'12'} lg={'6'} className={'text-lg-right'}>
                                                     {(this.state.selectedEntries.length > 0) &&
