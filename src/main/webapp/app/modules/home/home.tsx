@@ -29,6 +29,7 @@ import { getDatasetSchemas } from '../datasets/datasets.reducer';
 import ResultsPanel from '../analysis/results/results';
 import MetapathPanel from '../metapath/metapath-panel';
 import AutocompleteInput from '../datasets/autocomplete-input';
+import { faTimes } from '@fortawesome/free-solid-svg-icons';
 
 export interface IHomeProps extends StateProps, DispatchProps {
     loading: boolean;
@@ -1352,6 +1353,7 @@ export class Home extends React.Component<IHomeProps> {
                                                             target="_blank">link</Link> (job
                                             id = {this.props.uuid}).<br />
                                             {this.getDescriptionString()}
+                                            {this.props.progress && this.props.progress<100?<Button size={'sm'} className={'badge btn-danger'}><FontAwesomeIcon icon={faTimes}/> Cancel analysis</Button>:''}
                                         </Col>
                                     </Row>
                                 }

@@ -5,6 +5,8 @@ import { IRootState } from 'app/shared/reducers';
 import _ from 'lodash';
 import { getJob, getMoreResults, getResults, getStatus } from './jobs.reducer';
 import ResultsPanel from './results/results';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faTimes } from '@fortawesome/free-solid-svg-icons';
 
 export interface IHomeProps extends StateProps, DispatchProps {
     loading: boolean;
@@ -158,6 +160,7 @@ export class Jobs extends React.Component<IHomeProps> {
                                     <Row className="small-grey text-center">
                                         <Col>
                                             {this.getDescriptionString()}
+                                            {this.props.progress && this.props.progress<100?<Button size={'sm'} className={'badge btn-danger'}><FontAwesomeIcon icon={faTimes}/> Cancel analysis</Button>:''}
                                         </Col>
                                     </Row>
                                 }
