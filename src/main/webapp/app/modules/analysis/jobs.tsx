@@ -106,7 +106,7 @@ export class Jobs extends React.Component<IHomeProps> {
                     <Col md="6">
                         <Row>
                             <Col>
-                                <h4>Re-attach to job</h4>
+                                <h4>Re-attach analysis</h4>
                                 <Row>
                                     <Col md='10'>
                                         <Input name="job_id" id="job_id" placeholder="Please give a valid job id"

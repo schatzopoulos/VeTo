@@ -759,7 +759,7 @@ export class Home extends React.Component<IHomeProps> {
 
     handleTargetEntity(e) {
         let selected;
-
+console.warn("edw");
         if (_.isEmpty(e)) {
             selected = '';
         } else {
@@ -769,6 +769,8 @@ export class Home extends React.Component<IHomeProps> {
 
         this.setState({
             targetEntity: selected
+        }, () => {
+            console.log("changed");
         });
     }
 
@@ -1293,10 +1295,10 @@ export class Home extends React.Component<IHomeProps> {
                             {this.props.uuid &&
                             <Card className={'my-4 pt-0'}>
                                 <Row className={'justify-content-end'}>
-                                    <h5 className={'p-2'}><strong className={'text-muted'}>Job
-                                        ID: {this.props.uuid}</strong></h5>
+                                    <h5 className={'p-2'}>
+                                        <strong className={'text-muted'}>
+                                        Job id: <Link to={`/jobs/${this.props.uuid}`} target="_blank">{this.props.uuid}</Link>: </strong></h5>
                                 </Row>
-                                <br />
                                 {this.props.error &&
                                 <Row>
                                     <Col xs={'12'} className={'text-danger'}>{this.props.error}</Col>
@@ -1314,10 +1316,6 @@ export class Home extends React.Component<IHomeProps> {
                                     (this.props.loading) &&
                                     <Row className="small-grey text-center">
                                         <Col>
-                                            The analysis may take some time, you can check its progress in the
-                                            following <Link to={`/jobs/${this.props.uuid}`}
-                                                            target="_blank">link</Link> (job
-                                            id = {this.props.uuid}).<br />
                                             {this.getDescriptionString()}
                                         </Col>
                                     </Row>
