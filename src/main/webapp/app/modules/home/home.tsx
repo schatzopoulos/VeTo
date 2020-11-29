@@ -884,6 +884,16 @@ export class Home extends React.Component<IHomeProps> {
         return constraintExpressions.filter(expression=>!!expression).join(', ');
     }
 
+    clearMetapath() {
+        const newState={
+            constraints:{},
+            metapathStr:'',
+            metapath:[],
+            selectField:''
+        };
+        this.setState(newState,()=>{this.animateNeighbors(undefined)})
+    }
+
     render() {
         const datasetOptions = this.getDatasetOptions();
         const schema = this.getSchema();
@@ -994,7 +1004,14 @@ export class Home extends React.Component<IHomeProps> {
                         </Card>
 
                         <br />
-                        <h4>Query metapath</h4>
+                        <Row>
+                            <Col xs={8}>
+                                <h4>Query metapath</h4>
+                            </Col>
+                            <Col xs={4} className={'text-right'}>
+                                {this.state.metapathStr && <Button color={'danger'} onClick={this.clearMetapath.bind(this)} size={'sm'}>Clear metapath</Button>}
+                            </Col>
+                        </Row>
                         {(this.props.schemas) &&
                         <MetapathPanel
                             metapath={this.state.metapath}
