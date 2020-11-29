@@ -12,6 +12,7 @@ export interface IResultsTableProps {
     selectField: string,
     communityView: boolean,
     selections: any,
+    showRank: boolean
     innerTable?: boolean,
 
     handleSelectionChange: any
@@ -19,7 +20,7 @@ export interface IResultsTableProps {
 
 export class ResultsTable extends React.Component<IResultsTableProps> {
 
-    tableCheckboxRef=null;
+    tableCheckboxRef = null;
     state = {
         allSelected: false,
         selectedIndices: []
@@ -27,7 +28,7 @@ export class ResultsTable extends React.Component<IResultsTableProps> {
 
     constructor(props) {
         super(props);
-        this.tableCheckboxRef=React.createRef();
+        this.tableCheckboxRef = React.createRef();
     }
 
     componentDidUpdate(prevProps: Readonly<IResultsTableProps>, prevState: Readonly<{}>, snapshot?: any) {
@@ -39,7 +40,7 @@ export class ResultsTable extends React.Component<IResultsTableProps> {
 
 
         if (this.tableCheckboxRef.current) {
-            this.tableCheckboxRef.current.indeterminate=(!(this.props.selections.length===this.props.docs.length) && this.props.selections.length>0);
+            this.tableCheckboxRef.current.indeterminate = (!(this.props.selections.length === this.props.docs.length) && this.props.selections.length > 0);
         }
     }
 
@@ -58,9 +59,17 @@ export class ResultsTable extends React.Component<IResultsTableProps> {
 
     render() {
         let rows;
-        const tableHeaders=this.props.communityView?['Community','Members']:this.props.headers;
-        console.log('Table headers: '+this.props.headers.join(', '));
-        console.log('Selecting results with index: ' + this.props.selections.join(', '));
+        const rearrangeHeaders = (headers, selectField) => {
+            const selectFieldHeaderIndex = headers.indexOf(selectField);
+            if (selectFieldHeaderIndex > -1) {
+                return [selectField].concat(headers.slice(0, selectFieldHeaderIndex), headers.slice(selectFieldHeaderIndex + 1));
+            }
+            return [selectField];
+        };
+        const tableHeaders = this.props.communityView
+            ? this.props.headers.includes('Ranking Score') ? ['Community', 'Members', 'Average Ranking Score'] : ['Community', 'Members']
+            : rearrangeHeaders(this.props.headers, this.props.selectField);
+        // const tableHeaders = this.props.communityView? this.props.headers: rearrangeHeaders(this.props.headers,this.props.selectField);
         if (!this.props.communityView) {
             rows = this.props.docs.map((row, index) => {
                 const rowValues = this.props.headers.map(fieldName => {
@@ -70,7 +79,9 @@ export class ResultsTable extends React.Component<IResultsTableProps> {
                     <ResultEntry
                         key={'result-' + row.resultIndex}
                         rowIndex={row.resultIndex}
+                        rank={index+1}
                         selectField={this.props.selectField}
+                        showRank={this.props.showRank}
                         values={rowValues}
                         checked={this.props.selections.includes(row.resultIndex)}
                         handleResultSelection={this.toggleSelected.bind(this)}
@@ -87,7 +98,9 @@ export class ResultsTable extends React.Component<IResultsTableProps> {
                         headers={_.without(this.props.headers, 'Community')}
                         docs={communityGroup}
                         selectField={this.props.selectField}
-                        selectedCommunityMembers={_.intersection(this.props.selections,communityIndices)}
+                        selectedCommunityMembers={_.intersection(this.props.selections, communityIndices)}
+                        showAverageOn={'Ranking Score'}
+                        showRank={this.props.showRank}
                         handleToggledCommunityMembers={this.toggleSelected.bind(this)}
                     />
                 );
@@ -97,17 +110,24 @@ export class ResultsTable extends React.Component<IResultsTableProps> {
         return (
             <Table size="sm">
                 <thead>
-                <tr className={(!this.props.innerTable && (this.props.selections.length === this.props.docs.length))? 'bg-info' : ''}>
+                <tr className={(!this.props.innerTable && (this.props.selections.length === this.props.docs.length)) ? 'bg-info' : ''}>
                     <th>
-                        <div>
-                            {!this.props.innerTable &&
+                        {!this.props.innerTable &&
+                        <div className={'form-check form-check-inline'}>
                             <input
                                 type={'checkbox'}
+                                id={'results-table'}
                                 onChange={this.handleMasterSelectionChange.bind(this)}
                                 checked={this.props.selections.length === this.props.docs.length}
-                                ref={this.tableCheckboxRef}/>
-                            }
+                                ref={this.tableCheckboxRef}
+                                className={'form-check-input'} />
+                            <label className={'form-check-label'}
+                                   htmlFor={'results-table'}>{(!this.props.communityView && this.props.showRank)? 'Rank' : ''}</label>
                         </div>
+                        }
+                        {this.props.innerTable && this.props.showRank &&
+                        <span>Rank</span>
+                        }
                     </th>
                     {
                         tableHeaders.map((fieldName, index) => {

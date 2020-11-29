@@ -4,6 +4,8 @@ import { REQUEST, SUCCESS, FAILURE } from 'app/shared/reducers/action-type.util'
 import _ from 'lodash';
 import { min } from 'moment';
 import { setFileData } from 'react-jhipster';
+import index from 'react-redux-loading-bar';
+
 const analysisAPIUrl = 'api/analysis';
 
 export const ACTION_TYPES = {
@@ -89,8 +91,11 @@ export default (state: AnalysisState = initialState, action): AnalysisState => {
     case SUCCESS(ACTION_TYPES.GET_RESULTS): {
       const data = action.payload.data;
       const results = { ...state.results };
+      const indexedDocs = _.map(data.docs, (doc, resultIndex) => {
+        return { ...doc, resultIndex };
+      });
       results[data.analysis] = {
-        docs: data.docs,
+        docs: indexedDocs,
         meta: data._meta
       };
 
@@ -104,6 +109,10 @@ export default (state: AnalysisState = initialState, action): AnalysisState => {
       const data = action.payload.data;
 
       const results = { ...state.results };
+      const existingDocs = results[data.analysis]['docs'];
+      const indexedDocs = _.map(data.docs, (doc, resultIndex) => {
+        return { ...doc, resultIndex: existingDocs.length + resultIndex };
+      });
       const meta = data._meta;
 
       // merge old with new community details
@@ -112,7 +121,7 @@ export default (state: AnalysisState = initialState, action): AnalysisState => {
       }
 
       results[data.analysis] = {
-        docs: [...results[data.analysis]['docs'], ...data.docs],
+        docs: [...existingDocs, ...indexedDocs],
         meta
       };
 

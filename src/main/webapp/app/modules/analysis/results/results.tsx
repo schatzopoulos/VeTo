@@ -104,7 +104,6 @@ export class ResultsPanel extends React.Component<IResultsPanelProps> {
         // this.setState({
         //     selectedEntries
         // });
-        console.log('Results: Updated result selections as: ' + selections.join(', '));
         this.setState({
             selectedEntries: selections
         });
@@ -117,35 +116,35 @@ export class ResultsPanel extends React.Component<IResultsPanelProps> {
 
             const result = this.props.results[this.state.activeAnalysis];
             if (this.state.activeAnalysis) {
-                let assignedHeaders = [...result.meta.headers];
+                const assignedHeaders = [...result.meta.headers];
                 const selectField = result.meta.analysis_domain.selectField;
-                console.log(selectField);
-                let assignedDocs = result.docs;
+                const assignedDocs = result.docs;
+                let showRank=false;
                 switch(this.state.activeAnalysis) {
-                    case 'Ranking':
-                    case 'Ranking - Community Detection':
-                        assignedHeaders=["Rank"].concat(assignedHeaders);
-                        assignedDocs=_.map(assignedDocs,(doc,index)=>{
-                            return {...doc, "Rank":index};
-                        });
-                        // falls through
                     case 'Similarity Search':
                     case 'Similarity Join':
+                    case 'Ranking':
+                    case 'Ranking - Community Detection':
+                        showRank=true;
                         resultPanel = <ResultsTable
                             docs={assignedDocs}
                             headers={assignedHeaders}
                             selectField={selectField}
                             selections={this.state.selectedEntries}
+                            showRank={showRank}
                             communityView={false}
                             handleSelectionChange={this.handleSelectionChange.bind(this)}
                         />;
                         break;
                     case 'Community Detection - Ranking':
+                        showRank=true;
+                        // falls through
                     case 'Community Detection':
                         resultPanel = <ResultsTable
                             docs={result.docs}
                             headers={result.meta.headers}
                             selectField={selectField}
+                            showRank={showRank}
                             selections={this.state.selectedEntries}
                             communityView={true}
                             handleSelectionChange={this.handleSelectionChange.bind(this)}
