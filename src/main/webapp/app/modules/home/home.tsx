@@ -759,7 +759,7 @@ export class Home extends React.Component<IHomeProps> {
 
     handleTargetEntity(e) {
         let selected;
-
+console.warn("edw");
         if (_.isEmpty(e)) {
             selected = '';
         } else {
@@ -769,6 +769,8 @@ export class Home extends React.Component<IHomeProps> {
 
         this.setState({
             targetEntity: selected
+        }, () => {
+            console.log("changed");
         });
     }
 
