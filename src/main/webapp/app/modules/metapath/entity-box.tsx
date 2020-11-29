@@ -90,7 +90,7 @@ class EntityBox extends React.Component<any, any> {
                         this.props.primaryEntity &&
                         <div className={'d-inline-block'}>
                             <Button color="link" onClick={this.toggleReferenceKeyModal.bind(this)}
-                                    title={'Show/edit entity identifier'}
+                                    title={'Show/edit entity identifier'+(this.props.selectField?`. Currently selected: `+this.props.selectField:'')}
                                     className="btn-circle circle-button-svg-container mx-1">
                                 <svg width="1em" height="1em" viewBox="0 0 16 16"
                                      className={'bi bi-key-fill text-secondary'}
@@ -116,7 +116,7 @@ class EntityBox extends React.Component<any, any> {
                                                     title="Entities are presented with this attribute in the results" />
                                             </h5>
                                             <Input id="select-field-dropdown" type="select"
-                                                   value={this.state.selectField}
+                                                   value={this.props.selectField}
                                                    onChange={this.props.handleSelectFieldChange}>
                                                 {this.props.selectFieldOptions}
                                             </Input>

@@ -1001,6 +1001,7 @@ export class Home extends React.Component<IHomeProps> {
                             schema={this.props.schemas[datasetToUse]}
                             datasetFolder={datasetFolder}
                             constraints={this.state.constraints}
+                            selectField = {this.state.selectField}
                             selectFieldOptions={selectFieldOptions}
                             onNewEntity={this.simulateClickOnNode.bind(this)}
                             onRecommendationAccept={this.addMultiple.bind(this)}
