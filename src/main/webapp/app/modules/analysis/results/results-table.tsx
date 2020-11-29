@@ -9,10 +9,11 @@ import CommunityResultsEntry from 'app/modules/analysis/results/community-result
 export interface IResultsTableProps {
     docs: any,
     headers: any,
-    selectField: string,
+    selectField: any,
     communityView: boolean,
     selections: any,
     showRank: boolean
+    aliases?:any,
     innerTable?: boolean,
 
     handleSelectionChange: any
@@ -64,11 +65,15 @@ export class ResultsTable extends React.Component<IResultsTableProps> {
             if (selectFieldHeaderIndex > -1) {
                 return [selectField].concat(headers.slice(0, selectFieldHeaderIndex), headers.slice(selectFieldHeaderIndex + 1));
             }
-            return [selectField];
+            return [];
         };
         const tableHeaders = this.props.communityView
             ? this.props.headers.includes('Ranking Score') ? ['Community', 'Members', 'Average Ranking Score'] : ['Community', 'Members']
-            : rearrangeHeaders(this.props.headers, this.props.selectField);
+            : Array.isArray(this.props.selectField)
+                ?this.props.selectField.reverse().reduce((newHeaders, currentSelectField)=>{
+                    return rearrangeHeaders(newHeaders,currentSelectField);
+                },this.props.headers)
+                :rearrangeHeaders(this.props.headers, this.props.selectField);
         // const tableHeaders = this.props.communityView? this.props.headers: rearrangeHeaders(this.props.headers,this.props.selectField);
         if (!this.props.communityView) {
             rows = this.props.docs.map((row, index) => {
@@ -96,6 +101,7 @@ export class ResultsTable extends React.Component<IResultsTableProps> {
                         key={communityGroup[0].Community}
                         communityId={communityGroup[0].Community}
                         headers={_.without(this.props.headers, 'Community')}
+                        aliases={this.props.aliases}
                         docs={communityGroup}
                         selectField={this.props.selectField}
                         selectedCommunityMembers={_.intersection(this.props.selections, communityIndices)}
@@ -131,7 +137,7 @@ export class ResultsTable extends React.Component<IResultsTableProps> {
                     </th>
                     {
                         tableHeaders.map((fieldName, index) => {
-                            return <th key={`header-${index}-${fieldName}`}>{fieldName}</th>;
+                            return <th key={`header-${index}-${fieldName}`}>{this.props.aliases?_.get(this.props.aliases,fieldName,fieldName):fieldName}</th>;
                         })
                     }
                     {

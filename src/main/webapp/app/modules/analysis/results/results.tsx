@@ -135,17 +135,34 @@ export class ResultsPanel extends React.Component<IResultsPanelProps> {
             if (this.state.activeAnalysis) {
                 const assignedHeaders = [...result.meta.headers];
                 const selectField = result.meta.analysis_domain.selectField;
+                const entity = result.meta.analysis_domain.entity;
                 const assignedDocs = result.docs;
+                const aliases = {}
+                aliases[selectField]=`${entity} ${selectField}`
                 let showRank = false;
                 switch (this.state.activeAnalysis) {
                     case 'Similarity Search':
                     case 'Similarity Join':
+                        aliases['Entity 1']=`${entity} 1 ${selectField}`;
+                        aliases['Entity 2']=`${entity} 2 ${selectField}`;
+                        resultPanel = <ResultsTable
+                            docs={assignedDocs}
+                            headers={assignedHeaders}
+                            selectField={['Entity 1','Entity 2']}
+                            selections={this.state.selectedEntries}
+                            aliases={aliases}
+                            showRank={showRank}
+                            communityView={false}
+                            handleSelectionChange={this.handleSelectionChange.bind(this)}
+                        />;
+                        break;
                     case 'Ranking':
                     case 'Ranking - Community Detection':
                         showRank = true;
                         resultPanel = <ResultsTable
                             docs={assignedDocs}
                             headers={assignedHeaders}
+                            aliases={aliases}
                             selectField={selectField}
                             selections={this.state.selectedEntries}
                             showRank={showRank}
@@ -161,6 +178,7 @@ export class ResultsPanel extends React.Component<IResultsPanelProps> {
                         resultPanel = <ResultsTable
                             docs={result.docs}
                             headers={result.meta.headers}
+                            aliases={aliases}
                             selectField={selectField}
                             showRank={showRank}
                             selections={this.state.selectedEntries}
