@@ -59,7 +59,7 @@ export class Home extends React.Component<IHomeProps> {
         simMinValues: 5,
         searchK: 100,
         hashTables: 1,
-        lpaIter: 20,
+        lpaIter: 5,
     };
     cy: any;
     polling: any;
@@ -1297,7 +1297,7 @@ console.warn("edw");
                                 <Row className={'justify-content-end'}>
                                     <h5 className={'p-2'}>
                                         <strong className={'text-muted'}>
-                                        Job id: <Link to={`/jobs/${this.props.uuid}`} target="_blank">{this.props.uuid}</Link>: </strong></h5>
+                                        Job id: <Link to={`/jobs/${this.props.uuid}`} target="_blank">{this.props.uuid}</Link></strong></h5>
                                 </Row>
                                 {this.props.error &&
                                 <Row>
