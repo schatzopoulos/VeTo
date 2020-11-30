@@ -76,14 +76,18 @@ public class DatasetsService {
             if (i >= attrs.length) continue;
 
             if (attrs[i].toLowerCase().contains(term)) {
+                // skip if value already exists and we want only unique values
+                if (uniqueValues && values.contains(attrs[i]))
+                    continue;
+
                 Document doc = new Document();
                 doc.append("id", Integer.parseInt(attrs[0]));
                 doc.append("name", attrs[i]);
                 values.add(attrs[i]);
 
                 docs.add(doc);
-                Boolean breakCondition = (uniqueValues) ? values.size() == 5 : docs.size() == 5;
-                if (breakCondition) {
+                // System.out.println(values.size());
+                if (docs.size() == 5) {
                     break;
                 }
             }

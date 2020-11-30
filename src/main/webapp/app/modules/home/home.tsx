@@ -1283,7 +1283,7 @@ console.warn("edw");
                                                     size='sm'
                                                     index={0}
                                                     additionTriggerCallback={this.setTargetEntity.bind(this)}
-						    uniqueValues={false}
+						                            uniqueValues={false}
                                                 />
                                             </Col>
                                             {this.state.showTargetEntitySaveButton &&
