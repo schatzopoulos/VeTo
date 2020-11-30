@@ -18,6 +18,7 @@ export interface IAutocompleteInputProps extends StateProps, DispatchProps {
     size?: string,
     value?: string,
 
+    uniqueValues: boolean,
     disabled: boolean,
     onChange: any,
     hasValidValue: any
@@ -127,7 +128,8 @@ export class AutocompleteInput extends React.Component<IAutocompleteInputProps> 
                 entity: this.props.entity,
                 field: this.props.field,
                 folder: this.props.folder,
-                term: query
+                term: query,
+                uniqueValues: this.props.uniqueValues,
             }
         }).then((response) => {
             console.log('AutocompleteInput: onSearch() - got response from API for: ' + query);

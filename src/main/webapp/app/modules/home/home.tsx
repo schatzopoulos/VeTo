@@ -1246,6 +1246,7 @@ console.warn("edw");
                                                 disabled={_.isEmpty(this.state.metapath)}
                                                 size='sm'
                                                 index={0}
+                                                uniqueValues={false}
                                             />
                                             {
                                                 (this.state.targetEntity === '') &&

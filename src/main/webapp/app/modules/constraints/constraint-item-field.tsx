@@ -191,6 +191,7 @@ export class ConstraintItemField extends React.Component<IConstraintItemFieldPro
                 placeholder={''}
                 size="sm"
                 index={this.state.fieldIndex}
+                uniqueValues={true}
             />;
 
 
