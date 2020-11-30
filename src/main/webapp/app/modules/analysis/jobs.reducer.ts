@@ -72,7 +72,7 @@ export default (state: JobState = initialState, action): JobState => {
       if (!action.payload.data.exists) {
         return {
           ...state,
-          error: 'We were unable to locate the analysis with the specified job id.',
+          error: 'We were unable to locate the analysis with the specified analysis id.',
           loading: false
         };
       } else {

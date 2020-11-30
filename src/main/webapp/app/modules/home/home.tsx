@@ -1376,7 +1376,7 @@ export class Home extends React.Component<IHomeProps> {
                             {this.props.uuid &&
                             <Card className={'my-4 pt-0'}>
                                 <Row className={'justify-content-end'}>
-                                    <h5 className={'p-2'}><strong className={'text-muted'}>Job
+                                    <h5 className={'p-2'}><strong className={'text-muted'}>Analysis
                                         ID: {this.props.uuid}</strong></h5>
                                 </Row>
                                 <br />

@@ -42,7 +42,7 @@ export const Jobs = props => (
   <NavItem>
     <NavLink tag={Link} to="/jobs" className="d-flex align-items-center">
       <FontAwesomeIcon icon="search" />
-      <span>Re-attach to job</span>
+      <span>Re-attach to analysis</span>
     </NavLink>
   </NavItem>
 );
