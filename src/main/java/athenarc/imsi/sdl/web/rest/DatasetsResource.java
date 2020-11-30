@@ -87,10 +87,11 @@ public class DatasetsResource {
     public List<Document> autocomplete(@RequestParam(value = "folder") String folder,
                                        @RequestParam(value = "entity") String entity,
                                        @RequestParam(value = "field") String field,
-                                       @RequestParam(value = "term") String term) {
+                                       @RequestParam(value = "term") String term,
+                                       @RequestParam(value = "uniqueValues") Boolean uniqueValues) {
 
         try {
-            return datasetsService.autocomplete(folder, entity.substring(0, 1), field, term.toLowerCase());
+            return datasetsService.autocomplete(folder, entity.substring(0, 1), field, term.toLowerCase(), uniqueValues);
         } catch (IOException e) {
             throw new RuntimeException("Error reading schema for datasets");
         }

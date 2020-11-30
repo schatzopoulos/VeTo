@@ -51,8 +51,10 @@ public class DatasetsService {
         return response;
     }
 
-    public List<Document> autocomplete(String folder, String entity, String field, String term) throws IOException {
+    public List<Document> autocomplete(String folder, String entity, String field, String term, Boolean uniqueValues) throws IOException {
         List<Document> docs = new ArrayList<>();
+        Set<String> values = new HashSet<>();
+
         BufferedReader reader;
         String filename = Constants.DATA_DIR + folder + "/nodes/" + entity + ".csv";
         reader = new BufferedReader(new FileReader(filename));
@@ -77,8 +79,11 @@ public class DatasetsService {
                 Document doc = new Document();
                 doc.append("id", Integer.parseInt(attrs[0]));
                 doc.append("name", attrs[i]);
+                values.add(attrs[i]);
+
                 docs.add(doc);
-                if (docs.size() == 5) {
+                Boolean breakCondition = (uniqueValues) ? values.size() == 5 : docs.size() == 5;
+                if (breakCondition) {
                     break;
                 }
             }
