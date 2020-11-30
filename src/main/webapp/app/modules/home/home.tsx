@@ -50,7 +50,11 @@ export class Home extends React.Component<IHomeProps> {
         analysis: ['Ranking'],
         dataset: null,
         selectField: '',
+
+        typedTargetEntityValue: '',
+        showTargetEntitySaveButton: false,
         targetEntity: '',
+
         configurationActive: false,
 
         edgesThreshold: 5,
@@ -563,6 +567,11 @@ export class Home extends React.Component<IHomeProps> {
             newState.analysis.push(selected);
         } else {
             newState.analysis.splice(index, 1);
+            if (selected === 'Similarity Search') {
+                newState.typedTargetEntityValue='';
+                newState.showTargetEntitySaveButton=false;
+                newState.targetEntity='';
+            }
         }
         this.setState(newState);
     }
@@ -858,40 +867,51 @@ export class Home extends React.Component<IHomeProps> {
     constraintsSummary(constraintSegments) {
         const constraintExpressions = Object.keys(constraintSegments).map(entity => {
             const entityFields = constraintSegments[entity];
-            const fieldExpressions=entityFields.map(field => {
-                console.log('For: ')
+            const fieldExpressions = entityFields.map(field => {
+                console.log('For: ');
                 console.log(field);
                 const disjunctionExpressions = field.map(disjunction => {
-                    if (disjunction.length>1) {
-                        const conjunctionExpressions = disjunction.map(conjunctionElement=>{
+                    if (disjunction.length > 1) {
+                        const conjunctionExpressions = disjunction.map(conjunctionElement => {
                             console.log(conjunctionElement);
-                            return conjunctionElement.field+conjunctionElement.condition;
-                        })
-                        if (field.length>1) {
+                            return conjunctionElement.field + conjunctionElement.condition;
+                        });
+                        if (field.length > 1) {
                             return `(${conjunctionExpressions.join(' and ')})`;
                         } else {
                             return `${conjunctionExpressions.join(' and ')}`;
                         }
-                    } else{
-                        return disjunction[0].field+disjunction[0].condition;
+                    } else {
+                        return disjunction[0].field + disjunction[0].condition;
                     }
 
                 });
                 return disjunctionExpressions.join(' or ');
             });
-            return fieldExpressions.filter(expression=>!!expression).join(', ');
+            return fieldExpressions.filter(expression => !!expression).join(', ');
         });
-        return constraintExpressions.filter(expression=>!!expression).join(', ');
+        return constraintExpressions.filter(expression => !!expression).join(', ');
     }
 
     clearMetapath() {
-        const newState={
-            constraints:{},
-            metapathStr:'',
-            metapath:[],
-            selectField:''
+        const newState = {
+            constraints: {},
+            metapathStr: '',
+            metapath: [],
+            selectField: ''
         };
-        this.setState(newState,()=>{this.animateNeighbors(undefined)})
+        this.setState(newState, () => {
+            this.animateNeighbors(undefined);
+        });
+    }
+
+    setTargetEntity() {
+        if (this.state.showTargetEntitySaveButton) {
+            this.setState({
+                showTargetEntitySaveButton: false,
+                targetEntity: this.state.typedTargetEntityValue
+            })
+        }
     }
 
     render() {
@@ -919,42 +939,6 @@ export class Home extends React.Component<IHomeProps> {
             datasetFolder = this.props.schemas[datasetToUse]['folder'];
         }
 
-        // const constraintsPanel = <Row>
-        //     <Col md="12">
-        //         <h4>Select constraints</h4>
-        //     </Col>
-        //     <Col md="12">
-        //         {
-        //             <ListGroup>
-        //                 {
-        //                     (this.state.metapathStr.length > 0) ?
-        //                         _.map(this.state.constraints, (entityConstraints, entity) => {
-        //                             return <ConstraintItem
-        //                                 key={entity}
-        //                                 datasetFolder={datasetFolder}
-        //                                 entity={entity}
-        //                                 entityConstraints={entityConstraints}
-        //                                 handleSwitch={this.handleConstraintSwitch.bind(this)}
-        //                                 handleDropdown={this.handleConstraintOpDropdown.bind(this)}
-        //                                 handleLogicDropdown={this.handleConstraintLogicOpDropdown.bind(this)}
-        //                                 handleInput={this.handleConstraintInputChange.bind(this)}
-        //                                 handleAddition={this.handleConstraintAddition.bind(this)}
-        //                                 handleRemoval={this.handleConstraintRemoval.bind(this)}
-        //
-        //                             />;
-        //                         })
-        //                         : 'No constraints can be applied'
-        //                 }
-        //             </ListGroup>
-        //         }
-        //         {
-        //             (!validConstraints && (this.state.metapathStr.length !== 0)) &&
-        //             <span className="attribute-type text-danger">
-        // 				Please provide at least one constraint.
-        // 		</span>
-        //         }
-        //     </Col>
-        // </Row>;
         const rankingLabel = <span>
 			Ranking <FontAwesomeIcon style={{ color: '#17a2b8' }} icon="question-circle"
                                      title="Ranking analysis is perfomed using PageRank." />
@@ -1009,7 +993,9 @@ export class Home extends React.Component<IHomeProps> {
                                 <h4>Query metapath</h4>
                             </Col>
                             <Col xs={4} className={'text-right'}>
-                                {this.state.metapathStr && <Button color={'danger'} onClick={this.clearMetapath.bind(this)} size={'sm'}>Clear metapath</Button>}
+                                {this.state.metapathStr &&
+                                <Button color={'danger'} onClick={this.clearMetapath.bind(this)} size={'sm'}>Clear
+                                    metapath</Button>}
                             </Col>
                         </Row>
                         {(this.props.schemas) &&
@@ -1018,7 +1004,7 @@ export class Home extends React.Component<IHomeProps> {
                             schema={this.props.schemas[datasetToUse]}
                             datasetFolder={datasetFolder}
                             constraints={this.state.constraints}
-                            selectField = {this.state.selectField}
+                            selectField={this.state.selectField}
                             selectFieldOptions={selectFieldOptions}
                             onNewEntity={this.simulateClickOnNode.bind(this)}
                             onRecommendationAccept={this.addMultiple.bind(this)}
@@ -1283,30 +1269,65 @@ export class Home extends React.Component<IHomeProps> {
                                                      checked={this.state.analysis.includes('Similarity Search')}
                                                      label={simSearchLabel} />
                                     </Col>
-                                    {
-                                        (this.state.analysis.includes('Similarity Search')) &&
-                                        <Col xs={'12'}>
-                                            <AutocompleteInput
-                                                id="targetEntityInput"
-                                                placeholder={_.isEmpty(this.state.metapath) ? 'First, select a metapath' : `Search for ${selectedEntity} entities`}
-                                                onChange={this.handleTargetEntity.bind(this)}
-                                                entity={selectedEntity}
-                                                field={this.state.selectField}
-                                                folder={datasetFolder}
-                                                disabled={_.isEmpty(this.state.metapath)}
-                                                size='sm'
-                                                index={0}
-                                            />
-                                            {
-                                                (this.state.targetEntity === '') &&
-                                                <span className="attribute-type text-danger">
-                                                    This field cannot be empty when Similarity Search is enabled.
-                                                </span>
-                                            }
-                                        </Col>
-
-                                    }
                                 </Row>
+                                {
+                                    (this.state.analysis.includes('Similarity Search')) &&
+                                    <Col xs={'12'}>
+                                        <Row>
+                                            <Col xs={'10'} className={'px-0'}>
+                                                <AutocompleteInput
+                                                    id="targetEntityInput"
+                                                    placeholder={_.isEmpty(this.state.metapath) ? 'First, select a metapath' : `Search for ${selectedEntity} entities`}
+                                                    onChange={(val, callback = () => {
+                                                    }) => {
+                                                        const selectedId=val.id;
+                                                        if (this.state.targetEntity && this.state.targetEntity!==selectedId) {
+                                                            this.setState({
+                                                                typedTargetEntityValue: selectedId,
+                                                                targetEntity:''
+                                                            }, callback);
+                                                        } else {
+                                                            this.setState({
+                                                                typedTargetEntityValue: selectedId
+                                                            }, callback)
+                                                        }
+                                                    }}
+                                                    hasValidValue={validTypedValue => {
+                                                        this.setState({
+                                                            showTargetEntitySaveButton:!!validTypedValue&&(validTypedValue.id!==this.state.targetEntity)
+                                                        });
+                                                    }}
+                                                    entity={selectedEntity}
+                                                    field={this.state.selectField}
+                                                    folder={datasetFolder}
+                                                    disabled={_.isEmpty(this.state.metapath)}
+                                                    size='sm'
+                                                    index={0}
+                                                    additionTriggerCallback={this.setTargetEntity.bind(this)}
+                                                />
+                                            </Col>
+                                            {this.state.showTargetEntitySaveButton &&
+                                            <Col xs={'2'} className={'pl-1'}>
+                                                <Button color={'info'} size={'sm'} onClick={this.setTargetEntity.bind(this)}><FontAwesomeIcon icon={'save'} /></Button>
+                                            </Col>
+                                            }
+                                        </Row>
+                                        {
+                                            (this.state.targetEntity === '') &&
+                                            <Row>
+                                                <Col xs={'12'} className={'px-0'}>
+                                                <span className="attribute-type text-danger">
+                                                    {this.state.typedTargetEntityValue
+                                                        ? this.state.showTargetEntitySaveButton
+                                                            ? 'The new value of the field must be saved.'
+                                                            : 'The value of the field must be a valid option from the ones provided.'
+                                                        :'This field cannot be empty when Similarity Search is enabled.'}
+                                                </span>
+                                                </Col>
+                                            </Row>
+                                        }
+                                    </Col>
+                                }
                                 <Row>
                                     <Col>
                                         <CustomInput type="switch" id="cdSwitch"
@@ -1371,7 +1392,9 @@ export class Home extends React.Component<IHomeProps> {
                                                             target="_blank">link</Link> (job
                                             id = {this.props.uuid}).<br />
                                             {this.getDescriptionString()}
-                                            {this.props.progress && this.props.progress<100?<Button size={'sm'} className={'badge btn-danger'}><FontAwesomeIcon icon={faTimes}/> Cancel analysis</Button>:''}
+                                            {this.props.progress && this.props.progress < 100 ?
+                                                <Button size={'sm'} className={'badge btn-danger'}><FontAwesomeIcon
+                                                    icon={faTimes} /> Cancel analysis</Button> : ''}
                                         </Col>
                                     </Row>
                                 }
