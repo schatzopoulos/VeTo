@@ -320,6 +320,9 @@ export class Home extends React.Component<IHomeProps> {
         // clear select field when metapath is deleted
         if (metapath.length === 0) {
             newState.selectField = '';
+            newState.targetEntity = '';
+            newState.typedTargetEntityValue = '';
+            newState.showTargetEntitySaveButton = false;
         }
 
         this.setState(newState, () => {
@@ -744,6 +747,9 @@ export class Home extends React.Component<IHomeProps> {
         newState.neighbors = undefined;
         newState.constraints = {};
         newState.selectField = '';
+        newState.targetEntity = '';
+        newState.typedTargetEntityValue = '';
+        newState.showTargetEntitySaveButton = false;
         newState.dataset = e.target.value;
 
         this.setState(newState, () => {
@@ -898,7 +904,10 @@ export class Home extends React.Component<IHomeProps> {
             constraints: {},
             metapathStr: '',
             metapath: [],
-            selectField: ''
+            selectField: '',
+            typedTargetEntityValue: '',
+            targetEntity: '',
+            showTargetEntitySaveButton: false
         };
         this.setState(newState, () => {
             this.animateNeighbors(undefined);
@@ -1278,6 +1287,7 @@ export class Home extends React.Component<IHomeProps> {
                                                 <AutocompleteInput
                                                     id="targetEntityInput"
                                                     placeholder={_.isEmpty(this.state.metapath) ? 'First, select a metapath' : `Search for ${selectedEntity} entities`}
+                                                    key={`similarity-search-field${this.state.metapath.length>0?'-for-'+this.state.metapath[0].data('label'):''}`}
                                                     onChange={(val, callback = () => {
                                                     }) => {
                                                         const selectedId=val.id;
