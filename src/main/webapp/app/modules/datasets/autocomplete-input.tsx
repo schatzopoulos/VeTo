@@ -81,7 +81,6 @@ export class AutocompleteInput extends React.Component<IAutocompleteInputProps> 
 
     onBlur() {
         if (this.state.isLoading) {
-            console.log('AutocompleteInput: onBlur(): Blur event before response');
             this.setState({
                 blurValue: this.state.current
             });

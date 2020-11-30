@@ -96,7 +96,7 @@ export class ConstraintItemField extends React.Component<IConstraintItemFieldPro
 
     handleValidValue(isValid) {
         this.setState({
-            additionActive: isValid
+            additionActive: !!isValid
         });
     }
 
