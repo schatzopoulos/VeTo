@@ -46,7 +46,7 @@ Main page styles
 .balloon:after {
   position: absolute;
   display: block;
-  top: -40px;
+  top: -20px;
   left: 2rem;
   content: ' ';
   border-style: solid;
@@ -54,5 +54,5 @@ Main page styles
   border-left-width: 10px;
   border-right-width: 10px;
   border-color: transparent;
-  border-bottom: solid 40px #e3e3e3;
+  border-bottom: solid 20px #e3e3e3;
 }
