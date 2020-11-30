@@ -131,20 +131,38 @@ export class ResultsPanel extends React.Component<IResultsPanelProps> {
         if (!_.isEmpty(this.props.results)) {
 
             const result = this.props.results[this.state.activeAnalysis];
+            let areCommunityResults = false;
             if (this.state.activeAnalysis) {
                 const assignedHeaders = [...result.meta.headers];
                 const selectField = result.meta.analysis_domain.selectField;
+                const entity = result.meta.analysis_domain.entity;
                 const assignedDocs = result.docs;
+                const aliases = {}
+                aliases[selectField]=`${entity} ${selectField}`
                 let showRank = false;
                 switch (this.state.activeAnalysis) {
                     case 'Similarity Search':
                     case 'Similarity Join':
+                        aliases['Entity 1']=`${entity} 1 ${selectField}`;
+                        aliases['Entity 2']=`${entity} 2 ${selectField}`;
+                        resultPanel = <ResultsTable
+                            docs={assignedDocs}
+                            headers={assignedHeaders}
+                            selectField={['Entity 1','Entity 2']}
+                            selections={this.state.selectedEntries}
+                            aliases={aliases}
+                            showRank={showRank}
+                            communityView={false}
+                            handleSelectionChange={this.handleSelectionChange.bind(this)}
+                        />;
+                        break;
                     case 'Ranking':
                     case 'Ranking - Community Detection':
                         showRank = true;
                         resultPanel = <ResultsTable
                             docs={assignedDocs}
                             headers={assignedHeaders}
+                            aliases={aliases}
                             selectField={selectField}
                             selections={this.state.selectedEntries}
                             showRank={showRank}
@@ -156,9 +174,11 @@ export class ResultsPanel extends React.Component<IResultsPanelProps> {
                         showRank = true;
                     // falls through
                     case 'Community Detection':
+                        areCommunityResults=true;
                         resultPanel = <ResultsTable
                             docs={result.docs}
                             headers={result.meta.headers}
+                            aliases={aliases}
                             selectField={selectField}
                             showRank={showRank}
                             selections={this.state.selectedEntries}
@@ -193,8 +213,8 @@ export class ResultsPanel extends React.Component<IResultsPanelProps> {
                 resultPanel = '';
             }
 
-            const totalCommunities = (_.get(result, 'meta.community_counts')) ?
-                <span> / {result.meta.community_counts['total']} communities found in total</span> : '';
+            // const totalCommunities = (_.get(result, 'meta.community_counts')) ?
+            //     <span> / {result.meta.community_counts} communities found in total</span> : '';
             return (<div>
                 <h2>Results</h2>
                 <p>{this.props.description}</p>
@@ -237,8 +257,8 @@ export class ResultsPanel extends React.Component<IResultsPanelProps> {
                                             <Row>
                                                 <Col xs={'12'} lg={'6'}
                                                      className="small-grey">
-                                                    Displaying {docs.length} out
-                                                    of {meta.totalRecords} results{totalCommunities}{this.state.selectedEntries.length > 0 ? `. (${this.state.selectedEntries.length} selected)` : ''}
+                                                    Displaying {areCommunityResults?_.keys(_.groupBy(docs,doc=>doc.Community)).length:docs.length} out
+                                                    of {meta.totalRecords} {areCommunityResults?'communities':'results'}{this.state.selectedEntries.length > 0 ? `. (${this.state.selectedEntries.length} ${areCommunityResults?'members ':''}selected)` : ''}
                                                 </Col>
                                                 <Col xs={'12'} lg={'6'} className={'text-lg-right'}>
                                                     {(this.state.selectedEntries.length > 0) &&

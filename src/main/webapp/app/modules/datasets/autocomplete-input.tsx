@@ -43,8 +43,6 @@ export class AutocompleteInput extends React.Component<IAutocompleteInputProps> 
     }
 
     componentDidUpdate(prevProps: Readonly<IAutocompleteInputProps>, prevState: Readonly<{}>, snapshot?: any) {
-        console.log('AutocompleteInput: componentDidUpdate() - watching this.index: '+this.index);
-        console.log('AutocompleteInput: componentDidUpdate() - watching props.index: '+this.props.index);
         if (this.index !== this.props.index) {
             this.setState({
                 current:''
@@ -71,9 +69,6 @@ export class AutocompleteInput extends React.Component<IAutocompleteInputProps> 
         const currentFieldValueLC = this.state.current.toLowerCase();
         if (currentFieldValueLC) {
             const validOption = this.state.options.find(option => option.name.toLowerCase() === currentFieldValueLC);
-            console.log('AutocompleteInput: emitValue() - watching state.current in lowercase: ' + currentFieldValueLC);
-            console.log('AutocompleteInput: emitValue() - watching state.options: ' + this.state.options);
-            console.log('AutocompleteInput: emitValue() - watching validOptionIndex: ' + validOption);
             if (validOption !== undefined) {
                 this.props.onChange(validOption, callback);
             } else {
@@ -85,20 +80,16 @@ export class AutocompleteInput extends React.Component<IAutocompleteInputProps> 
     }
 
     onBlur() {
-        console.log('AutocompleteInput: entering onBlur()');
         if (this.state.isLoading) {
-            console.log('AutocompleteInput: onBlur(): Blur event before response');
             this.setState({
                 blurValue: this.state.current
             });
         } else {
             this.emitValue();
         }
-        console.log('AutocompleteInput: exiting onBlur()');
     }
 
     onInput(currentValue) {
-        console.debug('got: '+currentValue);
         if (currentValue) {
             const isLoading = true; // change for looking in cache
             this.setState({
@@ -121,7 +112,6 @@ export class AutocompleteInput extends React.Component<IAutocompleteInputProps> 
     }
 
     onSearch(query) {
-        console.log('AutocompleteInput: onSearch() - Searching for ' + query);
         axios.get(`api/datasets/autocomplete`, {
             params: {
                 entity: this.props.entity,
@@ -130,9 +120,6 @@ export class AutocompleteInput extends React.Component<IAutocompleteInputProps> 
                 term: query
             }
         }).then((response) => {
-            console.log('AutocompleteInput: onSearch() - got response from API for: ' + query);
-            console.log('AutocompleteInput: onSearch() - watching state.current: ' + this.state.current);
-            console.log('AutocompleteInput: onSearch() - watching state.blurValue: ' + this.state.blurValue);
             if (this.state.current === query) {
                 if (this.state.blurValue && this.state.blurValue === this.state.current) {
                     this.setState({
@@ -158,13 +145,13 @@ export class AutocompleteInput extends React.Component<IAutocompleteInputProps> 
     validateCurrentValue() {
         const currentFieldValueLC = this.state.current.toLowerCase();
         if (currentFieldValueLC) {
-            return (this.state.options.some(option => option.name.toLowerCase() === currentFieldValueLC));
+            const foundOption = this.state.options.find(option => option.name.toLowerCase()===currentFieldValueLC);
+            return (foundOption!==undefined)?foundOption:false;
         }
     }
 
     clearField() {
         if ((this.ref) && (this.ref.current)) {
-            console.log(this.ref.current);
             this.ref.current.getInstance().clear();
         }
     }
@@ -190,8 +177,6 @@ export class AutocompleteInput extends React.Component<IAutocompleteInputProps> 
     }
 
     render() {
-        console.log('Autocomplete-Input: render() - watching "state.current": ' + this.state.current);
-        console.log('Autocomplete-Input: render() - watching "state.options": ' + this.state.options.map(option => option.name));
         const asyncTypeaheadJsx=<AsyncTypeahead
             allowNew={false}
             isLoading={this.state.isLoading}

@@ -33,7 +33,7 @@ const CommunityResultsEntry = props => {
     const [focusedSpoilerControl, focusSpoilerControl] = useState(false);
     const communityCheckboxRef = useRef(null);
     const communityDescription = _.chain(props.docs)
-        .map(result => result[props.selectField])
+        .map(result => result[Array.isArray(props.selectField)?props.selectField[0]:props.selectField])
         .filter(res => !!res)
         .join(', ')
         .truncate({
@@ -84,6 +84,7 @@ const CommunityResultsEntry = props => {
                             docs={props.docs}
                             headers={props.headers}
                             selectField={props.selectField}
+                            aliases={props.aliases}
                             communityView={false}
                             innerTable={true}
                             selections={props.selectedCommunityMembers}
