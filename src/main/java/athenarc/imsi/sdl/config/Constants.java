@@ -13,6 +13,8 @@ public final class Constants {
     public static final String ANONYMOUS_USER = "anonymoususer";
     
     public static final String BASE_PATH = "/data/SciNeM/SciNeM-results";
+		public static final String HDFS_BASE_PATH = "hdfs://172.16.1.156:9000/SciNeM-results";
+
     public static final String HIN_OUT = "HIN";
     public static final String JOIN_HIN_OUT = "JOIN_HIN";
 
@@ -33,6 +35,7 @@ public final class Constants {
     public static final String CONFIG_FILE = "config.json";
 
     public static final String DATA_DIR = "/data/SciNeM/SciNeM-data/";
+		public static final String HDFS_DATA_DIR = "hdfs://172.16.1.156:9000/SciNeM-data/";
     public static final String WORKFLOW_DIR = "/data/SciNeM/SciNeM-workflows/";
     public static final int MAX_THREADS = 10;
 

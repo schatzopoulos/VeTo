@@ -33,7 +33,7 @@ export const Upload = props => (
   <NavItem>
     <NavLink tag={Link} to="/upload" className="d-flex align-items-center">
       <FontAwesomeIcon icon="upload" />
-      <span>Upload</span>
+      <span>Upload dataset</span>
     </NavLink>
   </NavItem>
 );
@@ -42,7 +42,7 @@ export const Jobs = props => (
   <NavItem>
     <NavLink tag={Link} to="/jobs" className="d-flex align-items-center">
       <FontAwesomeIcon icon="search" />
-      <span>Re-attach to job</span>
+      <span>Re-attach to analysis</span>
     </NavLink>
   </NavItem>
 );

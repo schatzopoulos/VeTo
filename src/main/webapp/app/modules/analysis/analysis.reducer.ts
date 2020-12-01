@@ -4,6 +4,8 @@ import { REQUEST, SUCCESS, FAILURE } from 'app/shared/reducers/action-type.util'
 import _ from 'lodash';
 import { min } from 'moment';
 import { setFileData } from 'react-jhipster';
+import index from 'react-redux-loading-bar';
+
 const analysisAPIUrl = 'api/analysis';
 
 export const ACTION_TYPES = {
@@ -18,6 +20,7 @@ const initialState = {
   progress: 0 as number,
   progressMsg: null as string,
   description: null as string,
+  analysesParameters: null as any,
   error: null as string,
   uuid: null as string,
   analysis: null as string,
@@ -60,7 +63,6 @@ export default (state: AnalysisState = initialState, action): AnalysisState => {
         progressMsg: null,
         description: null,
         error: errorMsg,
-        uuid: null,
         analysis: null,
         results: {}
       };
@@ -81,6 +83,7 @@ export default (state: AnalysisState = initialState, action): AnalysisState => {
         status: data.completed,
         progress: data.progress,
         progressMsg: `${data.stage}: ${data.step}`,
+        analysesParameters: data.analysesParameters,
         description: data.description,
         error: null
       };
@@ -88,8 +91,11 @@ export default (state: AnalysisState = initialState, action): AnalysisState => {
     case SUCCESS(ACTION_TYPES.GET_RESULTS): {
       const data = action.payload.data;
       const results = { ...state.results };
+      const indexedDocs = _.map(data.docs, (doc, resultIndex) => {
+        return { ...doc, resultIndex };
+      });
       results[data.analysis] = {
-        docs: data.docs,
+        docs: indexedDocs,
         meta: data._meta
       };
 
@@ -103,6 +109,10 @@ export default (state: AnalysisState = initialState, action): AnalysisState => {
       const data = action.payload.data;
 
       const results = { ...state.results };
+      const existingDocs = results[data.analysis]['docs'];
+      const indexedDocs = _.map(data.docs, (doc, resultIndex) => {
+        return { ...doc, resultIndex: existingDocs.length + resultIndex };
+      });
       const meta = data._meta;
 
       // merge old with new community details
@@ -111,7 +121,7 @@ export default (state: AnalysisState = initialState, action): AnalysisState => {
       }
 
       results[data.analysis] = {
-        docs: [...results[data.analysis]['docs'], ...data.docs],
+        docs: [...existingDocs, ...indexedDocs],
         meta
       };
 
@@ -198,25 +208,26 @@ export const analysisRun = (
   metapath,
   joinpath,
   constraints,
+  constraintsExpression,
+  primaryEntity,
   folder,
   selectField,
   targetId,
   edgesThreshold,
-  prAlpha,
   prTol,
-  joinK,
-  joinW,
-  joinMinValues,
+  prAlpha,
+  simMinValues,
   searchK,
-  searchW,
-  searchMinValues,
+  hashTables,
+  lpaIter,
   w,
   minValues
 ) => {
   const payload = {
     searchK,
-    joinK,
-    t: 1,
+    constraintsExpression,
+    primaryEntity,
+    t: hashTables,
     minValues: 5,
     targetId,
     analysis,
@@ -227,10 +238,8 @@ export const analysisRun = (
     edgesThreshold,
     prAlpha,
     prTol,
-    joinW,
-    joinMinValues,
-    searchW,
-    searchMinValues
+    simMinValues,
+    lpaIter
   };
 
   formatConstraints(payload, constraints);
