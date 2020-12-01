@@ -775,7 +775,7 @@ export class Home extends React.Component<IHomeProps> {
 
     handleTargetEntity(e) {
         let selected;
-console.warn("edw");
+
         if (_.isEmpty(e)) {
             selected = '';
         } else {
@@ -1030,7 +1030,7 @@ console.warn("edw");
                     </Col>
                 </Row>
                 {this.checkMetapathDefined() &&
-                <Row className={'justify-content-center mt-1'}>
+                <Row className={'justify-content-center mt-4'}>
                     <Col md={'6'}>
                         <div className={'balloon bg-light-grey'}>
                             <div>
@@ -1346,9 +1346,8 @@ console.warn("edw");
                             {this.props.uuid &&
                             <Card className={'my-4 pt-0'}>
                                 <Row className={'justify-content-end'}>
-                                    <h5 className={'p-2'}>
-                                        <strong className={'text-muted'}>
-                                        Job id: <Link to={`/jobs/${this.props.uuid}`} target="_blank">{this.props.uuid}</Link></strong></h5>
+                                    <h5 className={'p-2'}><strong className={'text-muted'}>Analysis
+                                        ID: <Link to={`/jobs/${this.props.uuid}`} target="_blank">{this.props.uuid}</Link></strong></h5>
                                 </Row>
                                 {this.props.error &&
                                 <Row>

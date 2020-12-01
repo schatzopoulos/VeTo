@@ -1,4 +1,5 @@
 import React from 'react';
+import { Col } from 'reactstrap';
 import RecommendationEntityBox from './recommendation-entity-box';
 import EntityConnector from 'app/modules/metapath/entity-connector';
 
@@ -42,12 +43,12 @@ class Recommendation extends React.Component<RecommendationProps> {
       if (index !== 0) {
         itemsToBeRendered.push(<EntityConnector recommendation={true} emphasize={this.state.focused} />);
       }
-      itemsToBeRendered.push(entityBox);
+        itemsToBeRendered.push(entityBox);
     });
     return (
-      <div className={'d-flex px-1'}>
-        {itemsToBeRendered}
-      </div>
+      <>
+          {itemsToBeRendered}
+      </>
     );
   }
 }

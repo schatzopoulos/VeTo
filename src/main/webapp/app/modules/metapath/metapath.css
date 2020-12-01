@@ -42,10 +42,6 @@
   font-family: Arial, Helvetica, sans-serif;
 }
 
-.metapath-constructor {
-  height: 200px;
-}
-
 .metapath-control-options {
   max-height: 150px;
   overflow-y: auto;

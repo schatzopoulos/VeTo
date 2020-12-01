@@ -4,7 +4,7 @@ const ResultEntry = (props) => {
     const resultFields = props.values.map((value, index) => {
         return <td key={props.rowIndex + '-' + index}>{value}</td>;
     });
-    console.log('ResultEntry.props.showRank: '+props.showRank);
+
     return (
         <tr key={props.rowIndex} className={props.checked ? 'table-info' : ''}>
             <td>

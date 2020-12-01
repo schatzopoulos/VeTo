@@ -108,10 +108,10 @@ export class Jobs extends React.Component<IHomeProps> {
                     <Col md="6">
                         <Row>
                             <Col>
-                                <h4>Re-attach analysis</h4>
+                               <h4>Re-attach to analysis</h4>
                                 <Row>
                                     <Col md='10'>
-                                        <Input name="job_id" id="job_id" placeholder="Please give a valid job id"
+                                        <Input name="job_id" id="job_id" placeholder="Please give a valid analysis id"
                                                onChange={this.onChangeInput.bind(this)} value={this.state.jobId} />
                                     </Col>
                                     <Col md='2'>
@@ -134,7 +134,7 @@ export class Jobs extends React.Component<IHomeProps> {
                             {(this.props.error || this.props.description || this.props.loading) &&
                             <Card className={'my-4 pt-0'}>
                                 <Row className={'justify-content-end'}>
-                                    <h5 className={'p-2'}><strong className={'text-muted'}>Job
+                                    <h5 className={'p-2'}><strong className={'text-muted'}>Analysis
                                         ID: {this.props.uuid}</strong></h5>
                                 </Row>
                                 <br />

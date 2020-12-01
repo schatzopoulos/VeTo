@@ -80,7 +80,7 @@ class EntityBox extends React.Component<any, any> {
 
     render() {
         return (
-            <div className="position-relative entity-box">
+            <Col xs={'auto'} className="position-relative entity-box px-0">
                 <div>
                     <Button color="dark" size="lg" className={'text-nowrap'}
                             disabled>{this.props.idIndexedSchema[this.props.entity]}</Button>
@@ -191,7 +191,7 @@ class EntityBox extends React.Component<any, any> {
                          className={'d-inline-block text-muted constraints-number'}>{`(${this.numberOfConditions()})`}</div>
                     }
                 </div>
-            </div>
+            </Col>
         );
     }
 }
