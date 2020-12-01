@@ -88,10 +88,11 @@ export class ResultsPanel extends React.Component<IResultsPanelProps> {
 
     downloadConditions() {
         const results = this.props.results[this.state.activeAnalysis];
-        const selectField = results.meta.analysis_domain.selectField;
+        const selectField = (this.state.activeAnalysis !== 'Similarity Search') ? results.meta.analysis_domain.selectField : 'Entity 2';
         const conditionValues = {};
         this.state.selectedEntries.forEach((entry, index) => {
-            const entryValue = results.docs.find(doc => doc.resultIndex === entry)[selectField];
+            const entryObj = results.docs.find(doc => doc.resultIndex === entry);
+            const entryValue = entryObj[selectField];
             if (!Object.prototype.hasOwnProperty.call(conditionValues, entryValue)) {
                 if (index > 0) {
                     conditionValues[entryValue] = {
@@ -197,15 +198,15 @@ export class ResultsPanel extends React.Component<IResultsPanelProps> {
                         break;
                     case 'Community Detection - Ranking':
                         showRank = true;
-                        groupedDocs=_.groupBy(result.docs,doc=>doc.Community);
-                        plotData=_.map(_.keys(groupedDocs), communityId=>{
+                        groupedDocs = _.groupBy(result.docs, doc => doc.Community);
+                        plotData = _.map(_.keys(groupedDocs), communityId => {
                             const groupData = groupedDocs[communityId];
 
-                            const sumOfGroupRankingScores=_.reduce(groupData,(sum,current)=>sum+Number.parseFloat(current['Ranking Score']),0);
-                            return ['Community '+communityId,sumOfGroupRankingScores/groupData.length];
+                            const sumOfGroupRankingScores = _.reduce(groupData, (sum, current) => sum + Number.parseFloat(current['Ranking Score']), 0);
+                            return ['Community ' + communityId, sumOfGroupRankingScores / groupData.length];
                         });
-                        plotData=plotData.sort((docA,docB)=>{
-                            return docB[1]-docA[1];
+                        plotData = plotData.sort((docA, docB) => {
+                            return docB[1] - docA[1];
                         });
                     // falls through
                     case 'Community Detection':
@@ -297,10 +298,10 @@ export class ResultsPanel extends React.Component<IResultsPanelProps> {
                                             </Row>
                                             <Row className={'justify-content-between mt-1'}>
                                                 <Col xs={'auto'}>
-                                                    { plotData && plotData.length>0 &&
-                                                        <Button size={'sm'} color={'dark'}
-                                                                onClick={this.toggleVisualizationModal.bind(this)}><FontAwesomeIcon
-                                                            icon={faChartBar} /> Visualize</Button>
+                                                    {plotData && plotData.length > 0 &&
+                                                    <Button size={'sm'} color={'dark'}
+                                                            onClick={this.toggleVisualizationModal.bind(this)}><FontAwesomeIcon
+                                                        icon={faChartBar} /> Visualize</Button>
                                                     }
                                                 </Col>
                                                 {
@@ -314,13 +315,16 @@ export class ResultsPanel extends React.Component<IResultsPanelProps> {
                                                 <Col xs={'auto'}>
                                                     {(this.state.selectedEntries.length > 0) &&
                                                     <ButtonGroup>
+                                                        {this.state.activeAnalysis !== 'Similarity Join' &&
                                                         <Button
                                                             size={'sm'}
                                                             className={'text-nowrap'}
                                                             title={'Create a conditions JSON file from selected entities'}
                                                             outline
                                                             onClick={this.downloadConditions.bind(this)}
-                                                        ><FontAwesomeIcon icon={faFile} /> Create conditions file</Button>
+                                                        ><FontAwesomeIcon icon={faFile} /> Create conditions
+                                                            file</Button>
+                                                        }
                                                         <Button
                                                             size={'sm'}
                                                             className={'text-nowrap'}
@@ -350,7 +354,7 @@ export class ResultsPanel extends React.Component<IResultsPanelProps> {
                                                                 labels: plotData.map(d => d[0]),
                                                                 datasets: [
                                                                     {
-                                                                        label: this.state.activeAnalysis==='Community Detection - Ranking'?'Average Community Ranking Score':'Ranking Score',
+                                                                        label: this.state.activeAnalysis === 'Community Detection - Ranking' ? 'Average Community Ranking Score' : 'Ranking Score',
                                                                         backgroundColor: 'rgba(52,58,64,0.6)',
                                                                         borderColor: 'rgba(52,58,64,0.8)',
                                                                         borderWidth: 1,
@@ -379,7 +383,8 @@ export class ResultsPanel extends React.Component<IResultsPanelProps> {
                                                 <ModalFooter>
                                                     <Row>
                                                         <Col xs={'auto'}>
-                                                            <Button color={'dark'} onClick={this.toggleVisualizationModal.bind(this)}>Close</Button>
+                                                            <Button color={'dark'}
+                                                                    onClick={this.toggleVisualizationModal.bind(this)}>Close</Button>
                                                         </Col>
                                                     </Row>
                                                 </ModalFooter>
