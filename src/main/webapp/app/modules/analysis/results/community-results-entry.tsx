@@ -27,6 +27,8 @@ const average = (docs, field) => {
 
 const CommunityResultsEntry = props => {
     const MAX_COMMUNITY_DESCRIPTION_LENGTH = 64;
+    const RESULTS_MAX_FLOATING_POINT = 6;
+    const roundingOperator = Math.pow(10,RESULTS_MAX_FLOATING_POINT);
     const communityMembersIndices = _.map(props.docs, doc => doc.resultIndex);
     const wholeCommunitySelected = props.selectedCommunityMembers.length === props.docs.length;
     const [communityCollapsed, toggleCommunity] = useState(true);
@@ -64,7 +66,7 @@ const CommunityResultsEntry = props => {
                 </td>
                 {props.showAverageOn && props.headers.includes(props.showAverageOn) &&
                 <td>
-                    {average(props.docs, props.showAverageOn)}
+                    {Math.round(average(props.docs, props.showAverageOn)*roundingOperator)/roundingOperator}
                 </td>
                 }
                 <td>

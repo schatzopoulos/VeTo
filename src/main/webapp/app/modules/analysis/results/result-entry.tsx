@@ -2,7 +2,10 @@ import React, { useState } from 'react';
 
 const ResultEntry = (props) => {
     const resultFields = props.values.map((value, index) => {
-        return <td key={props.rowIndex + '-' + index}>{value}</td>;
+        const RESULTS_MAX_FLOATING_POINT = 6;
+        const roundingOperator = Math.pow(10,RESULTS_MAX_FLOATING_POINT);
+        const attemptedFloatCast = Number.parseFloat(value);
+        return <td key={props.rowIndex + '-' + index}>{(!isNaN(attemptedFloatCast) && attemptedFloatCast%1!==0 && attemptedFloatCast.toString()===value.toString())?Math.round(attemptedFloatCast*roundingOperator)/roundingOperator:value}</td>;
     });
 
     return (

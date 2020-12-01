@@ -146,6 +146,20 @@ export class ResultsPanel extends React.Component<IResultsPanelProps> {
         });
     }
 
+    transformVisualizationLabel(tooltipItem, data) {
+        let label = data.datasets[tooltipItem.datasetIndex].label || '';
+
+        if (label) {
+            label += ': ';
+        }
+        console.log('Visualizing: '+tooltipItem.yLabel);
+        const value = tooltipItem.yLabel;
+        const attemptedFloatCast = Number.parseFloat(value);
+        const finalValue = (!isNaN(attemptedFloatCast) && attemptedFloatCast%1!==0 && attemptedFloatCast.toString()===value.toString())?Math.round(attemptedFloatCast*1000000)/1000000:value;
+        label += finalValue
+        return label;
+    }
+
     render() {
         let resultPanel;
 
@@ -375,6 +389,11 @@ export class ResultsPanel extends React.Component<IResultsPanelProps> {
                                                                          xAxes: [{
                                                                              display: false
                                                                          }]
+                                                                     },
+                                                                     tooltips: {
+                                                                         callbacks: {
+                                                                             label: this.transformVisualizationLabel
+                                                                         }
                                                                      }
                                                                  }} />
                                                         </Col>
