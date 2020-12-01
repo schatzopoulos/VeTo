@@ -1,12 +1,27 @@
 import React from 'react';
-import { Button, ButtonGroup, Col, Nav, NavItem, NavLink, Row, TabContent, TabPane } from 'reactstrap';
+import {
+    Button,
+    ButtonGroup,
+    Col,
+    Nav,
+    NavItem,
+    NavLink,
+    Row,
+    TabContent,
+    TabPane,
+    Modal,
+    ModalHeader,
+    ModalFooter,
+    ModalBody
+} from 'reactstrap';
 import classnames from 'classnames';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFile } from '@fortawesome/free-solid-svg-icons';
+import { faFile, faChartBar } from '@fortawesome/free-solid-svg-icons';
 import ResultsTable from './results-table';
 import axios from 'axios';
 import FileSaver from 'file-saver';
 import _ from 'lodash';
+import { Bar } from 'react-chartjs-2';
 
 export interface IResultsPanelProps {
     uuid: any,
@@ -21,7 +36,8 @@ export interface IResultsPanelProps {
 export class ResultsPanel extends React.Component<IResultsPanelProps> {
     readonly state: any = {
         activeAnalysis: '',
-        selectedEntries: []
+        selectedEntries: [],
+        visualizationModalOpen: false
     };
 
     constructor(props) {
@@ -53,20 +69,18 @@ export class ResultsPanel extends React.Component<IResultsPanelProps> {
                 },
                 responseType: 'blob'
             }).then(response => {
-                console.log(response.data);
                 FileSaver.saveAs(response.data, 'results.csv');
             });
         } else {
-            console.log('Phoebe Buffey')
             const results = this.props.results[this.state.activeAnalysis];
-            const headers = results.meta.headers.filter(header=>header!=='resultIndex');
+            const headers = results.meta.headers.filter(header => header !== 'resultIndex');
             const tsvRows = [headers];
             this.state.selectedEntries.forEach(entry => {
                 const docObject = results.docs.find(doc => doc.resultIndex === entry);
-                const docRow = headers.map(header=>docObject[header]);
+                const docRow = headers.map(header => docObject[header]);
                 tsvRows.push(docRow);
             });
-            const tsvContent = tsvRows.map(e => e.join('\t')).join("\n");
+            const tsvContent = tsvRows.map(e => e.join('\t')).join('\n');
             const conditionsBlob = new Blob([tsvContent]);
             FileSaver.saveAs(conditionsBlob, 'results.csv');
         }
@@ -125,30 +139,38 @@ export class ResultsPanel extends React.Component<IResultsPanelProps> {
         });
     }
 
+    toggleVisualizationModal() {
+        this.setState({
+            visualizationModalOpen: !this.state.visualizationModalOpen
+        });
+    }
+
     render() {
         let resultPanel;
 
         if (!_.isEmpty(this.props.results)) {
 
             const result = this.props.results[this.state.activeAnalysis];
+            let plotData = [];
             let areCommunityResults = false;
             if (this.state.activeAnalysis) {
                 const assignedHeaders = [...result.meta.headers];
                 const selectField = result.meta.analysis_domain.selectField;
                 const entity = result.meta.analysis_domain.entity;
                 const assignedDocs = result.docs;
-                const aliases = {}
-                aliases[selectField]=`${entity} ${selectField}`
+                const aliases = {};
+                aliases[selectField] = `${entity} ${selectField}`;
                 let showRank = false;
+                let groupedDocs = null;
                 switch (this.state.activeAnalysis) {
                     case 'Similarity Search':
                     case 'Similarity Join':
-                        aliases['Entity 1']=`${entity} 1 ${selectField}`;
-                        aliases['Entity 2']=`${entity} 2 ${selectField}`;
+                        aliases['Entity 1'] = `${entity} 1 ${selectField}`;
+                        aliases['Entity 2'] = `${entity} 2 ${selectField}`;
                         resultPanel = <ResultsTable
                             docs={assignedDocs}
                             headers={assignedHeaders}
-                            selectField={['Entity 1','Entity 2']}
+                            selectField={['Entity 1', 'Entity 2']}
                             selections={this.state.selectedEntries}
                             aliases={aliases}
                             showRank={showRank}
@@ -159,6 +181,9 @@ export class ResultsPanel extends React.Component<IResultsPanelProps> {
                     case 'Ranking':
                     case 'Ranking - Community Detection':
                         showRank = true;
+                        plotData = assignedDocs.map(doc => [doc[selectField], doc['Ranking Score']]).sort((docA, docB) => {
+                            return Number.parseFloat(docB[1]) - Number.parseFloat(docA[1]);
+                        });
                         resultPanel = <ResultsTable
                             docs={assignedDocs}
                             headers={assignedHeaders}
@@ -172,9 +197,19 @@ export class ResultsPanel extends React.Component<IResultsPanelProps> {
                         break;
                     case 'Community Detection - Ranking':
                         showRank = true;
+                        groupedDocs=_.groupBy(result.docs,doc=>doc.Community);
+                        plotData=_.map(_.keys(groupedDocs), communityId=>{
+                            const groupData = groupedDocs[communityId];
+
+                            const sumOfGroupRankingScores=_.reduce(groupData,(sum,current)=>sum+Number.parseFloat(current['Ranking Score']),0);
+                            return ['Community '+communityId,sumOfGroupRankingScores/groupData.length];
+                        });
+                        plotData=plotData.sort((docA,docB)=>{
+                            return docB[1]-docA[1];
+                        });
                     // falls through
                     case 'Community Detection':
-                        areCommunityResults=true;
+                        areCommunityResults = true;
                         resultPanel = <ResultsTable
                             docs={result.docs}
                             headers={result.meta.headers}
@@ -212,7 +247,6 @@ export class ResultsPanel extends React.Component<IResultsPanelProps> {
             } else {
                 resultPanel = '';
             }
-
             // const totalCommunities = (_.get(result, 'meta.community_counts')) ?
             //     <span> / {result.meta.community_counts} communities found in total</span> : '';
             return (<div>
@@ -257,10 +291,27 @@ export class ResultsPanel extends React.Component<IResultsPanelProps> {
                                             <Row>
                                                 <Col xs={'12'} lg={'6'}
                                                      className="small-grey">
-                                                    Displaying {areCommunityResults?_.keys(_.groupBy(docs,doc=>doc.Community)).length:docs.length} out
-                                                    of {meta.totalRecords} {areCommunityResults?'communities':'results'}{this.state.selectedEntries.length > 0 ? `. (${this.state.selectedEntries.length} ${areCommunityResults?'members ':''}selected)` : ''}
+                                                    Displaying {areCommunityResults ? _.keys(_.groupBy(docs, doc => doc.Community)).length : docs.length} out
+                                                    of {meta.totalRecords} {areCommunityResults ? 'communities' : 'results'}{this.state.selectedEntries.length > 0 ? `. (${this.state.selectedEntries.length} ${areCommunityResults ? 'members ' : ''}selected)` : ''}
                                                 </Col>
-                                                <Col xs={'12'} lg={'6'} className={'text-lg-right'}>
+                                            </Row>
+                                            <Row className={'justify-content-between mt-1'}>
+                                                <Col xs={'auto'}>
+                                                    { plotData && plotData.length>0 &&
+                                                        <Button size={'sm'} color={'dark'}
+                                                                onClick={this.toggleVisualizationModal.bind(this)}><FontAwesomeIcon
+                                                            icon={faChartBar} /> Visualize</Button>
+                                                    }
+                                                </Col>
+                                                {
+                                                    /* we want the button to appear in all cases except similarity join.
+
+                                                       especially for the case of similarity search alter the button title
+                                                       to indicate that conditions will be produced based on the second
+                                                       column
+                                                    */
+                                                }
+                                                <Col xs={'auto'}>
                                                     {(this.state.selectedEntries.length > 0) &&
                                                     <ButtonGroup>
                                                         <Button
@@ -290,6 +341,49 @@ export class ResultsPanel extends React.Component<IResultsPanelProps> {
                                                     ><FontAwesomeIcon icon="download" /> Download all</Button>
                                                 </Col>
                                             </Row>
+                                            <Modal className={'modal-xl'} isOpen={this.state.visualizationModalOpen}
+                                                   toggle={this.toggleVisualizationModal.bind(this)}>
+                                                <ModalBody>
+                                                    <Row className={'justify-content-center'}>
+                                                        <Col xs={'12'}>
+                                                            <Bar data={{
+                                                                labels: plotData.map(d => d[0]),
+                                                                datasets: [
+                                                                    {
+                                                                        label: this.state.activeAnalysis==='Community Detection - Ranking'?'Average Community Ranking Score':'Ranking Score',
+                                                                        backgroundColor: 'rgba(52,58,64,0.6)',
+                                                                        borderColor: 'rgba(52,58,64,0.8)',
+                                                                        borderWidth: 1,
+                                                                        hoverBackgroundColor: 'rgba(52,58,64,1)',
+                                                                        hoverBorderColor: 'rgba(52,58,64,1)',
+                                                                        data: plotData.map(d => d[1])
+                                                                    }
+                                                                ]
+                                                            }}
+                                                                 width={1024}
+                                                                 height={576}
+                                                                 options={{
+                                                                     maintainAspectRation: false,
+                                                                     legend: {
+                                                                         onClick: null
+                                                                     },
+                                                                     scales: {
+                                                                         xAxes: [{
+                                                                             display: false
+                                                                         }]
+                                                                     }
+                                                                 }} />
+                                                        </Col>
+                                                    </Row>
+                                                </ModalBody>
+                                                <ModalFooter>
+                                                    <Row>
+                                                        <Col xs={'auto'}>
+                                                            <Button color={'dark'} onClick={this.toggleVisualizationModal.bind(this)}>Close</Button>
+                                                        </Col>
+                                                    </Row>
+                                                </ModalFooter>
+                                            </Modal>
                                             <br />
                                             {resultPanel}
                                             {

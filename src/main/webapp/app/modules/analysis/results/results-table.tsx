@@ -46,7 +46,6 @@ export class ResultsTable extends React.Component<IResultsTableProps> {
     }
 
     toggleSelected(selections) {
-        console.log('ResultsTable' + (this.props.communityView ? '(Community)' : '') + ': Got triggered selections: ' + selections.join(', '));
         this.props.handleSelectionChange(_.difference(_.union(selections, this.props.selections), _.intersection(selections, this.props.selections)));
     }
 
