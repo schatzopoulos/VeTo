@@ -1,14 +1,8 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 import './metapath.css';
 
-import { Button, ButtonDropdown, Modal, ModalHeader, ModalBody , Dropdown, DropdownToggle, DropdownMenu, DropdownItem} from 'reactstrap';
-
-// const testEntities = [
-//     'Topic',
-//     'Venue',
-//     'Author'
-// ];
+import { Button } from 'reactstrap';
 
 const getNeighborsFromSchema = (currentNodeId, schema) => {
     const nodeInfo = {};
@@ -60,9 +54,7 @@ const MetapathControl = (props) => {
             toggle();
             props.onNewEntity(item[0]);
         }} block>{item[1]}</Button>);
-    })
-
-    useEffect(scrollIntoView);
+    });
 
     return (
         <div className="d-flex flex-column justify-content-center">

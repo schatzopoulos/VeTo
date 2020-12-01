@@ -1,9 +1,13 @@
-.recommendation-entity-box {
+.recommendation-entity-box button {
   background-color: #8f8f8f !important;
   cursor: default !important;
 }
 
-.recommendation-entity-box .emphasized {
+.recommendation-entity-box {
+  margin: 20px 0;
+}
+
+.recommendation-entity-box button.emphasized {
   background-color: #6e6e6e !important;
 }
 

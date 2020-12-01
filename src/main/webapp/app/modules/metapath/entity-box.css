@@ -2,6 +2,10 @@
   opacity: 100;
 }
 
+.entity-box {
+  margin: 20px 0;
+}
+
 .circle-button-svg-container {
   line-height: 0.8;
 }

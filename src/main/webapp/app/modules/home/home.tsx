@@ -1031,7 +1031,7 @@ export class Home extends React.Component<IHomeProps> {
                     </Col>
                 </Row>
                 {this.checkMetapathDefined() &&
-                <Row className={'justify-content-center mt-1'}>
+                <Row className={'justify-content-center mt-4'}>
                     <Col md={'6'}>
                         <div className={'balloon bg-light-grey'}>
                             <div>
