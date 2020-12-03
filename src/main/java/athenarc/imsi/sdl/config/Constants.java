@@ -36,7 +36,6 @@ public final class Constants {
 
     public static final String DATA_DIR = "/data/SciNeM/SciNeM-data/";
 		public static final String HDFS_DATA_DIR = "hdfs://172.16.1.156:9000/SciNeM-data/";
-
     public static final String WORKFLOW_DIR = "/data/SciNeM/SciNeM-workflows/";
     public static final int MAX_THREADS = 10;
 
