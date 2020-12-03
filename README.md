@@ -1,4 +1,8 @@
-# SciNeM
+<p align="center">
+  <img src="https://github.com/schatzopoulos/SciNeM/blob/master/src/main/webapp/content/images/scinem_logo_purple.png?raw=true" width="400px"/>
+  <h1 align="center">Data Science Tool for Heterogeneous Network Mining (SciNeM)</h1>
+  <br />
+</p>
 
 This application was generated using JHipster 6.5.1, you can find documentation and help at [https://www.jhipster.tech/documentation-archive/v6.5.1](https://www.jhipster.tech/documentation-archive/v6.5.1).
 
