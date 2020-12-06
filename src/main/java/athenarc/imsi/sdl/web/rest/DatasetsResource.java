@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.bson.Document;
@@ -49,14 +50,30 @@ public class DatasetsResource {
         }
 
         try {
+
             String zipFile = datasetsService.upload(filename, file.getBytes());
+ 
+            List<String> initialDatasets = FileUtil.getLocalDatasets();
+
             if (FileUtil.unzip(zipFile) != 0) {
                 throw new RuntimeException("Error unzipping " + zipFile);
             }
+            
+            List<String> currentDatasets = FileUtil.getLocalDatasets();
+
+            // find the folder that was just created - though unzip
+            List<String> diff = new ArrayList(currentDatasets);
+            diff.removeAll(initialDatasets);
+            String newDataset = diff.get(0);    
+
+            // copy that folder to hdfs
+            if (FileUtil.copyToHdfs(newDataset) != 0) {
+                throw new RuntimeException("Error copying to HDFS " + zipFile);
+            }          
 
             if (!FileUtil.remove(zipFile)) {
-                throw new RuntimeException("Error removing zip  " + zipFile);
-            }
+                    throw new RuntimeException("Error removing zip  " + zipFile);
+                }
 
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException("Error uploading " + filename);

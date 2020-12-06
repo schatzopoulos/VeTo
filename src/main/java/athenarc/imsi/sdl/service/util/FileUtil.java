@@ -12,6 +12,7 @@ import java.io.LineNumberReader;
 import java.io.PrintWriter;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -228,6 +229,24 @@ public final class FileUtil {
 
         ProcessBuilder pb = new ProcessBuilder();
         pb.command("unzip", "-n", zipFile, "-d", Constants.DATA_DIR);
+        Process process = pb.start();
+        return process.waitFor();
+    }
+
+    public static List<String> getLocalDatasets() {
+        File file = new File(Constants.DATA_DIR);
+        String[] directories = file.list(new FilenameFilter() {
+          @Override
+          public boolean accept(File current, String name) {
+            return new File(current, name).isDirectory();
+          }
+        });
+        return Arrays.asList(directories);
+    }
+
+    public static int copyToHdfs(String dataset) throws java.io.IOException, InterruptedException {
+        ProcessBuilder pb = new ProcessBuilder();
+        pb.command("hadoop", "dfs", "-put", Constants.DATA_DIR + dataset, Constants.HDFS_DATA_DIR);
         Process process = pb.start();
         return process.waitFor();
     }
