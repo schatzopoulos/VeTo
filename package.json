@@ -16,6 +16,7 @@
     "bootstrap": "4.3.1",
     "chart.js": "^2.9.4",
     "cytoscape": "^3.12.1",
+    "cytoscape-cose-bilkent": "^4.1.0",
     "file-saver": "^2.0.2",
     "loaders.css": "0.1.2",
     "lodash": "^4.17.15",

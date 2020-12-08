@@ -16,12 +16,13 @@ import {
 } from 'reactstrap';
 import classnames from 'classnames';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFile, faChartBar } from '@fortawesome/free-solid-svg-icons';
+import { faFile, faChartBar, faProjectDiagram } from '@fortawesome/free-solid-svg-icons';
 import ResultsTable from './results-table';
 import axios from 'axios';
 import FileSaver from 'file-saver';
 import _ from 'lodash';
 import { Bar } from 'react-chartjs-2';
+import HinGraph from 'app/modules/analysis/results/hin-graph';
 
 export interface IResultsPanelProps {
     uuid: any,
@@ -37,7 +38,8 @@ export class ResultsPanel extends React.Component<IResultsPanelProps> {
     readonly state: any = {
         activeAnalysis: '',
         selectedEntries: [],
-        visualizationModalOpen: false
+        visualizationModalOpen: '',
+        networkModalOpen: ''
     };
 
     constructor(props) {
@@ -140,9 +142,15 @@ export class ResultsPanel extends React.Component<IResultsPanelProps> {
         });
     }
 
-    toggleVisualizationModal() {
+    toggleVisualizationModal(modalId) {
         this.setState({
-            visualizationModalOpen: !this.state.visualizationModalOpen
+            visualizationModalOpen: this.state.visualizationModalOpen === modalId ? '' : modalId
+        });
+    }
+
+    toggleNetworkModal(modalId) {
+        this.setState({
+            networkModalOpen: this.state.networkModalOpen === modalId ? '' : modalId
         });
     }
 
@@ -152,11 +160,11 @@ export class ResultsPanel extends React.Component<IResultsPanelProps> {
         if (label) {
             label += ': ';
         }
-        console.log('Visualizing: '+tooltipItem.yLabel);
+
         const value = tooltipItem.yLabel;
         const attemptedFloatCast = Number.parseFloat(value);
-        const finalValue = (!isNaN(attemptedFloatCast) && attemptedFloatCast%1!==0 && attemptedFloatCast.toString()===value.toString())?Math.round(attemptedFloatCast*1000000)/1000000:value;
-        label += finalValue
+        const finalValue = (!isNaN(attemptedFloatCast) && attemptedFloatCast % 1 !== 0 && attemptedFloatCast.toString() === value.toString()) ? Math.round(attemptedFloatCast * 1000000) / 1000000 : value;
+        label += finalValue;
         return label;
     }
 
@@ -166,6 +174,7 @@ export class ResultsPanel extends React.Component<IResultsPanelProps> {
         if (!_.isEmpty(this.props.results)) {
 
             const result = this.props.results[this.state.activeAnalysis];
+            const normalizeToId = str => str.replace(/(((\s*[-]\s*)+)|(\s))+/g, '-').toLowerCase();
             let plotData = [];
             let areCommunityResults = false;
             if (this.state.activeAnalysis) {
@@ -199,6 +208,7 @@ export class ResultsPanel extends React.Component<IResultsPanelProps> {
                         plotData = assignedDocs.map(doc => [doc[selectField], doc['Ranking Score']]).sort((docA, docB) => {
                             return Number.parseFloat(docB[1]) - Number.parseFloat(docA[1]);
                         });
+                        console.log(assignedDocs);
                         resultPanel = <ResultsTable
                             docs={assignedDocs}
                             headers={assignedHeaders}
@@ -313,9 +323,14 @@ export class ResultsPanel extends React.Component<IResultsPanelProps> {
                                             <Row className={'justify-content-between mt-1'}>
                                                 <Col xs={'auto'}>
                                                     {plotData && plotData.length > 0 &&
-                                                    <Button size={'sm'} color={'dark'}
-                                                            onClick={this.toggleVisualizationModal.bind(this)}><FontAwesomeIcon
-                                                        icon={faChartBar} /> Visualize</Button>
+                                                    <ButtonGroup>
+                                                        <Button size={'sm'} color={'dark'}
+                                                                onClick={this.toggleVisualizationModal.bind(this, `vis-${normalizeToId(analysis)}`)}><FontAwesomeIcon
+                                                            icon={faChartBar} /> Visualize</Button>
+                                                        <Button size={'sm'} color={'dark'}
+                                                                onClick={this.toggleNetworkModal.bind(this, `net-${normalizeToId(analysis)}`)}><FontAwesomeIcon
+                                                            icon={faProjectDiagram} /> Show network</Button>
+                                                    </ButtonGroup>
                                                     }
                                                 </Col>
                                                 {
@@ -359,8 +374,29 @@ export class ResultsPanel extends React.Component<IResultsPanelProps> {
                                                     ><FontAwesomeIcon icon="download" /> Download all</Button>
                                                 </Col>
                                             </Row>
-                                            <Modal className={'modal-xl'} isOpen={this.state.visualizationModalOpen}
-                                                   toggle={this.toggleVisualizationModal.bind(this)}>
+                                            <Modal className={'modal-xl'}
+                                                   isOpen={this.state.networkModalOpen === `net-${normalizeToId(analysis)}`}
+                                                   toggle={this.toggleNetworkModal.bind(this, `net-${normalizeToId(analysis)}`)}>
+                                                <ModalBody>
+                                                    <Row className={'justify-content-center'}>
+                                                        <Col xs={'12'}>
+                                                            <HinGraph/>
+                                                        </Col>
+                                                    </Row>
+                                                </ModalBody>
+                                                <ModalFooter>
+                                                    <Row>
+                                                        <Col xs={'auto'}>
+                                                            <Button color={'dark'}
+                                                                    onClick={this.toggleNetworkModal.bind(this, `net-${normalizeToId(analysis)}`)}>Close</Button>
+                                                        </Col>
+                                                    </Row>
+                                                </ModalFooter>
+                                            </Modal>
+                                            <Modal className={'modal-xl'}
+                                                   isOpen={this.state.visualizationModalOpen === `vis-${normalizeToId(analysis)}`}
+                                                   id={`vis-${normalizeToId(analysis)}`}
+                                                   toggle={this.toggleVisualizationModal.bind(this, `vis-${normalizeToId(analysis)}`)}>
                                                 <ModalBody>
                                                     <Row className={'justify-content-center'}>
                                                         <Col xs={'12'}>
@@ -403,7 +439,7 @@ export class ResultsPanel extends React.Component<IResultsPanelProps> {
                                                     <Row>
                                                         <Col xs={'auto'}>
                                                             <Button color={'dark'}
-                                                                    onClick={this.toggleVisualizationModal.bind(this)}>Close</Button>
+                                                                    onClick={this.toggleVisualizationModal.bind(this, `vis-${normalizeToId(analysis)}`)}>Close</Button>
                                                         </Col>
                                                     </Row>
                                                 </ModalFooter>
@@ -431,7 +467,6 @@ export class ResultsPanel extends React.Component<IResultsPanelProps> {
             </div>);
         }
         return '';
-
     }
 };
 
