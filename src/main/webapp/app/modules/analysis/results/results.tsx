@@ -12,7 +12,11 @@ import {
     Modal,
     ModalHeader,
     ModalFooter,
-    ModalBody
+    ModalBody,
+    UncontrolledButtonDropdown,
+    DropdownToggle,
+    DropdownMenu,
+    DropdownItem
 } from 'reactstrap';
 import classnames from 'classnames';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -322,14 +326,19 @@ export class ResultsPanel extends React.Component<IResultsPanelProps> {
                                             <Row className={'justify-content-between mt-1'}>
                                                 <Col xs={'auto'}>
                                                     {plotData && plotData.length > 0 &&
-                                                    <ButtonGroup>
-                                                        <Button size={'sm'} color={'dark'}
-                                                                onClick={this.toggleVisualizationModal.bind(this, `vis-${normalizeToId(analysis)}`)}><FontAwesomeIcon
-                                                            icon={faChartBar} /> Visualize</Button>
-                                                        <Button size={'sm'} color={'dark'}
-                                                                onClick={this.toggleNetworkModal.bind(this, `net-${normalizeToId(analysis)}`)}><FontAwesomeIcon
-                                                            icon={faProjectDiagram} /> Show network</Button>
-                                                    </ButtonGroup>
+                                                    (analysis==='Ranking'
+                                                        ? <UncontrolledButtonDropdown>
+                                                            <DropdownToggle caret color={'dark'} size={'sm'}>
+                                                                <FontAwesomeIcon icon={faChartBar} /> Visualize
+                                                            </DropdownToggle>
+                                                            <DropdownMenu>
+                                                                <DropdownItem onClick={this.toggleVisualizationModal.bind(this, `vis-${normalizeToId(analysis)}`)}>Scores bar chart</DropdownItem>
+                                                                <DropdownItem onClick={this.toggleNetworkModal.bind(this, `net-${normalizeToId(analysis)}`)}>Top-10 network</DropdownItem>
+                                                            </DropdownMenu>
+                                                        </UncontrolledButtonDropdown>
+                                                        : <Button size={'sm'} color={'dark'}
+                                                                  onClick={this.toggleVisualizationModal.bind(this, `vis-${normalizeToId(analysis)}`)}><FontAwesomeIcon
+                                                            icon={faChartBar} /> Visualize</Button>)
                                                     }
                                                 </Col>
                                                 {
