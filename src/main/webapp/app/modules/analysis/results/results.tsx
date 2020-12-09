@@ -413,11 +413,11 @@ export class ResultsPanel extends React.Component<IResultsPanelProps> {
                                                                 datasets: [
                                                                     {
                                                                         label: this.state.activeAnalysis === 'Community Detection - Ranking' ? 'Average Community Ranking Score' : 'Ranking Score',
-                                                                        backgroundColor: 'rgba(170,0,255,0.6)',
-                                                                        borderColor: 'rgba(170,0,255,0.8)',
+                                                                        backgroundColor: 'rgba(23,162,184,0.6)',
+                                                                        borderColor: 'rgba(23,162,184,0.8)',
                                                                         borderWidth: 1,
-                                                                        hoverBackgroundColor: 'rgba(170,0,255,1)',
-                                                                        hoverBorderColor: 'rgba(170,0,255,1)',
+                                                                        hoverBackgroundColor: 'rgba(23,162,184,1)',
+                                                                        hoverBorderColor: 'rgba(23,162,184,1)',
                                                                         data: plotData.map(d => d[1])
                                                                     }
                                                                 ]
