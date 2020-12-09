@@ -1002,7 +1002,8 @@ export class Home extends React.Component<IHomeProps> {
                             </Col>
                             <Col xs={4} className={'text-right'}>
                                 {this.state.metapathStr &&
-                                <Button color={'danger'} onClick={this.clearMetapath.bind(this)} size={'sm'}>Clear
+                                <Button color={'danger'} onClick={this.clearMetapath.bind(this)} size={'sm'}><FontAwesomeIcon
+                                    icon={faTimes} /> Clear
                                     metapath</Button>}
                             </Col>
                         </Row>
@@ -1150,7 +1151,7 @@ export class Home extends React.Component<IHomeProps> {
 																This field cannot be empty.
 												</span>
                                                                 }
-                                                                
+
                                                                 <br />
                                                                 <Label for="hashTables">
                                                                     Hash Tables <FontAwesomeIcon style={{ color: '#17a2b8' }}
@@ -1206,7 +1207,7 @@ export class Home extends React.Component<IHomeProps> {
                                                                 }
                                                                </Card>
                                                         </Col>
-                      
+
                                                     </Row>
                                                 </Container>
                                             </ModalBody>
