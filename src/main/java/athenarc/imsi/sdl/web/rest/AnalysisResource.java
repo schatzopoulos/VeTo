@@ -1,6 +1,8 @@
 package athenarc.imsi.sdl.web.rest;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -209,12 +211,28 @@ public class AnalysisResource {
                 analysisDomain.append("selectField", selectField);
                 analysisDomain.append("dataset", dataset);
                 analysisDomain.append("entity", primaryEntiry);
-                meta.append("analysis_domain",analysisDomain);
+                meta.append("analysis_domain", analysisDomain);
+
+                Document hin = null;
+                if (analysis.equals("Ranking")) {
+                    String fileName="RANKING_HIN_SCHEMA.json";
+                    String targetHinJsonFilePath = Paths.get((String) configuration.get("local_out_dir"),fileName).toString();
+                    // check if hin json exists
+                    File targetHinJsonFile = new File(targetHinJsonFilePath);
+                    if (targetHinJsonFile.exists()) {
+                        // if it does load it
+                        hin = Document.parse(FileUtil.readJsonFile(targetHinJsonFilePath));
+                    }
+                }
 
                 response.append("id", id)
                     .append("analysis", analysis)
                     .append("_meta", meta)
                     .append("docs", docs);
+
+                if (hin != null && (page == null || !(page > 1))) {
+                    response.append("hin", hin);
+                }
 
             } catch (IOException e) {
                 throw new RuntimeException("Error results from file");
