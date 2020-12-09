@@ -11,7 +11,18 @@ const HinGraph = props => {
     let cy = null;
 
     cytoscape.use(coseBilkent);
-
+    const data = []
+    if (props.data) {
+        props.data.nodes.forEach(node=>{
+            if (node.parent)
+                data.push({group:'nodes',data:{id:node.id,label:node.label,value:node.value,parent:node.parent}})
+            else
+                data.push({group:'nodes',data:{id:node.id,label:node.label,value:node.value}})
+        });
+        props.data.edges.forEach( ({ source, target, weight }) =>{
+            data.push({group:'edges',data:{source, target, id:`e-${source}-${target}`}})
+        });
+    }
     useEffect(() => {
         const containerDiv = document.getElementById(props.id || 'hin-graph');
         cy = cytoscape({
@@ -20,8 +31,9 @@ const HinGraph = props => {
                 {
                     selector: 'node',
                     style: {
-                        'label': 'data(id)',
-                        'background-color': '#17a2b8'
+                        'label': 'data(label)',
+                        'background-color': '#17a2b8',
+                        'font-size': '5px'
                     }
                 },
 
@@ -35,35 +47,20 @@ const HinGraph = props => {
                 {
                     selector: 'edge',
                     style: {
-                        'width': 3,
-                        'line-color': '#17a2b8'
+                        'width': 1,
+                        'line-color': '#48c7ea'
                     }
                 }
             ],
 
-            elements: [
-                { group: 'nodes', data: { id: 'node0', parent: 'supernode0' } },
-                { group: 'nodes', data: { id: 'node1', parent: 'supernode1' } },
-                { group: 'nodes', data: { id: 'node2', parent: 'supernode1' } },
-                { group: 'nodes', data: { id: 'supernode0' } },
-                { group: 'nodes', data: { id: 'node3' } },
-                { group: 'nodes', data: { id: 'node4' } },
-                { group: 'nodes', data: { id: 'node5', parent: 'supernode0' } },
-                { group: 'nodes', data: { id: 'supernode1' } },
-                { group: 'nodes', data: { id: 'node6', parent: 'supernode0' } },
-                { group: 'nodes', data: { id: 'node7', parent: 'supernode1', label: 'nikos' } },
-                { group: 'edges', data: { id: 'e0', source: 'node0', target: 'node3' } },
-                { group: 'edges', data: { id: 'e1', source: 'node1', target: 'node2' } },
-                { group: 'edges', data: { id: 'e2', source: 'node5', target: 'node7' } },
-                { group: 'edges', data: { id: 'e3', source: 'node5', target: 'node6' } },
-                { group: 'edges', data: { id: 'e4', source: 'node0', target: 'node3' } },
-                { group: 'edges', data: { id: 'e5', source: 'node4', target: 'node3' } }
-            ]
+            elements: data
         });
         cy.ready(() => {
             cy.nodes().forEach(node=>{
-                node.css('width',50);
-                node.css('height',50);
+                const n = (node.data('value')*30.0);
+                const r = 10+Math.round(n);
+                node.css('width',r);
+                node.css('height',r);
             });
             cy.layout({name: 'cose-bilkent', animationDuration: 1000}).run();
         });

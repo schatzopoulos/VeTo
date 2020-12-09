@@ -208,7 +208,6 @@ export class ResultsPanel extends React.Component<IResultsPanelProps> {
                         plotData = assignedDocs.map(doc => [doc[selectField], doc['Ranking Score']]).sort((docA, docB) => {
                             return Number.parseFloat(docB[1]) - Number.parseFloat(docA[1]);
                         });
-                        console.log(assignedDocs);
                         resultPanel = <ResultsTable
                             docs={assignedDocs}
                             headers={assignedHeaders}
@@ -380,7 +379,7 @@ export class ResultsPanel extends React.Component<IResultsPanelProps> {
                                                 <ModalBody>
                                                     <Row className={'justify-content-center'}>
                                                         <Col xs={'12'}>
-                                                            <HinGraph/>
+                                                            <HinGraph data={result?result.hin:null}/>
                                                         </Col>
                                                     </Row>
                                                 </ModalBody>
