@@ -96,7 +96,8 @@ export default (state: AnalysisState = initialState, action): AnalysisState => {
       });
       results[data.analysis] = {
         docs: indexedDocs,
-        meta: data._meta
+        meta: data._meta,
+        hin: data.hin || null
       };
 
       return {
