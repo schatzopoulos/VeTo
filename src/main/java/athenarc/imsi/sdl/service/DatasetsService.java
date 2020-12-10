@@ -72,7 +72,7 @@ public class DatasetsService {
         // loop in lines until find 5 results to return
         while ( ( line = reader.readLine() ) != null) {
             String [] attrs = line.split("\t");
-            
+
             if (i >= attrs.length) continue;
 
             if (attrs[i].toLowerCase().contains(term)) {
@@ -87,9 +87,9 @@ public class DatasetsService {
 
                 docs.add(doc);
                 // System.out.println(values.size());
-                if (docs.size() == 5) {
-                    break;
-                }
+                // if (docs.size() == 5) {
+                //    break;
+                // }
             }
 
         }
