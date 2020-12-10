@@ -1298,11 +1298,13 @@ export class Home extends React.Component<IHomeProps> {
                                             <Row>
                                                 <Col xs={'12'} className={'px-0'}>
                                                 <span className="attribute-type text-danger">
-                                                    {this.state.typedTargetEntityValue
-                                                        ? this.state.showTargetEntitySaveButton
-                                                            ? 'The new value of the field must be saved.'
-                                                            : 'The value of the field must be a valid option from the ones provided.'
-                                                        :'This field cannot be empty when Similarity Search is enabled.'}
+                                                    {this.state.metapath.length>0
+                                                        ? this.state.typedTargetEntityValue
+                                                            ? this.state.showTargetEntitySaveButton
+                                                                ? 'The new value of the field must be saved.'
+                                                                : 'The value of the field must be a valid option from the ones provided.'
+                                                            :'This field cannot be empty when Similarity Search is enabled.'
+                                                        : 'Select an entity first'}
                                                 </span>
                                                 </Col>
                                             </Row>
