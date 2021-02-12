@@ -82,6 +82,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             .antMatchers("/api/simjoin/**").permitAll()
             .antMatchers("/api/simsearch/**").permitAll()
             .antMatchers("/api/datasets/**").permitAll()
+            .antMatchers("/api/metapath/**").permitAll()
 
             .antMatchers("/api/authenticate").permitAll()
             .antMatchers("/api/register").permitAll()
