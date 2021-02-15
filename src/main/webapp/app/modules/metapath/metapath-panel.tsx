@@ -1,10 +1,11 @@
 import React from 'react';
-import { Button, Row, Col } from 'reactstrap';
+import { Button, Row, Col, Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap';
 import EntityBox from './entity-box';
 import EntityConnector from './entity-connector';
 import EntityInsertionModal from './entity-insertion-modal';
 import MetapathControl from './metapath-control';
 import Recommendation from 'app/modules/metapath/recommendation';
+import PredefinedMetapathBrowser from 'app/modules/metapath/predefined-metapath-browser';
 
 interface MetapathPanelProps {
     constraints: any,
@@ -27,7 +28,10 @@ interface MetapathPanelProps {
 };
 
 class MetapathPanel extends React.Component<MetapathPanelProps> {
-    readonly state: any;
+    readonly state = {
+        entityModalOpen: false,
+        predefinedMetapathsModalOpen: false
+    };
     nodes = null;
 
     constructor(props) {
@@ -35,9 +39,6 @@ class MetapathPanel extends React.Component<MetapathPanelProps> {
         if (this.props.schema) {
             this.nodes = this.getAvailableNodesFromSchema(this.props.schema);
         }
-        this.state = {
-            modalOpen: false
-        };
     }
 
     getAvailableNodesFromSchema(schema) {
@@ -64,10 +65,18 @@ class MetapathPanel extends React.Component<MetapathPanelProps> {
         return isSymmetric(metapathString) ? [] : metapathEntities.slice(0, metapathEntities.length - 1).reverse();
     }
 
-    toggleModal() {
+    toggleEntitySelectionModal() {
         this.setState({
-            modalOpen: (!this.state.modalOpen)
+            entityModalOpen: (!this.state.entityModalOpen)
         });
+    }
+
+    togglePredefinedMetapathsModal() {
+        this.setState(
+            {
+                predefinedMetapathsModalOpen: (!this.state.predefinedMetapathsModalOpen)
+            }
+        )
     }
 
     render() {
@@ -94,7 +103,7 @@ class MetapathPanel extends React.Component<MetapathPanelProps> {
                                    idIndexedSchema={idIndexedSchema}
                                    datasetFolder={this.props.datasetFolder}
                                    primaryEntity={metapathEntityBoxes.length === 0}
-                                   selectField = {this.props.selectField}
+                                   selectField={this.props.selectField}
                                    selectFieldOptions={metapathEntityBoxes.length === 0 ? this.props.selectFieldOptions : null}
                                    handleSelectFieldChange={this.props.handleSelectFieldChange}
                                    handleSwitch={this.props.handleSwitch}
@@ -103,7 +112,7 @@ class MetapathPanel extends React.Component<MetapathPanelProps> {
                                    handleInput={this.props.handleInput}
                                    handleAddition={this.props.handleAddition}
                                    handleRemoval={this.props.handleRemoval}
-                                   handleMultipleAddition={this.props.handleMultipleAddition}/>
+                                   handleMultipleAddition={this.props.handleMultipleAddition} />
                     );
                     delete tempConstraints[element];
                 } else {
@@ -127,13 +136,21 @@ class MetapathPanel extends React.Component<MetapathPanelProps> {
             );
         } else if (this.nodes) {
             return (
-                <Row>
-                    <Col className={'d-flex overflow-auto flex-nowrap align-items-center metapath-constructor'}>
-                        <Button outline color="dark" size="lg" onClick={this.toggleModal.bind(this)}>Select starting
+                <Row className={'justify-content-start'}>
+                    <Col xs={12}>
+                        <Button outline color="dark" size="lg" onClick={this.toggleEntitySelectionModal.bind(this)}>Select starting
                             entity</Button>
-                        {(this.state.modalOpen) &&
+                        {(this.state.entityModalOpen) &&
                         <EntityInsertionModal entities={this.nodes} onSelection={this.props.onNewEntity}
-                                              onDismiss={this.toggleModal.bind(this)} />}
+                                              onDismiss={this.toggleEntitySelectionModal.bind(this)} />}
+                        <Button className={'ml-2'} outline color="dark" size="lg" onClick={this.togglePredefinedMetapathsModal.bind(this)}>Select a predefined
+                            metapath</Button>
+                        <Modal isOpen={this.state.predefinedMetapathsModalOpen} toggle={this.togglePredefinedMetapathsModal.bind(this)} >
+                            <ModalHeader toggle={this.togglePredefinedMetapathsModal.bind(this)}>Select a predefined metapath</ModalHeader>
+                            <ModalBody>
+                                <PredefinedMetapathBrowser dataset={this.props.datasetFolder}/>
+                            </ModalBody>
+                        </Modal>
                     </Col>
                 </Row>
             );

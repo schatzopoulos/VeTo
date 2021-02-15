@@ -15,14 +15,9 @@ import {
     ModalBody,
     ModalFooter,
     ModalHeader,
-    Nav,
-    NavItem,
-    NavLink,
     Progress,
     Row,
     Spinner,
-    TabContent,
-    TabPane
 } from 'reactstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { IRootState } from 'app/shared/reducers';
@@ -176,7 +171,7 @@ export class Home extends React.Component<IHomeProps> {
         const temporaryMetapath = [...this.state.metapath];
         const getMetapathStr = metapath => metapath.map(n => {
             console.log(n);
-            return n.data('label').substr(0, 1)
+            return n.data('label').substr(0, 1);
         }).join('');
         let temporaryNeighborhood = this.state.neighbors;
         let temporaryMetapathStr = getMetapathStr(temporaryMetapath);
@@ -1009,98 +1004,63 @@ export class Home extends React.Component<IHomeProps> {
                         </Card>
 
                         <br />
-                        <Nav tabs>
-                            <NavItem>
-                                <NavLink onClick={() => {
-                                    this.setState({ metapathTab: 'metapath-constructor' });
-                                }}>
-                                    New metapath
-                                </NavLink>
-                            </NavItem>
-                            <NavItem>
-                                <NavLink onClick={() => {
-                                    this.setState({ metapathTab: 'predefined-metapaths' });
-                                }}>
-                                    Select a predefined metapath
-                                </NavLink>
-                            </NavItem>
-                        </Nav>
-                        <TabContent activeTab={this.state.metapathTab}>
-                            <TabPane tabId="metapath-constructor">
-                                <Row className={'mt-2'}>
-                                    <Col xs={12}>
-                                        <Row>
-                                            <Col xs={8}>
-                                                <h4>Query metapath</h4>
-                                            </Col>
-                                            <Col xs={4} className={'text-right'}>
-                                                {this.state.metapathStr &&
-                                                <Button color={'danger'} onClick={this.clearMetapath.bind(this)}
-                                                        size={'sm'}><FontAwesomeIcon
-                                                    icon={faTimes} /> Clear
-                                                    metapath</Button>}
-                                            </Col>
-                                        </Row>
-                                        {(this.props.schemas) &&
-                                        <MetapathPanel
-                                            metapath={this.state.metapath}
-                                            schema={this.props.schemas[datasetToUse]}
-                                            datasetFolder={datasetFolder}
-                                            constraints={this.state.constraints}
-                                            selectField={this.state.selectField}
-                                            selectFieldOptions={selectFieldOptions}
-                                            onNewEntity={this.simulateClickOnNode.bind(this)}
-                                            onRecommendationAccept={this.addMultiple.bind(this)}
-                                            onDelete={this.deleteLast.bind(this)}
-                                            handleSwitch={this.handleConstraintSwitch.bind(this)}
-                                            handleDropdown={this.handleConstraintOpDropdown.bind(this)}
-                                            handleLogicDropdown={this.handleConstraintLogicOpDropdown.bind(this)}
-                                            handleInput={this.handleConstraintInputChange.bind(this)}
-                                            handleAddition={this.handleConstraintAddition.bind(this)}
-                                            handleRemoval={this.handleConstraintRemoval.bind(this)}
-                                            handleSelectFieldChange={this.handleSelectFieldChange.bind(this)}
-                                            handleMultipleAddition={this.handleMultipleConditionsAddition.bind(this)} />
-                                        }
-                                        {this.checkMetapathDefined() &&
-                                        <Row className={'justify-content-center mt-4'}>
-                                            <Col md={'12'}>
-                                                <div className={'balloon bg-light-grey'}>
-                                                    <div>
-                                                        {this.generateNotification()}
-                                                    </div>
-                                                    {this.checkSymmetricMetapath() &&
-                                                    <div>
-                                                        <hr className={'m-0'} />
-                                                        <div>
-                                                            <p className={'m-0'}>
-                                                                {this.getCrudeInterpretation()}
-                                                            </p>
-                                                        </div>
-                                                    </div>
-                                                    }
-                                                </div>
-                                            </Col>
-                                        </Row>
-                                        }
+                        <Row className={'mt-2'}>
+                            <Col xs={12}>
+                                <Row>
+                                    <Col xs={8}>
+                                        <h4>Query metapath</h4>
+                                    </Col>
+                                    <Col xs={4} className={'text-right'}>
+                                        {this.state.metapathStr &&
+                                        <Button color={'danger'} onClick={this.clearMetapath.bind(this)}
+                                                size={'sm'}><FontAwesomeIcon
+                                            icon={faTimes} /> Clear
+                                            metapath</Button>}
                                     </Col>
                                 </Row>
-                            </TabPane>
-                            <TabPane tabId="predefined-metapaths">
-                                {this.cy && this.state.dataset &&
-                                <PredefinedMetapathBrowser
-                                    dataset={this.state.dataset}
-                                    cytoscapeIds={this.cy.filter('nodes').map(node => {
-                                        const nodeId = node.data('id');
-                                        console.log(nodeId);
-                                        const nodeChar = nodeId.split('.')[1];
-                                        return [nodeChar, nodeId];
-                                    })}
-                                    applyMetapath={this.addMultiple.bind(this)}
-                                    clearMetapath={this.clearMetapath.bind(this)}
-                                />
+                                {(this.props.schemas) &&
+                                <MetapathPanel
+                                    metapath={this.state.metapath}
+                                    schema={this.props.schemas[datasetToUse]}
+                                    datasetFolder={datasetFolder}
+                                    constraints={this.state.constraints}
+                                    selectField={this.state.selectField}
+                                    selectFieldOptions={selectFieldOptions}
+                                    onNewEntity={this.simulateClickOnNode.bind(this)}
+                                    onRecommendationAccept={this.addMultiple.bind(this)}
+                                    onDelete={this.deleteLast.bind(this)}
+                                    handleSwitch={this.handleConstraintSwitch.bind(this)}
+                                    handleDropdown={this.handleConstraintOpDropdown.bind(this)}
+                                    handleLogicDropdown={this.handleConstraintLogicOpDropdown.bind(this)}
+                                    handleInput={this.handleConstraintInputChange.bind(this)}
+                                    handleAddition={this.handleConstraintAddition.bind(this)}
+                                    handleRemoval={this.handleConstraintRemoval.bind(this)}
+                                    handleSelectFieldChange={this.handleSelectFieldChange.bind(this)}
+                                    handleMultipleAddition={this.handleMultipleConditionsAddition.bind(this)} />
                                 }
-                            </TabPane>
-                        </TabContent>
+                                {this.checkMetapathDefined() &&
+                                <Row className={'justify-content-center mt-4'}>
+                                    <Col md={'12'}>
+                                        <div className={'balloon bg-light-grey'}>
+                                            <div>
+                                                {this.generateNotification()}
+                                            </div>
+                                            {this.checkSymmetricMetapath() &&
+                                            <div>
+                                                <hr className={'m-0'} />
+                                                <div>
+                                                    <p className={'m-0'}>
+                                                        {this.getCrudeInterpretation()}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            }
+                                        </div>
+                                    </Col>
+                                </Row>
+                                }
+                            </Col>
+                        </Row>
 
 
                         {/* <MetapathControl metapath={this.state.metapath} onEntityRemove={this.deleteLast.bind(this)} neighbors={this.state.neighbors} /> */}

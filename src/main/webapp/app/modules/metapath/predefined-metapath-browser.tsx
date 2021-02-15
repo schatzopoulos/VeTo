@@ -27,7 +27,7 @@ const PredefinedMetapathBrowser = props => {
                         <td>{predefinedMetapathData.description}</td>
                         <td><Button color={'success'} onClick={() => {
                             handleMetapathApplication(predefinedMetapathData.metapath);
-                        }}>Apply</Button></td>
+                        }}>Select</Button></td>
                     </tr>
                 );
             }
