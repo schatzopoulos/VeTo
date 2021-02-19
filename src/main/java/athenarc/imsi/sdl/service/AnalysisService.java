@@ -14,6 +14,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import athenarc.imsi.sdl.domain.PredefinedMetapath;
+import athenarc.imsi.sdl.repository.PredefinedMetapathRepository;
 import com.opencsv.CSVParserBuilder;
 import com.opencsv.CSVReader;
 import com.opencsv.CSVReaderBuilder;
@@ -21,6 +23,10 @@ import com.opencsv.CSVReaderBuilder;
 import org.bson.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
@@ -29,6 +35,9 @@ import athenarc.imsi.sdl.service.util.FileUtil;
 
 @Service
 public class AnalysisService {
+
+    @Autowired
+    private PredefinedMetapathRepository predefinedMetapathRepository;
 
     private final Logger log = LoggerFactory.getLogger(AnalysisService.class);
 
@@ -47,25 +56,57 @@ public class AnalysisService {
                 targetId, folder, selectField, edgesThreshold, prAlpha, prTol, simMinValues, lpaIter);
 
         // prepare ranking script arguments
-        ProcessBuilder pb = new ProcessBuilder();
+//        ProcessBuilder pb = new ProcessBuilder();
 
-        pb.command("/bin/bash", Constants.WORKFLOW_DIR + "analysis/analysis.sh", config);
+        PredefinedMetapath predefinedMetapath = predefinedMetapathRepository.findFirstByDatasetAndMetapathAbbreviation(folder, metapath);
+        PredefinedMetapath.Analytics metapathAnalytics = predefinedMetapath.getAnalytics();
+        PredefinedMetapath.Analytics.TimesUsed frequencies = metapathAnalytics.getTimesUsed();
+        for (String analysisType: analysis) {
+            String analysisTypeNormalized = analysisType.toLowerCase();
+            log.debug("analysis: "+analysisTypeNormalized);
+            switch (analysisTypeNormalized) {
+                case "ranking":
+                    frequencies.setRanking(frequencies.getRanking()+1);
+                    break;
+                case "community detection":
+                    frequencies.setCommunityDetection(frequencies.getCommunityDetection()+1);
+                    break;
+                case "similarity join":
+                    frequencies.setSimJoin(frequencies.getSimJoin()+1);
+                    break;
+                case "similarity search":
+                    frequencies.setSimSearch(frequencies.getSimSearch()+1);
+                    break;
+                default:
+                    break;
+            }
+        }
+        metapathAnalytics.setTimesUsed(frequencies);
+        predefinedMetapath.setAnalytics(metapathAnalytics);
+
+        predefinedMetapathRepository.save(predefinedMetapath);
+
+//        update.inc("stats.timesUsed.ranking", 1);
+//        update.inc("description", person.getDescription());
+//        predefinedMetapathRepository.
+
+//        pb.command("/bin/bash", Constants.WORKFLOW_DIR + "analysis/analysis.sh", config);
 
         // redirect ouput to logfile
-        File out = new File(outputLog);
-        pb.redirectOutput(out);
+//        File out = new File(outputLog);
+//        pb.redirectOutput(out);
 
         // execute ranking script
-        Process process = pb.start();
-        int exitCode = process.waitFor();
+//        Process process = pb.start();
+//        int exitCode = process.waitFor();
 
         // write to file that the job has finished
-        FileWriter fileWriter = new FileWriter(outputLog, true);
-        PrintWriter printWriter = new PrintWriter(fileWriter);
-        printWriter.print("Exit Code\t" + exitCode);
-        printWriter.close();
+//        FileWriter fileWriter = new FileWriter(outputLog, true);
+//        PrintWriter printWriter = new PrintWriter(fileWriter);
+//        printWriter.print("Exit Code\t" + exitCode);
+//        printWriter.close();
 
-        log.debug("Analysis task for id: " + id + " exited with code: " + exitCode);
+//        log.debug("Analysis task for id: " + id + " exited with code: " + exitCode);
     }
 
     private static void getMeta(Document meta, int totalRecords, int totalPages, int page, String[] headers) {

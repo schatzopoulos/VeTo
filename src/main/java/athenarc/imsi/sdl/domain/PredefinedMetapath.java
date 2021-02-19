@@ -13,18 +13,33 @@ public class PredefinedMetapath {
 
     private String dataset;
     private List<String> metapath;
+    private String metapathAbbreviation;
     private String key;
     private String description;
+    private Analytics analytics;
 
     public PredefinedMetapath() {
     }
 
-    public PredefinedMetapath(String id, String dataset, List<String> metapath, String key, String description) {
+    public PredefinedMetapath(
+        String id, String dataset, List<String> metapath, String metapathAbbreviation, String key, String description,
+        Analytics analytics
+    ) {
         this.id = id;
         this.dataset = dataset;
         this.metapath = metapath;
+        this.metapathAbbreviation = metapathAbbreviation;
         this.key = key;
         this.description = description;
+        this.analytics = analytics;
+    }
+
+    public String getMetapathAbbreviation() {
+        return metapathAbbreviation;
+    }
+
+    public void setMetapathAbbreviation(String metapathAbbreviation) {
+        this.metapathAbbreviation = metapathAbbreviation;
     }
 
     public String getId() {
@@ -63,14 +78,107 @@ public class PredefinedMetapath {
         this.description = description;
     }
 
+    public Analytics getAnalytics() {
+        return analytics;
+    }
+
+    public void setAnalytics(Analytics analytics) {
+        this.analytics = analytics;
+    }
+
     @Override
     public String toString() {
-        StringBuilder metapathBuilder = new StringBuilder();
-        for (String entity : this.metapath) {
-            char entityCharacter = entity.toUpperCase().charAt(0);
-            metapathBuilder.append(entityCharacter);
+        return "Predefined metapath for dataset '" + this.dataset + "' - " + this.description + " - " + this.metapathAbbreviation + " - key: " + this.key + " - analytics: [" + this.analytics.toString() + "]";
+    }
+
+    public static class Analytics {
+        private TimesUsed timesUsed;
+        private int rank;
+
+        public Analytics() {
+
         }
-        String metapath = metapathBuilder.toString();
-        return "Predefined metapath for dataset '" + this.dataset + "' - " + this.description + " - " + metapath + " - key: " + this.key;
+
+        public Analytics(TimesUsed timesUsed, int rank) {
+            this.timesUsed=timesUsed;
+            this.rank=rank;
+        }
+
+        public TimesUsed getTimesUsed() {
+            return timesUsed;
+        }
+
+        public void setTimesUsed(TimesUsed timesUsed) {
+            this.timesUsed = timesUsed;
+        }
+
+        public int getRank() {
+            return rank;
+        }
+
+        public void setRank(int rank) {
+            this.rank = rank;
+        }
+
+        @Override
+        public String toString() {
+            return "rank: " + this.rank + ", counts per analysis: [" + this.timesUsed.toString() + "]";
+        }
+
+        public static class TimesUsed {
+
+            private int ranking;
+            private int simJoin;
+            private int simSearch;
+            private int communityDetection;
+
+            public TimesUsed() {
+
+            }
+
+            public TimesUsed(int ranking, int simJoin, int simSearch, int communityDetection) {
+                this.ranking=ranking;
+                this.simJoin=simJoin;
+                this.simSearch=simSearch;
+                this.communityDetection=communityDetection;
+            }
+
+            public int getRanking() {
+                return ranking;
+            }
+
+            public void setRanking(int ranking) {
+                this.ranking = ranking;
+            }
+
+            public int getSimJoin() {
+                return simJoin;
+            }
+
+            public void setSimJoin(int simJoin) {
+                this.simJoin = simJoin;
+            }
+
+            public int getSimSearch() {
+                return simSearch;
+            }
+
+            public void setSimSearch(int simSearch) {
+                this.simSearch = simSearch;
+            }
+
+            public int getCommunityDetection() {
+                return communityDetection;
+            }
+
+            public void setCommunityDetection(int communityDetection) {
+                this.communityDetection = communityDetection;
+            }
+
+            @Override
+            public String toString() {
+                return "ranking: " + this.ranking + ", similarity join: " + this.simJoin + ", similarity search: " + this.simSearch + ", community detection: " + this.communityDetection;
+            }
+        }
     }
 }

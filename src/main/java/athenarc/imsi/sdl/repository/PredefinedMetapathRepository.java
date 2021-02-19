@@ -9,5 +9,9 @@ import java.util.List;
 @Repository
 public interface PredefinedMetapathRepository extends MongoRepository<PredefinedMetapath, String> {
 
-    List<PredefinedMetapath> findByDataset(String dataset);
+    List<PredefinedMetapath> findPredefinedMetapathByDataset(String dataset);
+
+    List<PredefinedMetapath> findPredefinedMetapathByDatasetAndMetapath(String dataset, List<String> metapath);
+
+    PredefinedMetapath findFirstByDatasetAndMetapathAbbreviation(String dataset, String metapathAbbreviation);
 }

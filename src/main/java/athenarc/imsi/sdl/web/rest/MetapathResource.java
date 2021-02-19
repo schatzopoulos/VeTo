@@ -42,4 +42,22 @@ public class MetapathResource {
 
         return result;
     }
+
+    @GetMapping("/description")
+    public Document getMetapathDescription(
+        @RequestParam(value = "dataset") String dataset,
+        @RequestParam(value = "entities") List<String> entities) {
+        Document metapathInfo = new Document();
+
+        metapathInfo.append("dataset", dataset);
+        metapathInfo.append("entities", entities);
+
+        String retrievedDescription = metapathService.getMetapathDescription(dataset, entities);
+        if (retrievedDescription == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Dataset '"+dataset+"' does not exist");
+        }
+        metapathInfo.append("metapathDescription", retrievedDescription);
+
+        return metapathInfo;
+    }
 }
