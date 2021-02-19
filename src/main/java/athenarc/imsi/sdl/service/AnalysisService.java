@@ -59,32 +59,34 @@ public class AnalysisService {
         ProcessBuilder pb = new ProcessBuilder();
 
         PredefinedMetapath predefinedMetapath = predefinedMetapathRepository.findFirstByDatasetAndMetapathAbbreviation(folder, metapath);
-        PredefinedMetapath.Analytics metapathAnalytics = predefinedMetapath.getAnalytics();
-        PredefinedMetapath.Analytics.TimesUsed frequencies = metapathAnalytics.getTimesUsed();
-        for (String analysisType: analysis) {
-            String analysisTypeNormalized = analysisType.toLowerCase();
-            log.debug("analysis: "+analysisTypeNormalized);
-            switch (analysisTypeNormalized) {
-                case "ranking":
-                    frequencies.setRanking(frequencies.getRanking()+1);
-                    break;
-                case "community detection":
-                    frequencies.setCommunityDetection(frequencies.getCommunityDetection()+1);
-                    break;
-                case "similarity join":
-                    frequencies.setSimJoin(frequencies.getSimJoin()+1);
-                    break;
-                case "similarity search":
-                    frequencies.setSimSearch(frequencies.getSimSearch()+1);
-                    break;
-                default:
-                    break;
+        if (predefinedMetapath!=null) {
+            PredefinedMetapath.Analytics metapathAnalytics = predefinedMetapath.getAnalytics();
+            PredefinedMetapath.Analytics.TimesUsed frequencies = metapathAnalytics.getTimesUsed();
+            for (String analysisType : analysis) {
+                String analysisTypeNormalized = analysisType.toLowerCase();
+                log.debug("analysis: " + analysisTypeNormalized);
+                switch (analysisTypeNormalized) {
+                    case "ranking":
+                        frequencies.setRanking(frequencies.getRanking() + 1);
+                        break;
+                    case "community detection":
+                        frequencies.setCommunityDetection(frequencies.getCommunityDetection() + 1);
+                        break;
+                    case "similarity join":
+                        frequencies.setSimJoin(frequencies.getSimJoin() + 1);
+                        break;
+                    case "similarity search":
+                        frequencies.setSimSearch(frequencies.getSimSearch() + 1);
+                        break;
+                    default:
+                        break;
+                }
             }
-        }
-        metapathAnalytics.setTimesUsed(frequencies);
-        predefinedMetapath.setAnalytics(metapathAnalytics);
+            metapathAnalytics.setTimesUsed(frequencies);
+            predefinedMetapath.setAnalytics(metapathAnalytics);
 
-        predefinedMetapathRepository.save(predefinedMetapath);
+            predefinedMetapathRepository.save(predefinedMetapath);
+        }
 
         pb.command("/bin/bash", Constants.WORKFLOW_DIR + "analysis/analysis.sh", config);
 
