@@ -11,22 +11,20 @@ import { connect } from 'react-redux';
 import { getPredefinedMetapaths } from 'app/modules/metapath/metapath.reducer';
 
 const PredefinedMetapathBrowser = props => {
-    const handleMetapathApplication = newMetapathString => {
-        const newMetapathCharacters = [...newMetapathString];
-        const cytoscapeMetapath = newMetapathCharacters.map(c => props.cytoscapeIds.find(mapping => mapping[0] === c)[1]);
-        props.clearMetapath();
-        props.applyMetapath(cytoscapeMetapath);
-    };
+    const metapathTotalUses = metapathData => (
+        metapathData.stats.ranking + metapathData.stats.simJoin + metapathData.stats.simSearch + metapathData.stats.communityDetection
+    );
     const predefinedMetapathsComponents = props.predefinedMetapaths
-        ? props.predefinedMetapaths.map(
+        ? props.predefinedMetapaths.sort((pm0,pm1)=>pm0.stats.rank-pm1.stats.rank).map(
             predefinedMetapathData => {
-                const metapathString = (predefinedMetapathData.metapath.map(entity => entity[0])).join('');
                 return (
-                    <tr key={`metapath-${metapathString}`}>
-                        <td>{metapathString}</td>
+                    <tr key={`metapath-${predefinedMetapathData.metapathAbbreviation}`}>
+                        <td>{predefinedMetapathData.metapathAbbreviation}</td>
                         <td>{predefinedMetapathData.description}</td>
+                        <td>{metapathTotalUses(predefinedMetapathData)}</td>
                         <td><Button color={'success'} onClick={() => {
-                            handleMetapathApplication(predefinedMetapathData.metapath);
+                            // handleMetapathApplication(predefinedMetapathData.metapath);
+                            props.handlePredefinedMetapathAddition(predefinedMetapathData.metapath);
                         }}>Select</Button></td>
                     </tr>
                 );
@@ -50,6 +48,7 @@ const PredefinedMetapathBrowser = props => {
                                     <tr>
                                         <th>Metapath</th>
                                         <th>Description</th>
+                                        <th>Times used</th>
                                         <th></th>
                                     </tr>
                                     </thead>

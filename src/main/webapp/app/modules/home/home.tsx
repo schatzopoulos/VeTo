@@ -25,12 +25,12 @@ import { generateGroupsOfDisjunctions } from 'app/shared/util/constraint-utils';
 import CytoscapeComponent from 'react-cytoscapejs';
 import _ from 'lodash';
 import { analysisRun, getMoreResults, getResults, getStatus } from '../analysis/analysis.reducer';
-import { getDatasetSchemas } from '../datasets/datasets.reducer';
+import { getDatasetSchemas } from '../datasets/datasets.reducer'
+import { getMetapathDescription, ACTION_TYPES as metapathActions} from 'app/modules/metapath/metapath.reducer';
 import ResultsPanel from '../analysis/results/results';
 import MetapathPanel from '../metapath/metapath-panel';
 import AutocompleteInput from '../datasets/autocomplete-input';
 import { faTimes } from '@fortawesome/free-solid-svg-icons';
-import PredefinedMetapathBrowser from 'app/modules/metapath/predefined-metapath-browser';
 
 export interface IHomeProps extends StateProps, DispatchProps {
     loading: boolean;
@@ -40,7 +40,7 @@ export interface IHomeProps extends StateProps, DispatchProps {
     docs: any;
     meta: any;
     uuid: string;
-};
+}
 
 export class Home extends React.Component<IHomeProps> {
     readonly state: any = {
@@ -70,6 +70,8 @@ export class Home extends React.Component<IHomeProps> {
     };
     cy: any;
     polling: any;
+
+    pollMetapathDescription = null;
 
     validMove(node) {
         // allow first move to be anywhere
@@ -218,6 +220,9 @@ export class Home extends React.Component<IHomeProps> {
         }
 
         this.setState(newState, () => {
+            if (this.state.metapath.length>2) {
+                this.props.getMetapathDescription(this.state.dataset, this.state.metapath.map(metapathCytoscapeNode=>metapathCytoscapeNode.data('label')));
+            }
             this.animateNeighbors(lastNode);
         });
     }
@@ -261,6 +266,9 @@ export class Home extends React.Component<IHomeProps> {
         }
 
         this.setState(newState, () => {
+            if (this.state.metapath.length>2) {
+                this.props.getMetapathDescription(this.state.dataset, this.state.metapath.map(metapathCytoscapeNode=>metapathCytoscapeNode.data('label')));
+            }
             this.animateNeighbors(node);
         });
 
@@ -874,6 +882,21 @@ export class Home extends React.Component<IHomeProps> {
         return <div></div>;
     }
 
+    getInterpretation() {
+        if (this.props.metapathLoading === metapathActions.GET_METAPATH_DESCRIPTION) {
+            return <span className={'text-center'}><Spinner /></span>;
+        } else if (this.props.metapathInfo && this.props.metapathInfo.metapathDescription) {
+            return <strong><small>{this.props.metapathInfo.metapathDescription}</small></strong>;
+        }
+        return this.getCrudeInterpretation();
+    }
+
+    setInterpretation(dataset, metapath, description) {
+        this.setState({
+            description: [dataset, metapath, description]
+        })
+    }
+
     constraintsSummary(constraintSegments) {
         const constraintExpressions = Object.keys(constraintSegments).map(entity => {
             const entityFields = constraintSegments[entity];
@@ -927,8 +950,9 @@ export class Home extends React.Component<IHomeProps> {
         }
     }
 
-    setMetapath(metapathStr) {
-
+    setMetapath(metapathEntities) {
+        const cytoscapeNodes = metapathEntities.map(entity => this.cy.filter(`[label="${entity}"]`)[0]);
+        this.registerMultipleNodes(cytoscapeNodes);
     }
 
     render() {
@@ -954,7 +978,8 @@ export class Home extends React.Component<IHomeProps> {
             // if (this.props.schemas) {
             datasetFolder = this.props.schemas[datasetToUse]['folder'];
         }
-
+        console.log(this.props.metapathInfo);
+        console.log(this.state.metapath);
         const rankingLabel = <span>
 			Ranking <FontAwesomeIcon style={{ color: '#17a2b8' }} icon="question-circle"
                                      title="Ranking analysis is perfomed using PageRank." />
@@ -1036,7 +1061,8 @@ export class Home extends React.Component<IHomeProps> {
                                     handleAddition={this.handleConstraintAddition.bind(this)}
                                     handleRemoval={this.handleConstraintRemoval.bind(this)}
                                     handleSelectFieldChange={this.handleSelectFieldChange.bind(this)}
-                                    handleMultipleAddition={this.handleMultipleConditionsAddition.bind(this)} />
+                                    handleMultipleAddition={this.handleMultipleConditionsAddition.bind(this)}
+                                    handlePredefinedMetapathAddition={this.setMetapath.bind(this)}/>
                                 }
                                 {this.checkMetapathDefined() &&
                                 <Row className={'justify-content-center mt-4'}>
@@ -1050,7 +1076,7 @@ export class Home extends React.Component<IHomeProps> {
                                                 <hr className={'m-0'} />
                                                 <div>
                                                     <p className={'m-0'}>
-                                                        {this.getCrudeInterpretation()}
+                                                        {this.getInterpretation()}
                                                     </p>
                                                 </div>
                                             </div>
@@ -1419,7 +1445,7 @@ export class Home extends React.Component<IHomeProps> {
             </Container>
         );
     }
-};
+}
 
 const mapStateToProps = (storeState: IRootState) => ({
     loading: storeState.analysis.loading,
@@ -1432,7 +1458,9 @@ const mapStateToProps = (storeState: IRootState) => ({
     results: storeState.analysis.results,
     uuid: storeState.analysis.uuid,
     analysis: storeState.analysis.analysis,
-    schemas: storeState.datasets.schemas
+    schemas: storeState.datasets.schemas,
+    metapathInfo: storeState.metapath.metapathInfo,
+    metapathLoading: storeState.metapath.loading
 });
 
 const mapDispatchToProps = {
@@ -1442,7 +1470,8 @@ const mapDispatchToProps = {
     getStatus,
     getResults,
     getMoreResults,
-    getDatasetSchemas
+    getDatasetSchemas,
+    getMetapathDescription
 };
 
 type StateProps = ReturnType<typeof mapStateToProps>;

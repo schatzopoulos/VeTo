@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, Row, Col, Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap';
+import { Button, Row, Col, Modal, ModalHeader, ModalBody } from 'reactstrap';
 import EntityBox from './entity-box';
 import EntityConnector from './entity-connector';
 import EntityInsertionModal from './entity-insertion-modal';
@@ -25,7 +25,8 @@ interface MetapathPanelProps {
     handleRemoval: any
     handleSelectFieldChange: any
     handleMultipleAddition: any
-};
+    handlePredefinedMetapathAddition: any
+}
 
 class MetapathPanel extends React.Component<MetapathPanelProps> {
     readonly state = {
@@ -145,10 +146,14 @@ class MetapathPanel extends React.Component<MetapathPanelProps> {
                                               onDismiss={this.toggleEntitySelectionModal.bind(this)} />}
                         <Button className={'ml-2'} outline color="dark" size="lg" onClick={this.togglePredefinedMetapathsModal.bind(this)}>Select a predefined
                             metapath</Button>
-                        <Modal isOpen={this.state.predefinedMetapathsModalOpen} toggle={this.togglePredefinedMetapathsModal.bind(this)} >
+                        <Modal isOpen={this.state.predefinedMetapathsModalOpen} toggle={this.togglePredefinedMetapathsModal.bind(this)} className={'modal-lg'}>
                             <ModalHeader toggle={this.togglePredefinedMetapathsModal.bind(this)}>Select a predefined metapath</ModalHeader>
                             <ModalBody>
-                                <PredefinedMetapathBrowser dataset={this.props.datasetFolder}/>
+                                <PredefinedMetapathBrowser dataset={this.props.datasetFolder} handlePredefinedMetapathAddition={metapathEntities=>{
+                                    this.setState({
+                                        predefinedMetapathsModalOpen: false
+                                    }, this.props.handlePredefinedMetapathAddition(metapathEntities));
+                                }}/>
                             </ModalBody>
                         </Modal>
                     </Col>
