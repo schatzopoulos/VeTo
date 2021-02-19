@@ -17,7 +17,7 @@ import {
     ModalHeader,
     Progress,
     Row,
-    Spinner
+    Spinner,
 } from 'reactstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { IRootState } from 'app/shared/reducers';
@@ -25,7 +25,8 @@ import { generateGroupsOfDisjunctions } from 'app/shared/util/constraint-utils';
 import CytoscapeComponent from 'react-cytoscapejs';
 import _ from 'lodash';
 import { analysisRun, getMoreResults, getResults, getStatus } from '../analysis/analysis.reducer';
-import { getDatasetSchemas } from '../datasets/datasets.reducer';
+import { getDatasetSchemas } from '../datasets/datasets.reducer'
+import { getMetapathDescription, ACTION_TYPES as metapathActions} from 'app/modules/metapath/metapath.reducer';
 import ResultsPanel from '../analysis/results/results';
 import MetapathPanel from '../metapath/metapath-panel';
 import AutocompleteInput from '../datasets/autocomplete-input';
@@ -39,12 +40,13 @@ export interface IHomeProps extends StateProps, DispatchProps {
     docs: any;
     meta: any;
     uuid: string;
-};
+}
 
 export class Home extends React.Component<IHomeProps> {
     readonly state: any = {
         metapath: [],
         metapathStr: '',
+        metapathTab: 'metapath-constructor',
         neighbors: undefined,
         constraints: {},
         analysis: ['Ranking'],
@@ -64,10 +66,12 @@ export class Home extends React.Component<IHomeProps> {
         simMinValues: 5,
         searchK: 100,
         hashTables: 1,
-        lpaIter: 5,
+        lpaIter: 5
     };
     cy: any;
     polling: any;
+
+    pollMetapathDescription = null;
 
     validMove(node) {
         // allow first move to be anywhere
@@ -167,7 +171,10 @@ export class Home extends React.Component<IHomeProps> {
 
     registerMultipleNodes(nodeList) {
         const temporaryMetapath = [...this.state.metapath];
-        const getMetapathStr = metapath => metapath.map(n => n.data('label').substr(0, 1)).join('');
+        const getMetapathStr = metapath => metapath.map(n => {
+            console.log(n);
+            return n.data('label').substr(0, 1);
+        }).join('');
         let temporaryNeighborhood = this.state.neighbors;
         let temporaryMetapathStr = getMetapathStr(temporaryMetapath);
         nodeList.forEach(node => {
@@ -213,6 +220,9 @@ export class Home extends React.Component<IHomeProps> {
         }
 
         this.setState(newState, () => {
+            if (this.state.metapath.length>2) {
+                this.props.getMetapathDescription(this.state.dataset, this.state.metapath.map(metapathCytoscapeNode=>metapathCytoscapeNode.data('label')));
+            }
             this.animateNeighbors(lastNode);
         });
     }
@@ -256,6 +266,9 @@ export class Home extends React.Component<IHomeProps> {
         }
 
         this.setState(newState, () => {
+            if (this.state.metapath.length>2) {
+                this.props.getMetapathDescription(this.state.dataset, this.state.metapath.map(metapathCytoscapeNode=>metapathCytoscapeNode.data('label')));
+            }
             this.animateNeighbors(node);
         });
 
@@ -568,9 +581,9 @@ export class Home extends React.Component<IHomeProps> {
         } else {
             newState.analysis.splice(index, 1);
             if (selected === 'Similarity Search') {
-                newState.typedTargetEntityValue='';
-                newState.showTargetEntitySaveButton=false;
-                newState.targetEntity='';
+                newState.typedTargetEntityValue = '';
+                newState.showTargetEntitySaveButton = false;
+                newState.targetEntity = '';
             }
         }
         this.setState(newState);
@@ -786,7 +799,7 @@ export class Home extends React.Component<IHomeProps> {
         this.setState({
             targetEntity: selected
         }, () => {
-            console.log("changed");
+            console.log('changed');
         });
     }
 
@@ -869,6 +882,21 @@ export class Home extends React.Component<IHomeProps> {
         return <div></div>;
     }
 
+    getInterpretation() {
+        if (this.props.metapathLoading === metapathActions.GET_METAPATH_DESCRIPTION) {
+            return <span className={'text-center'}><Spinner /></span>;
+        } else if (this.props.metapathInfo && this.props.metapathInfo.metapathDescription) {
+            return <strong><small>{this.props.metapathInfo.metapathDescription}</small></strong>;
+        }
+        return this.getCrudeInterpretation();
+    }
+
+    setInterpretation(dataset, metapath, description) {
+        this.setState({
+            description: [dataset, metapath, description]
+        })
+    }
+
     constraintsSummary(constraintSegments) {
         const constraintExpressions = Object.keys(constraintSegments).map(entity => {
             const entityFields = constraintSegments[entity];
@@ -918,8 +946,13 @@ export class Home extends React.Component<IHomeProps> {
             this.setState({
                 showTargetEntitySaveButton: false,
                 targetEntity: this.state.typedTargetEntityValue
-            })
+            });
         }
+    }
+
+    setMetapath(metapathEntities) {
+        const cytoscapeNodes = metapathEntities.map(entity => this.cy.filter(`[label="${entity}"]`)[0]);
+        this.registerMultipleNodes(cytoscapeNodes);
     }
 
     render() {
@@ -933,7 +966,6 @@ export class Home extends React.Component<IHomeProps> {
         const { selectedEntity, selectFieldOptions }: any = this.getSelectFieldOptions();
         let datasetFolder = '';
         let datasetToUse;
-
         if (this.props.schemas) {
             if (this.state.dataset === null) {
                 datasetToUse = Object.keys(this.props.schemas)[0];
@@ -946,7 +978,8 @@ export class Home extends React.Component<IHomeProps> {
             // if (this.props.schemas) {
             datasetFolder = this.props.schemas[datasetToUse]['folder'];
         }
-
+        console.log(this.props.metapathInfo);
+        console.log(this.state.metapath);
         const rankingLabel = <span>
 			Ranking <FontAwesomeIcon style={{ color: '#17a2b8' }} icon="question-circle"
                                      title="Ranking analysis is perfomed using PageRank." />
@@ -996,61 +1029,69 @@ export class Home extends React.Component<IHomeProps> {
                         </Card>
 
                         <br />
-                        <Row>
-                            <Col xs={8}>
-                                <h4>Query metapath</h4>
-                            </Col>
-                            <Col xs={4} className={'text-right'}>
-                                {this.state.metapathStr &&
-                                <Button color={'danger'} onClick={this.clearMetapath.bind(this)} size={'sm'}><FontAwesomeIcon
-                                    icon={faTimes} /> Clear
-                                    metapath</Button>}
+                        <Row className={'mt-2'}>
+                            <Col xs={12}>
+                                <Row>
+                                    <Col xs={8}>
+                                        <h4>Query metapath</h4>
+                                    </Col>
+                                    <Col xs={4} className={'text-right'}>
+                                        {this.state.metapathStr &&
+                                        <Button color={'danger'} onClick={this.clearMetapath.bind(this)}
+                                                size={'sm'}><FontAwesomeIcon
+                                            icon={faTimes} /> Clear
+                                            metapath</Button>}
+                                    </Col>
+                                </Row>
+                                {(this.props.schemas) &&
+                                <MetapathPanel
+                                    metapath={this.state.metapath}
+                                    schema={this.props.schemas[datasetToUse]}
+                                    datasetFolder={datasetFolder}
+                                    constraints={this.state.constraints}
+                                    selectField={this.state.selectField}
+                                    selectFieldOptions={selectFieldOptions}
+                                    onNewEntity={this.simulateClickOnNode.bind(this)}
+                                    onRecommendationAccept={this.addMultiple.bind(this)}
+                                    onDelete={this.deleteLast.bind(this)}
+                                    handleSwitch={this.handleConstraintSwitch.bind(this)}
+                                    handleDropdown={this.handleConstraintOpDropdown.bind(this)}
+                                    handleLogicDropdown={this.handleConstraintLogicOpDropdown.bind(this)}
+                                    handleInput={this.handleConstraintInputChange.bind(this)}
+                                    handleAddition={this.handleConstraintAddition.bind(this)}
+                                    handleRemoval={this.handleConstraintRemoval.bind(this)}
+                                    handleSelectFieldChange={this.handleSelectFieldChange.bind(this)}
+                                    handleMultipleAddition={this.handleMultipleConditionsAddition.bind(this)}
+                                    handlePredefinedMetapathAddition={this.setMetapath.bind(this)}/>
+                                }
+                                {this.checkMetapathDefined() &&
+                                <Row className={'justify-content-center mt-4'}>
+                                    <Col md={'12'}>
+                                        <div className={'balloon bg-light-grey'}>
+                                            <div>
+                                                {this.generateNotification()}
+                                            </div>
+                                            {this.checkSymmetricMetapath() &&
+                                            <div>
+                                                <hr className={'m-0'} />
+                                                <div>
+                                                    <p className={'m-0'}>
+                                                        {this.getInterpretation()}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            }
+                                        </div>
+                                    </Col>
+                                </Row>
+                                }
                             </Col>
                         </Row>
-                        {(this.props.schemas) &&
-                        <MetapathPanel
-                            metapath={this.state.metapath}
-                            schema={this.props.schemas[datasetToUse]}
-                            datasetFolder={datasetFolder}
-                            constraints={this.state.constraints}
-                            selectField={this.state.selectField}
-                            selectFieldOptions={selectFieldOptions}
-                            onNewEntity={this.simulateClickOnNode.bind(this)}
-                            onRecommendationAccept={this.addMultiple.bind(this)}
-                            onDelete={this.deleteLast.bind(this)}
-                            handleSwitch={this.handleConstraintSwitch.bind(this)}
-                            handleDropdown={this.handleConstraintOpDropdown.bind(this)}
-                            handleLogicDropdown={this.handleConstraintLogicOpDropdown.bind(this)}
-                            handleInput={this.handleConstraintInputChange.bind(this)}
-                            handleAddition={this.handleConstraintAddition.bind(this)}
-                            handleRemoval={this.handleConstraintRemoval.bind(this)}
-                            handleSelectFieldChange={this.handleSelectFieldChange.bind(this)}
-                            handleMultipleAddition={this.handleMultipleConditionsAddition.bind(this)} />
-                        }
+
+
                         {/* <MetapathControl metapath={this.state.metapath} onEntityRemove={this.deleteLast.bind(this)} neighbors={this.state.neighbors} /> */}
                     </Col>
                 </Row>
-                {this.checkMetapathDefined() &&
-                <Row className={'justify-content-center mt-4'}>
-                    <Col md={'6'}>
-                        <div className={'balloon bg-light-grey'}>
-                            <div>
-                                {this.generateNotification()}
-                            </div>
-                            {this.checkSymmetricMetapath() &&
-                            <div>
-                                <hr className={'m-0'} />
-                                <div>
-                                    <p className={'m-0'}>
-                                        {this.getCrudeInterpretation()}
-                                    </p>
-                                </div>
-                            </div>
-                            }
-                        </div>
-                    </Col>
-                </Row>
-                }
                 <Row className={'justify-content-center'}>
                     <Col md="6">
                         <br />
@@ -1154,9 +1195,10 @@ export class Home extends React.Component<IHomeProps> {
 
                                                                 <br />
                                                                 <Label for="hashTables">
-                                                                    Hash Tables <FontAwesomeIcon style={{ color: '#17a2b8' }}
-                                                                                       icon="question-circle"
-                                                                                       title="Number of hash tables used for LSH." />
+                                                                    Hash Tables <FontAwesomeIcon
+                                                                    style={{ color: '#17a2b8' }}
+                                                                    icon="question-circle"
+                                                                    title="Number of hash tables used for LSH." />
                                                                 </Label>
                                                                 <Input id="hashTables" value={this.state.hashTables}
                                                                        bsSize="sm"
@@ -1170,9 +1212,10 @@ export class Home extends React.Component<IHomeProps> {
                                                                 }
                                                                 <br />
                                                                 <Label for="simMinValues">
-                                                                    Min. values <FontAwesomeIcon style={{ color: '#17a2b8' }}
-                                                                                       icon="question-circle"
-                                                                                       title="Min number of values for each entity." />
+                                                                    Min. values <FontAwesomeIcon
+                                                                    style={{ color: '#17a2b8' }}
+                                                                    icon="question-circle"
+                                                                    title="Min number of values for each entity." />
                                                                 </Label>
                                                                 <Input id="simMinValues" value={this.state.simMinValues}
                                                                        bsSize="sm"
@@ -1192,11 +1235,13 @@ export class Home extends React.Component<IHomeProps> {
                                                                 <h5>Community Detection</h5>
 
                                                                 <Label for="lpaIter">
-                                                                    Iterations <FontAwesomeIcon style={{ color: '#17a2b8' }}
-                                                                                       icon="question-circle"
-                                                                                       title="Number of iterations for LPA." />
+                                                                    Iterations <FontAwesomeIcon
+                                                                    style={{ color: '#17a2b8' }}
+                                                                    icon="question-circle"
+                                                                    title="Number of iterations for LPA." />
                                                                 </Label>
-                                                                <Input id="lpaIter" value={this.state.lpaIter} bsSize="sm"
+                                                                <Input id="lpaIter" value={this.state.lpaIter}
+                                                                       bsSize="sm"
                                                                        type='number'
                                                                        onChange={this.handleAdvancedOptions.bind(this)} />
                                                                 {
@@ -1205,7 +1250,7 @@ export class Home extends React.Component<IHomeProps> {
 																This field cannot be empty.
 												</span>
                                                                 }
-                                                               </Card>
+                                                            </Card>
                                                         </Col>
 
                                                     </Row>
@@ -1257,24 +1302,24 @@ export class Home extends React.Component<IHomeProps> {
                                                 <AutocompleteInput
                                                     id="targetEntityInput"
                                                     placeholder={_.isEmpty(this.state.metapath) ? 'First, select a metapath' : `Search for ${selectedEntity} entities`}
-                                                    key={`similarity-search-field${this.state.metapath.length>0?'-for-'+this.state.metapath[0].data('label'):''}`}
+                                                    key={`similarity-search-field${this.state.metapath.length > 0 ? '-for-' + this.state.metapath[0].data('label') : ''}`}
                                                     onChange={(val, callback = () => {
                                                     }) => {
-                                                        const selectedId=val.id;
-                                                        if (this.state.targetEntity && this.state.targetEntity!==selectedId) {
+                                                        const selectedId = val.id;
+                                                        if (this.state.targetEntity && this.state.targetEntity !== selectedId) {
                                                             this.setState({
                                                                 typedTargetEntityValue: selectedId,
-                                                                targetEntity:''
+                                                                targetEntity: ''
                                                             }, callback);
                                                         } else {
                                                             this.setState({
                                                                 typedTargetEntityValue: selectedId
-                                                            }, callback)
+                                                            }, callback);
                                                         }
                                                     }}
                                                     hasValidValue={validTypedValue => {
                                                         this.setState({
-                                                            showTargetEntitySaveButton:!!validTypedValue&&(validTypedValue.id!==this.state.targetEntity)
+                                                            showTargetEntitySaveButton: !!validTypedValue && (validTypedValue.id !== this.state.targetEntity)
                                                         });
                                                     }}
                                                     entity={selectedEntity}
@@ -1284,12 +1329,14 @@ export class Home extends React.Component<IHomeProps> {
                                                     size='sm'
                                                     index={0}
                                                     additionTriggerCallback={this.setTargetEntity.bind(this)}
-						                            uniqueValues={false}
+                                                    uniqueValues={false}
                                                 />
                                             </Col>
                                             {this.state.showTargetEntitySaveButton &&
                                             <Col xs={'2'} className={'pl-1'}>
-                                                <Button color={'info'} size={'sm'} onClick={this.setTargetEntity.bind(this)}><FontAwesomeIcon icon={'save'} /></Button>
+                                                <Button color={'info'} size={'sm'}
+                                                        onClick={this.setTargetEntity.bind(this)}><FontAwesomeIcon
+                                                    icon={'save'} /></Button>
                                             </Col>
                                             }
                                         </Row>
@@ -1298,11 +1345,13 @@ export class Home extends React.Component<IHomeProps> {
                                             <Row>
                                                 <Col xs={'12'} className={'px-0'}>
                                                 <span className="attribute-type text-danger">
-                                                    {this.state.typedTargetEntityValue
-                                                        ? this.state.showTargetEntitySaveButton
-                                                            ? 'The new value of the field must be saved.'
-                                                            : 'The value of the field must be a valid option from the ones provided.'
-                                                        :'This field cannot be empty when Similarity Search is enabled.'}
+                                                    {this.state.metapath.length > 0
+                                                        ? this.state.typedTargetEntityValue
+                                                            ? this.state.showTargetEntitySaveButton
+                                                                ? 'The new value of the field must be saved.'
+                                                                : 'The value of the field must be a valid option from the ones provided.'
+                                                            : 'This field cannot be empty when Similarity Search is enabled.'
+                                                        : 'Select an entity first'}
                                                 </span>
                                                 </Col>
                                             </Row>
@@ -1347,8 +1396,9 @@ export class Home extends React.Component<IHomeProps> {
                             {this.props.uuid &&
                             <Card className={'my-4 pt-0'}>
                                 <Row className={'justify-content-end'}>
-                                    <h5 className={'p-2'}><strong className={'text-muted'}>Analysis
-                                        ID: <Link to={`/jobs/${this.props.uuid}`} target="_blank">{this.props.uuid}</Link></strong></h5>
+                                    <h5 className={'p-2'}><strong className={'text-muted'}>./Analysis
+                                        ID: <Link to={`/jobs/${this.props.uuid}`}
+                                                  target="_blank">{this.props.uuid}</Link></strong></h5>
                                 </Row>
                                 {this.props.error &&
                                 <Row>
@@ -1395,7 +1445,7 @@ export class Home extends React.Component<IHomeProps> {
             </Container>
         );
     }
-};
+}
 
 const mapStateToProps = (storeState: IRootState) => ({
     loading: storeState.analysis.loading,
@@ -1408,7 +1458,9 @@ const mapStateToProps = (storeState: IRootState) => ({
     results: storeState.analysis.results,
     uuid: storeState.analysis.uuid,
     analysis: storeState.analysis.analysis,
-    schemas: storeState.datasets.schemas
+    schemas: storeState.datasets.schemas,
+    metapathInfo: storeState.metapath.metapathInfo,
+    metapathLoading: storeState.metapath.loading
 });
 
 const mapDispatchToProps = {
@@ -1418,7 +1470,8 @@ const mapDispatchToProps = {
     getStatus,
     getResults,
     getMoreResults,
-    getDatasetSchemas
+    getDatasetSchemas,
+    getMetapathDescription
 };
 
 type StateProps = ReturnType<typeof mapStateToProps>;

@@ -186,7 +186,7 @@ export class AutocompleteInput extends React.Component<IAutocompleteInputProps> 
             options={this.state.options || this.state.lastOptions || [this.state.current]}
             id={this.props.id}
             labelKey="name"
-            minLength={1}
+            minLength={3}
             onInputChange={this.onInput.bind(this)}
             onSearch={this.onSearch.bind(this)}
             onChange={this.onChange.bind(this)}
