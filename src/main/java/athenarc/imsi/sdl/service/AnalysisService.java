@@ -56,7 +56,7 @@ public class AnalysisService {
                 targetId, folder, selectField, edgesThreshold, prAlpha, prTol, simMinValues, lpaIter);
 
         // prepare ranking script arguments
-//        ProcessBuilder pb = new ProcessBuilder();
+        ProcessBuilder pb = new ProcessBuilder();
 
         PredefinedMetapath predefinedMetapath = predefinedMetapathRepository.findFirstByDatasetAndMetapathAbbreviation(folder, metapath);
         PredefinedMetapath.Analytics metapathAnalytics = predefinedMetapath.getAnalytics();
@@ -86,27 +86,23 @@ public class AnalysisService {
 
         predefinedMetapathRepository.save(predefinedMetapath);
 
-//        update.inc("stats.timesUsed.ranking", 1);
-//        update.inc("description", person.getDescription());
-//        predefinedMetapathRepository.
-
-//        pb.command("/bin/bash", Constants.WORKFLOW_DIR + "analysis/analysis.sh", config);
+        pb.command("/bin/bash", Constants.WORKFLOW_DIR + "analysis/analysis.sh", config);
 
         // redirect ouput to logfile
-//        File out = new File(outputLog);
-//        pb.redirectOutput(out);
+        File out = new File(outputLog);
+        pb.redirectOutput(out);
 
         // execute ranking script
-//        Process process = pb.start();
-//        int exitCode = process.waitFor();
+        Process process = pb.start();
+        int exitCode = process.waitFor();
 
         // write to file that the job has finished
-//        FileWriter fileWriter = new FileWriter(outputLog, true);
-//        PrintWriter printWriter = new PrintWriter(fileWriter);
-//        printWriter.print("Exit Code\t" + exitCode);
-//        printWriter.close();
+        FileWriter fileWriter = new FileWriter(outputLog, true);
+        PrintWriter printWriter = new PrintWriter(fileWriter);
+        printWriter.print("Exit Code\t" + exitCode);
+        printWriter.close();
 
-//        log.debug("Analysis task for id: " + id + " exited with code: " + exitCode);
+        log.debug("Analysis task for id: " + id + " exited with code: " + exitCode);
     }
 
     private static void getMeta(Document meta, int totalRecords, int totalPages, int page, String[] headers) {
