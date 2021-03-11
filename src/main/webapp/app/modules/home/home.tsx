@@ -1396,7 +1396,7 @@ export class Home extends React.Component<IHomeProps> {
                             {this.props.uuid &&
                             <Card className={'my-4 pt-0'}>
                                 <Row className={'justify-content-end'}>
-                                    <h5 className={'p-2'}><strong className={'text-muted'}>./Analysis
+                                    <h5 className={'p-2'}><strong className={'text-muted'}>Analysis
                                         ID: <Link to={`/jobs/${this.props.uuid}`}
                                                   target="_blank">{this.props.uuid}</Link></strong></h5>
                                 </Row>
