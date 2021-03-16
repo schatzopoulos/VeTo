@@ -7,6 +7,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import org.bson.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,6 +29,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import athenarc.imsi.sdl.service.DatasetsService;
 import athenarc.imsi.sdl.service.util.FileUtil;
+import springfox.documentation.annotations.ApiIgnore;
 
 /**
  * RankingResource controller
@@ -41,6 +46,7 @@ public class DatasetsResource {
     /**
      * POST submit
      */
+    @ApiIgnore
     @PostMapping("/upload")
     public Document upload(@RequestParam("file") MultipartFile file) {
         String filename = file.getOriginalFilename();
@@ -52,28 +58,28 @@ public class DatasetsResource {
         try {
 
             String zipFile = datasetsService.upload(filename, file.getBytes());
- 
+
             List<String> initialDatasets = FileUtil.getLocalDatasets();
 
             if (FileUtil.unzip(zipFile) != 0) {
                 throw new RuntimeException("Error unzipping " + zipFile);
             }
-            
+
             List<String> currentDatasets = FileUtil.getLocalDatasets();
 
             // find the folder that was just created - though unzip
             List<String> diff = new ArrayList(currentDatasets);
             diff.removeAll(initialDatasets);
-            String newDataset = diff.get(0);    
+            String newDataset = diff.get(0);
 
             // copy that folder to hdfs
             if (FileUtil.copyToHdfs(newDataset) != 0) {
                 throw new RuntimeException("Error copying to HDFS " + zipFile);
-            }          
+            }
 
             if (!FileUtil.remove(zipFile)) {
-                    throw new RuntimeException("Error removing zip  " + zipFile);
-                }
+                throw new RuntimeException("Error removing zip  " + zipFile);
+            }
 
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException("Error uploading " + filename);
@@ -85,7 +91,13 @@ public class DatasetsResource {
     /**
      * GET status
      */
-    @GetMapping("/schemas")
+    @ApiOperation(value = "Used to retrieve the names and schemas of the available datasets")
+    @ApiResponses(value =
+        {
+            @ApiResponse(code = 200, message = "Responds with a dictionary, mapping each available dataset to its elements")
+        }
+    )
+    @GetMapping(value = "/schemas", produces = "application/json;charset=UTF-8")
     public Document getSchemas() {
         Document response;
         try {
@@ -100,12 +112,18 @@ public class DatasetsResource {
     /**
      * GET status
      */
+    @ApiOperation(value = "Used for searching a dataset and retrieving field values from a specific dataset entity, that contain a given literal")
+    @ApiResponses(value =
+        {
+            @ApiResponse(code = 200, message = "Responds with a list of values")
+        }
+    )
     @GetMapping("/autocomplete")
-    public List<Document> autocomplete(@RequestParam(value = "folder") String folder,
-                                       @RequestParam(value = "entity") String entity,
-                                       @RequestParam(value = "field") String field,
-                                       @RequestParam(value = "term") String term,
-                                       @RequestParam(value = "uniqueValues") Boolean uniqueValues) {
+    public List<Document> autocomplete(@ApiParam(value = "The folder/dataset of the target entity", required = true) @RequestParam String folder,
+                                       @ApiParam(value = "The target entity", required = true) @RequestParam String entity,
+                                       @ApiParam(value = "The field of interest of the target entity", required = true) @RequestParam String field,
+                                       @ApiParam(value = "The literal that will be matched to the entity values", required = true) @RequestParam String term,
+                                       @ApiParam(value = "Whether the returned values are distinct or not") @RequestParam(required = false) Boolean uniqueValues) {
 
         try {
             return datasetsService.autocomplete(folder, entity.substring(0, 1), field, term.toLowerCase(), uniqueValues);
@@ -117,6 +135,7 @@ public class DatasetsResource {
     /**
      * GET validate multiple
      */
+    @ApiIgnore
     @GetMapping("/validate")
     public Document autocomplete(@RequestParam(value = "folder") String folder,
                                  @RequestParam(value = "entity") String entity,
@@ -134,7 +153,7 @@ public class DatasetsResource {
         try {
             Document doc = new Document();
             String[] nonExistent = datasetsService.findFiveNonExistent(folder, entity.substring(0, 1), field, normalizedTerms);
-            if (nonExistent!=null) {
+            if (nonExistent != null) {
                 doc.append("result", false);
                 doc.append("message", nonExistent);
             } else {
@@ -149,6 +168,7 @@ public class DatasetsResource {
     /**
      * GET download result
      */
+    @ApiIgnore
     @GetMapping(value = "/download", produces = "text/csv; charset=utf-8")
     public ResponseEntity<Resource> download(String analysisType, String id) {
 
