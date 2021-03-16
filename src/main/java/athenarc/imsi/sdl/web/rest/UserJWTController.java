@@ -19,10 +19,12 @@ import org.springframework.web.bind.annotation.RestController;
 import athenarc.imsi.sdl.security.jwt.JWTFilter;
 import athenarc.imsi.sdl.security.jwt.TokenProvider;
 import athenarc.imsi.sdl.web.rest.vm.LoginVM;
+import springfox.documentation.annotations.ApiIgnore;
 
 /**
  * Controller to authenticate users.
  */
+@ApiIgnore
 @RestController
 @RequestMapping("/api")
 public class UserJWTController {
