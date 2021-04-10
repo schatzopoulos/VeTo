@@ -45,7 +45,7 @@ public class AnalysisResource {
             @ApiResponse(code = 400, message = "Bad request")
         }
     )
-    @PostMapping(value = "/submit", produces = "applcation/json;charset=UTF-8")
+    @PostMapping(value = "/submit", produces = "application/json;charset=UTF-8")
     public Document submit(@Valid @RequestBody QueryConfigVM config) {
         String id = UUID.randomUUID().toString();
         log.debug("Analysis task submitted with id: " + id);
