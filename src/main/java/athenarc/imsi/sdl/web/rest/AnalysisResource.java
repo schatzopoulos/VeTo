@@ -9,15 +9,14 @@ import java.util.UUID;
 
 import javax.validation.Valid;
 
+import io.swagger.annotations.*;
 import org.bson.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 import athenarc.imsi.sdl.service.AnalysisService;
 import athenarc.imsi.sdl.service.util.FileUtil;
@@ -39,7 +38,14 @@ public class AnalysisResource {
     /**
      * POST submit
      */
-    @PostMapping("/submit")
+    @ApiOperation(value = "Used to submit a new analysis")
+    @ApiResponses(value =
+        {
+            @ApiResponse(code = 200, message = "The analysis was successfully submitted"),
+            @ApiResponse(code = 400, message = "Bad request")
+        }
+    )
+    @PostMapping(value = "/submit", produces = "application/json;charset=UTF-8")
     public Document submit(@Valid @RequestBody QueryConfigVM config) {
         String id = UUID.randomUUID().toString();
         log.debug("Analysis task submitted with id: " + id);
@@ -80,8 +86,16 @@ public class AnalysisResource {
         return new Document("id", id).append("analysis", config.getAnalysis());
     }
 
-    @GetMapping("/status")
-    public Document status(String id) {
+    @ApiOperation(value = "Retrieves the status of a submitted analysis")
+    @ApiResponses(value =
+        {
+            @ApiResponse(code = 200, message = "The analysis was found and its status was successfully retrieved", examples = @Example(@ExampleProperty(value = "da", mediaType = "dadwad"))),
+            @ApiResponse(code = 400, message = "Bad request")
+        }
+    )
+    @GetMapping(value = "/status", produces = "application/json;charset=UTF-8")
+    public Document status(
+        @ApiParam(value = "The ID that was assigned on the analysis in question, during submission", required = true) @RequestParam  String id) {
         log.debug("analysis/status : {}", id);
 
         Document response = new Document();
@@ -164,8 +178,18 @@ public class AnalysisResource {
     /**
      * GET status
      */
-    @GetMapping("/get")
-    public Document get(String id, String analysis, Integer page) {
+    @ApiOperation(value = "Retrieves the results for a given analysis")
+    @ApiResponses(value =
+        {
+            @ApiResponse(code = 200, message = "The analysis was found and the results were successfully retrieved"),
+            @ApiResponse(code = 400, message = "Bad request")
+        }
+    )
+    @GetMapping(value = "/get", produces = "application/json;charset=UTF-8")
+    public Document get(
+        @ApiParam(value = "The ID that was assigned on the analysis in question, during submission", required = true) @RequestParam String id,
+        @ApiParam(value = "The type of the analysis", required = true) @RequestParam String analysis,
+        @ApiParam(value = "A value N greater or equal to 1 that is used to retrieve the [(N-1)*50,N*50) results") @RequestParam(required = false) Integer page) {
         log.debug("analysis/get : {}", id, page);
 
         String logfile = FileUtil.getLogfile(id);
@@ -215,8 +239,8 @@ public class AnalysisResource {
 
                 Document hin = null;
                 if (analysis.equals("Ranking")) {
-                    String fileName="RANKING_HIN_SCHEMA.json";
-                    String targetHinJsonFilePath = Paths.get((String) configuration.get("local_out_dir"),fileName).toString();
+                    String fileName = "RANKING_HIN_SCHEMA.json";
+                    String targetHinJsonFilePath = Paths.get((String) configuration.get("local_out_dir"), fileName).toString();
                     // check if hin json exists
                     File targetHinJsonFile = new File(targetHinJsonFilePath);
                     if (targetHinJsonFile.exists()) {
@@ -247,8 +271,16 @@ public class AnalysisResource {
     /**
      * GET analysis exists
      */
-    @GetMapping("/exists")
-    public Document exists(String id) {
+    @ApiOperation(value = "Checks whether an analysis with the given ID exists")
+    @ApiResponses(value =
+        {
+            @ApiResponse(code = 200, message = "The analysis was found and the corresponding analysis types are returned"),
+            @ApiResponse(code = 400, message = "Bad request")
+        }
+    )
+    @GetMapping(value = "/exists", produces = "application/json;charset=UTF-8")
+    public ResponseEntity<Document> exists(
+        @ApiParam(value = "The ID that was assigned to the analysis in question, during submission", required = true) @RequestParam String id) {
         log.debug("analysis/exists : {}", id);
 
         Boolean exists = FileUtil.dirExists(id);
@@ -257,7 +289,11 @@ public class AnalysisResource {
             String conf = FileUtil.readJsonFile(FileUtil.getConfFile(id));
             Document config = Document.parse(conf);
             ArrayList<String> analyses = (ArrayList<String>) config.get("analyses");
-            return new Document().append("id", id).append("exists", exists).append("analysis", analyses);
+            Document content = new Document().append("id", id).append("exists", exists).append("analysis", analyses);
+
+            return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType("application/json;charset=UTF-8"))
+                .body(content);
 
         } catch (IOException e) {
             throw new RuntimeException("Error reading status from logfile");

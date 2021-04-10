@@ -3,7 +3,7 @@ import { getBasePath, Storage } from 'react-jhipster';
 
 import { SERVER_API_URL } from 'app/config/constants';
 
-const TIMEOUT = 1 * 60 * 1000;
+const TIMEOUT = 10 * 60 * 1000;
 axios.defaults.timeout = TIMEOUT;
 axios.defaults.baseURL = SERVER_API_URL;
 
