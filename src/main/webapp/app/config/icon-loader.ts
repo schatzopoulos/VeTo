@@ -35,6 +35,8 @@ import { faUpload } from '@fortawesome/free-solid-svg-icons/faUpload';
 import { faDownload } from '@fortawesome/free-solid-svg-icons/faDownload';
 import { faQuestionCircle } from '@fortawesome/free-solid-svg-icons/faQuestionCircle';
 import { faCogs } from '@fortawesome/free-solid-svg-icons/faCogs';
+import { faCheck } from '@fortawesome/free-solid-svg-icons/faCheck';
+import { faTimes } from '@fortawesome/free-solid-svg-icons/faTimes';
 
 import { library } from '@fortawesome/fontawesome-svg-core';
 
@@ -76,6 +78,8 @@ export const loadIcons = () => {
     faUpload,
     faDownload,
     faQuestionCircle,
-    faCogs
+    faCogs,
+    faCheck,
+    faTimes
   );
 };

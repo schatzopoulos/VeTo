@@ -32,7 +32,7 @@ public class DatasetsService {
     }
 
     public Document getSchemas() throws FileNotFoundException, IOException {
-        Document response = new Document(); 
+        Document response = new Document();
 
         String [] datasetDirs = FileUtil.findSubdirectories(Constants.DATA_DIR);
 
@@ -47,39 +47,66 @@ public class DatasetsService {
         return response;
     }
 
-    public List<Document> autocomplete(String folder, String entity, String field, String term) throws IOException {
+    public List<Document> autocomplete(String term) throws IOException {
         List<Document> docs = new ArrayList<>();
+
         BufferedReader reader;
-        String filename = Constants.DATA_DIR + folder + "/nodes/" + entity + ".csv";
+        String filename = Constants.DATA_DIR + "A.csv";
         reader = new BufferedReader(new FileReader(filename));
-        
+
         // read header line and find column of specified field
         String line = reader.readLine();
 
-        String [] columnNames = line.split("\t");
-        int i;
-        for (i=0; i<columnNames.length; i++) {
-            if (columnNames[i].startsWith(field))
-                break;
-        }
+        int i = 1;
 
         // loop in lines until find 5 results to return
         while ( ( line = reader.readLine() ) != null) {
             String [] attrs = line.split("\t");
 
+            if (i >= attrs.length) continue;
+
             if (attrs[i].toLowerCase().contains(term)) {
+
                 Document doc = new Document();
                 doc.append("id", Integer.parseInt(attrs[0]));
                 doc.append("name", attrs[i]);
                 docs.add(doc);
+
+                // System.out.println(values.size());
                 if (docs.size() == 5) {
-                    break;
+                   break;
                 }
             }
+        }
+        reader.close();
 
+        return docs;
+    }
+
+    public Document get(String term) throws IOException {
+        Document doc = new Document();
+
+        BufferedReader reader;
+        String filename = Constants.DATA_DIR + "A.csv";
+        reader = new BufferedReader(new FileReader(filename));
+        
+        // read header line and find column of specified field
+        String line = reader.readLine();
+
+        int i = 1;
+
+        // loop in lines until find 5 results to return
+        while ( ( line = reader.readLine() ) != null) {
+            String [] attrs = line.split("\t");
+
+            if (attrs[i].toLowerCase().equals(term)) {
+                doc.append("id", Integer.parseInt(attrs[0]));
+                doc.append("name", attrs[i]);
+                return doc;
+            }
         }
         reader.close();
 		
-        return docs;
+        return doc;
     }
 }

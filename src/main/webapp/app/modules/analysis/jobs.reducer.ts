@@ -2,6 +2,7 @@ import axios from 'axios';
 
 import { REQUEST, SUCCESS, FAILURE } from 'app/shared/reducers/action-type.util';
 import _ from 'lodash';
+
 const analysisAPIUrl = 'api/analysis';
 const simjoinAPIUrl = 'api/simjoin';
 const simsearchAPIUrl = 'api/simsearch';
@@ -18,6 +19,7 @@ const initialState = {
   progress: 0 as number,
   progressMsg: null as string,
   description: null as string,
+  analysesParameters: null as any,
   error: null as string,
   uuid: null as string,
   analysis: null as string,
@@ -70,7 +72,7 @@ export default (state: JobState = initialState, action): JobState => {
       if (!action.payload.data.exists) {
         return {
           ...state,
-          error: 'We were unable to locate the analysis with the specified job id.',
+          error: 'We were unable to locate the analysis with the specified analysis id.',
           loading: false
         };
       } else {
@@ -90,6 +92,7 @@ export default (state: JobState = initialState, action): JobState => {
         status: data.completed,
         progress: data.progress,
         progressMsg: `${data.stage}: ${data.step}`,
+        analysesParameters: data.analysesParameters,
         description: data.description,
         error: null
       };
@@ -97,9 +100,13 @@ export default (state: JobState = initialState, action): JobState => {
     case SUCCESS(ACTION_TYPES.GET_RESULTS): {
       const data = action.payload.data;
       const results = { ...state.results };
+      const indexedDocs = _.map(data.docs, (doc, index) => {
+        return { ...doc, resultIndex: index };
+      });
       results[data.analysis] = {
-        docs: data.docs,
-        meta: data._meta
+        docs: indexedDocs,
+        meta: data._meta,
+        hin: data.hin || null
       };
 
       return {
@@ -110,10 +117,13 @@ export default (state: JobState = initialState, action): JobState => {
     }
     case SUCCESS(ACTION_TYPES.GET_MORE_RESULTS): {
       const data = action.payload.data;
-
       const results = { ...state.results };
+      const existingDocs = results[data.analysis]['docs'];
+      const indexedDocs = _.map(data.docs, (doc, index) => {
+        return { ...doc, resultIndex: existingDocs.length + index };
+      });
       results[data.analysis] = {
-        docs: [...results[data.analysis]['docs'], ...data.docs],
+        docs: [...existingDocs, ...indexedDocs],
         meta: data._meta
       };
 

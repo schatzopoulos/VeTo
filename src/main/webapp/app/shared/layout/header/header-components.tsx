@@ -8,7 +8,8 @@ import appConfig from 'app/config/constants';
 
 export const BrandIcon = props => (
   <div {...props} className="brand-icon">
-    <img src="content/images/scinem_logo_wh.png" alt="Scinem" />
+    {/* <img src="content/images/scinem_logo_wh.png" alt="Scinem" /> */}
+    VeTo - <small>Expert Set Expansion</small>
   </div>
 );
 
@@ -33,7 +34,7 @@ export const Upload = props => (
   <NavItem>
     <NavLink tag={Link} to="/upload" className="d-flex align-items-center">
       <FontAwesomeIcon icon="upload" />
-      <span>Upload</span>
+      <span>Upload dataset</span>
     </NavLink>
   </NavItem>
 );
@@ -42,7 +43,7 @@ export const Jobs = props => (
   <NavItem>
     <NavLink tag={Link} to="/jobs" className="d-flex align-items-center">
       <FontAwesomeIcon icon="search" />
-      <span>Re-attach to job</span>
+      <span>Re-attach to analysis</span>
     </NavLink>
   </NavItem>
 );

@@ -5,11 +5,14 @@ import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.RandomAccessFile;
 import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import com.opencsv.CSVParserBuilder;
 import com.opencsv.CSVReader;
@@ -18,33 +21,69 @@ import com.opencsv.CSVReaderBuilder;
 import org.bson.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import athenarc.imsi.sdl.config.Constants;
+import athenarc.imsi.sdl.domain.PredefinedMetapath;
+import athenarc.imsi.sdl.repository.PredefinedMetapathRepository;
 import athenarc.imsi.sdl.service.util.FileUtil;
 
 @Service
 public class AnalysisService {
 
+    @Autowired
+    private PredefinedMetapathRepository predefinedMetapathRepository;
+
     private final Logger log = LoggerFactory.getLogger(AnalysisService.class);
 
     @Async
     public void submit(String id, ArrayList<String> analysis, String metapath, String joinpath, Document constraints,
-            int joinK, int searchK, int t, int joinW, int searchW, int minValues, int targetId, String folder,
-            String selectField, int edgesThreshold, double prAlpha, double prTol, int joinMinValues,
-            int searchMinValues) throws java.io.IOException, InterruptedException {
+                       String constraintsExpression, String primaryEntity, int searchK, int t, int targetId, String folder,
+                       String selectField, int edgesThreshold, double prAlpha, double prTol, int simMinValues,
+                       int lpaIter) throws java.io.IOException, InterruptedException {
 
         // create folder to store results
         String outputDir = FileUtil.createDir(id);
+        String hdfsOutputDir = "";
         String outputLog = FileUtil.getLogfile(id);
 
-        String config = FileUtil.writeConfig(analysis, outputDir, metapath, joinpath, constraints, joinK, searchK, t,
-                joinW, searchW, minValues, targetId, folder, selectField, edgesThreshold, prAlpha, prTol, joinMinValues,
-                searchMinValues);
+        String config = FileUtil.writeConfig(analysis, outputDir, hdfsOutputDir, metapath, joinpath, constraints, constraintsExpression, primaryEntity, searchK, t,
+                targetId, folder, selectField, edgesThreshold, prAlpha, prTol, simMinValues, lpaIter);
 
         // prepare ranking script arguments
         ProcessBuilder pb = new ProcessBuilder();
+
+        PredefinedMetapath predefinedMetapath = predefinedMetapathRepository.findFirstByDatasetAndMetapathAbbreviation(folder, metapath);
+        if (predefinedMetapath!=null) {
+            PredefinedMetapath.Analytics metapathAnalytics = predefinedMetapath.getAnalytics();
+            PredefinedMetapath.Analytics.TimesUsed frequencies = metapathAnalytics.getTimesUsed();
+            for (String analysisType : analysis) {
+                String analysisTypeNormalized = analysisType.toLowerCase();
+                log.debug("analysis: " + analysisTypeNormalized);
+                switch (analysisTypeNormalized) {
+                    case "ranking":
+                        frequencies.setRanking(frequencies.getRanking() + 1);
+                        break;
+                    case "community detection":
+                        frequencies.setCommunityDetection(frequencies.getCommunityDetection() + 1);
+                        break;
+                    case "similarity join":
+                        frequencies.setSimJoin(frequencies.getSimJoin() + 1);
+                        break;
+                    case "similarity search":
+                        frequencies.setSimSearch(frequencies.getSimSearch() + 1);
+                        break;
+                    default:
+                        break;
+                }
+            }
+            metapathAnalytics.setTimesUsed(frequencies);
+            predefinedMetapath.setAnalytics(metapathAnalytics);
+
+            predefinedMetapathRepository.save(predefinedMetapath);
+        }
 
         pb.command("/bin/bash", Constants.WORKFLOW_DIR + "analysis/analysis.sh", config);
 
@@ -78,6 +117,56 @@ public class AnalysisService {
         meta.append("headers", headers);
     }
 
+    public List<Document> getCommunityResults(String analysisFile, Integer page, Document meta) throws IOException {
+        if (page == null) {
+            page = 1;
+        }
+
+        List<Document> docs = new ArrayList<>();
+        List<Long> communityPositions = FileUtil.getCommunityPositions(analysisFile);
+        int totalRecords = communityPositions.size();
+        int totalPages = (int) Math.ceil(((double) totalRecords) / ((double) Constants.PAGE_SIZE));
+
+        String[] headers = FileUtil.getHeaders(analysisFile);
+        int firstCommunityIndex = (page - 1) * Constants.PAGE_SIZE;
+
+        if (firstCommunityIndex < communityPositions.size()) {
+            int communityColumnIndex;
+            for (communityColumnIndex = 0; communityColumnIndex < headers.length; communityColumnIndex++) {
+                if (headers[communityColumnIndex].equals("Community")) break;
+            }
+
+            boolean reachEnd = communityPositions.size() <= firstCommunityIndex + Constants.PAGE_SIZE;
+            log.debug(reachEnd? "Will reach end":"Will dump 50 entries");
+            long communityPositionLimit = reachEnd ? -1 : communityPositions.get(firstCommunityIndex + Constants.PAGE_SIZE);
+
+            RandomAccessFile communityResultsFile = new RandomAccessFile(analysisFile, "r");
+            Set<String> communityIds = new HashSet<>();
+            long currentPosition;
+            String line = null;
+            communityResultsFile.seek(communityPositions.get(firstCommunityIndex));
+            do {
+                currentPosition = communityResultsFile.getFilePointer();
+                if ((currentPosition < communityPositionLimit) || reachEnd) {
+                    line = communityResultsFile.readLine();
+                    if (line != null) {
+                        String[] attributes = line.split("\t");
+                        Document doc = new Document();
+                        for (int i = 0; i < attributes.length; i++) {
+                            doc.append(headers[i], attributes[i]);
+                        }
+                        docs.add(doc);
+                    }
+                }
+            } while (((currentPosition < communityPositionLimit) || reachEnd) && (line != null));
+
+        }
+
+        AnalysisService.getMeta(meta, totalRecords, totalPages, page, headers);
+        meta.append("community_counts", totalRecords);
+        return docs;
+    }
+
     public List<Document> getResults(String analysisFile, Integer page, Document meta) throws IOException {
         if (page == null)
             page = 1;
@@ -91,8 +180,8 @@ public class AnalysisService {
         int count = 0;
         Reader reader = Files.newBufferedReader(Paths.get(analysisFile));
         CSVReader csvReader = new CSVReaderBuilder(reader)
-                .withCSVParser(new CSVParserBuilder().withSeparator('\t').build()).withSkipLines(firstRecordNumber)
-                .build();
+            .withCSVParser(new CSVParserBuilder().withSeparator('\t').build()).withSkipLines(firstRecordNumber)
+            .build();
 
         String[] attributes;
         while (count < Constants.PAGE_SIZE && ((attributes = csvReader.readNext()) != null)) {
@@ -125,14 +214,14 @@ public class AnalysisService {
     }
 
     public Document getCommunityCounts(String detailsFile, List<Document> docs)
-            throws FileNotFoundException, IOException {
+        throws FileNotFoundException, IOException {
         Document communityCounts = new Document();
         Document counts = Document.parse(FileUtil.readJsonFile(detailsFile));
 
         // get number of entities of each community in the results
         for (Document doc : docs) {
             System.out.println(doc);
-            String entity = (String)doc.get("Community");
+            String entity = (String) doc.get("Community");
 
             int count = (int) counts.get(entity);
             communityCounts.append(entity, count);
