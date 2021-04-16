@@ -8,11 +8,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
 import org.bson.Document;
 import org.slf4j.Logger;
@@ -51,23 +47,17 @@ public class DatasetsService {
         return response;
     }
 
-    public List<Document> autocomplete(String folder, String entity, String field, String term, Boolean uniqueValues) throws IOException {
+    public List<Document> autocomplete(String term) throws IOException {
         List<Document> docs = new ArrayList<>();
-        Set<String> values = new HashSet<>();
 
         BufferedReader reader;
-        String filename = Constants.DATA_DIR + folder + "/nodes/" + entity + ".csv";
+        String filename = Constants.DATA_DIR + "A.csv";
         reader = new BufferedReader(new FileReader(filename));
 
         // read header line and find column of specified field
         String line = reader.readLine();
 
-        String [] columnNames = line.split("\t");
-        int i;
-        for (i=0; i<columnNames.length; i++) {
-            if (columnNames[i].startsWith(field))
-                break;
-        }
+        int i = 1;
 
         // loop in lines until find 5 results to return
         while ( ( line = reader.readLine() ) != null) {
@@ -76,60 +66,47 @@ public class DatasetsService {
             if (i >= attrs.length) continue;
 
             if (attrs[i].toLowerCase().contains(term)) {
-                // skip if value already exists and we want only unique values
-                if (uniqueValues && values.contains(attrs[i]))
-                    continue;
 
                 Document doc = new Document();
                 doc.append("id", Integer.parseInt(attrs[0]));
                 doc.append("name", attrs[i]);
-                values.add(attrs[i]);
-
                 docs.add(doc);
-                // System.out.println(values.size());
-                // if (docs.size() == 5) {
-                //    break;
-                // }
-            }
 
+                // System.out.println(values.size());
+                if (docs.size() == 5) {
+                   break;
+                }
+            }
         }
         reader.close();
 
         return docs;
     }
 
-    public String[] findFiveNonExistent(String folder, String entity, String field, String[] terms) throws IOException {
-        List<Document> docs = new ArrayList<>();
-        BufferedReader reader;
-        String filename = Constants.DATA_DIR + folder + "/nodes/" + entity + ".csv";
-        Set<String> termSet = new HashSet<>(Arrays.asList(terms));
-        reader = new BufferedReader(new FileReader(filename));
+    public Document get(String term) throws IOException {
+        Document doc = new Document();
 
+        BufferedReader reader;
+        String filename = Constants.DATA_DIR + "A.csv";
+        reader = new BufferedReader(new FileReader(filename));
+        
         // read header line and find column of specified field
         String line = reader.readLine();
 
-        String [] columnNames = line.split("\t");
-        int i;
-        for (i=0; i<columnNames.length; i++) {
-            if (columnNames[i].startsWith(field))
-                break;
-        }
+        int i = 1;
 
-        while( ( ( line = reader.readLine() ) != null) && (termSet.size()>0)) {
+        // loop in lines until find 5 results to return
+        while ( ( line = reader.readLine() ) != null) {
             String [] attrs = line.split("\t");
-            termSet.remove(attrs[i].toLowerCase());
-        }
 
-        if (termSet.size()>0) {
-            String[] result = new String[Math.min(termSet.size(),5)];
-            Iterator<String> iter = termSet.iterator();
-            i=0;
-            while(iter.hasNext() && i<5) {
-                result[i++]=(String)iter.next();
+            if (attrs[i].toLowerCase().equals(term)) {
+                doc.append("id", Integer.parseInt(attrs[0]));
+                doc.append("name", attrs[i]);
+                return doc;
             }
-            return result;
-        } else {
-            return null;
         }
+        reader.close();
+		
+        return doc;
     }
 }

@@ -7,10 +7,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
 import org.bson.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,6 +25,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import athenarc.imsi.sdl.service.DatasetsService;
 import athenarc.imsi.sdl.service.util.FileUtil;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import springfox.documentation.annotations.ApiIgnore;
 
 /**
@@ -119,56 +118,33 @@ public class DatasetsResource {
         }
     )
     @GetMapping("/autocomplete")
-    public List<Document> autocomplete(@ApiParam(value = "The folder/dataset of the target entity", required = true) @RequestParam String folder,
-                                       @ApiParam(value = "The target entity", required = true) @RequestParam String entity,
-                                       @ApiParam(value = "The field of interest of the target entity", required = true) @RequestParam String field,
-                                       @ApiParam(value = "The literal that will be matched to the entity values", required = true) @RequestParam String term,
-                                       @ApiParam(value = "Whether the returned values are distinct or not") @RequestParam(required = false) Boolean uniqueValues) {
-
-        try {
-            return datasetsService.autocomplete(folder, entity.substring(0, 1), field, term.toLowerCase(), uniqueValues);
-        } catch (IOException e) {
-            throw new RuntimeException("Error reading schema for datasets");
-        }
-    }
-
-    /**
-     * GET validate multiple
-     */
-    @ApiIgnore
-    @GetMapping("/validate")
-    public Document autocomplete(@RequestParam(value = "folder") String folder,
-                                 @RequestParam(value = "entity") String entity,
-                                 @RequestParam(value = "field") String field,
-                                 @RequestParam(value = "terms") String[] terms) {
-        // normalize terms - make sure that all terms are in lower case so that their existence can be safely deducted
-        String[] normalizedTerms = new String[terms.length];
-        for (int i = 0; i < terms.length; i++) {
-            normalizedTerms[i] = terms[i].toLowerCase();
-        }
+    public List<Document> autocomplete(@RequestParam(value = "term") String term) {
 
         // give terms to service so that it can check whether the all of the terms exist
         // in case of an error during the service execution throw a runtime error
         // in case of a successful service execution, return the service result
         try {
-            Document doc = new Document();
-            String[] nonExistent = datasetsService.findFiveNonExistent(folder, entity.substring(0, 1), field, normalizedTerms);
-            if (nonExistent != null) {
-                doc.append("result", false);
-                doc.append("message", nonExistent);
-            } else {
-                doc.append("result", true);
-            }
-            return doc;
+            return datasetsService.autocomplete(term.toLowerCase());
         } catch (IOException e) {
             throw new RuntimeException("Error reading schema for datasets");
         }
     }
 
     /**
-     * GET download result
-     */
-    @ApiIgnore
+    * GET status
+    */
+    @GetMapping("/get")
+    public Document get(@RequestParam(value = "term") String term) {
+
+        try {
+            return datasetsService.get(term.toLowerCase());
+        } catch (IOException e) {
+            throw new RuntimeException("Error reading schema for datasets");
+        }
+    }
+    /**
+    * GET download result
+    */
     @GetMapping(value = "/download", produces = "text/csv; charset=utf-8")
     public ResponseEntity<Resource> download(String analysisType, String id) {
 

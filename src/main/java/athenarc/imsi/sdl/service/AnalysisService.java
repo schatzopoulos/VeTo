@@ -14,8 +14,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import athenarc.imsi.sdl.domain.PredefinedMetapath;
-import athenarc.imsi.sdl.repository.PredefinedMetapathRepository;
 import com.opencsv.CSVParserBuilder;
 import com.opencsv.CSVReader;
 import com.opencsv.CSVReaderBuilder;
@@ -24,13 +22,12 @@ import org.bson.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import athenarc.imsi.sdl.config.Constants;
+import athenarc.imsi.sdl.domain.PredefinedMetapath;
+import athenarc.imsi.sdl.repository.PredefinedMetapathRepository;
 import athenarc.imsi.sdl.service.util.FileUtil;
 
 @Service
@@ -49,7 +46,7 @@ public class AnalysisService {
 
         // create folder to store results
         String outputDir = FileUtil.createDir(id);
-				String hdfsOutputDir = Constants.HDFS_BASE_PATH + "/" + id;
+        String hdfsOutputDir = "";
         String outputLog = FileUtil.getLogfile(id);
 
         String config = FileUtil.writeConfig(analysis, outputDir, hdfsOutputDir, metapath, joinpath, constraints, constraintsExpression, primaryEntity, searchK, t,

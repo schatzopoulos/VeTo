@@ -8,7 +8,8 @@ import appConfig from 'app/config/constants';
 
 export const BrandIcon = props => (
   <div {...props} className="brand-icon">
-    <img src="content/images/scinem_logo_wh.png" alt="Scinem" />
+    {/* <img src="content/images/scinem_logo_wh.png" alt="Scinem" /> */}
+    VeTo - <small>Expert Set Expansion</small>
   </div>
 );
 
