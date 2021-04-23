@@ -88,43 +88,28 @@ export default (state: JobState = initialState, action): JobState => {
       const data = action.payload.data;
       return {
         ...state,
-        loading: Object.values(data.completed).some(v => v === false), // when all analysis tasks have been completed
-        status: data.completed,
+        loading: data.progress !== 100,
         progress: data.progress,
-        progressMsg: `${data.stage}: ${data.step}`,
-        analysesParameters: data.analysesParameters,
-        description: data.description,
+        progressMsg: data.description,
         error: null
       };
     }
     case SUCCESS(ACTION_TYPES.GET_RESULTS): {
-      const data = action.payload.data;
-      const results = { ...state.results };
-      const indexedDocs = _.map(data.docs, (doc, index) => {
-        return { ...doc, resultIndex: index };
-      });
-      results[data.analysis] = {
-        docs: indexedDocs,
-        meta: data._meta,
-        hin: data.hin || null
-      };
-
       return {
         ...state,
         error: null,
-        results
+        results: action.payload.data
       };
     }
     case SUCCESS(ACTION_TYPES.GET_MORE_RESULTS): {
       const data = action.payload.data;
-      const results = { ...state.results };
-      const existingDocs = results[data.analysis]['docs'];
-      const indexedDocs = _.map(data.docs, (doc, index) => {
-        return { ...doc, resultIndex: existingDocs.length + index };
-      });
-      results[data.analysis] = {
-        docs: [...existingDocs, ...indexedDocs],
-        meta: data._meta
+
+      let results = { ...state.results };
+      const existingDocs = results['docs'];
+
+      results = {
+        docs: [...existingDocs, ...data.docs],
+        _meta: data._meta
       };
 
       return {
@@ -161,25 +146,23 @@ export const getStatus = id => {
   };
 };
 
-export const getResults = (analysis, id) => {
+export const getResults = id => {
   return {
     type: ACTION_TYPES.GET_RESULTS,
     payload: axios.get(`${analysisAPIUrl}/get`, {
       params: {
-        id,
-        analysis
+        id
       }
     })
   };
 };
 
-export const getMoreResults = (analysis, id, page) => {
+export const getMoreResults = (id, page) => {
   return {
     type: ACTION_TYPES.GET_MORE_RESULTS,
     payload: axios.get(`${analysisAPIUrl}/get`, {
       params: {
         id,
-        analysis,
         page
       }
     })

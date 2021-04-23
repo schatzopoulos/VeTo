@@ -52,14 +52,6 @@ export default (state: DatasetsState = initialState, action): DatasetsState => {
         error: null
       };
     }
-    case SUCCESS(ACTION_TYPES.GET_SCHEMAS): {
-      const schemas = action.payload.data;
-
-      return {
-        ...state,
-        schemas
-      };
-    }
 
     default:
       return state;

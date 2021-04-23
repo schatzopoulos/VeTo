@@ -44,7 +44,7 @@ const Header = (props: IHeaderProps) => {
           <Nav id="header-tabs" className="ml-auto" navbar>
             <Home />
             <Jobs />
-            <Upload />
+            {/* <Upload /> */}
             {props.isAuthenticated && <EntitiesMenu />}
             {props.isAuthenticated && props.isAdmin && <AdminMenu showSwagger={props.isSwaggerEnabled} />}
             {!props.isInProduction && <AccountMenu isAuthenticated={props.isAuthenticated} />}

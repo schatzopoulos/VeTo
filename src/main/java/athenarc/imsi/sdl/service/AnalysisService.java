@@ -26,7 +26,6 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import athenarc.imsi.sdl.config.Constants;
-import athenarc.imsi.sdl.domain.PredefinedMetapath;
 import athenarc.imsi.sdl.repository.PredefinedMetapathRepository;
 import athenarc.imsi.sdl.service.util.FileUtil;
 
@@ -39,53 +38,27 @@ public class AnalysisService {
     private final Logger log = LoggerFactory.getLogger(AnalysisService.class);
 
     @Async
-    public void submit(String id, ArrayList<String> analysis, String metapath, String joinpath, Document constraints,
-                       String constraintsExpression, String primaryEntity, int searchK, int t, int targetId, String folder,
-                       String selectField, int edgesThreshold, double prAlpha, double prTol, int simMinValues,
-                       int lpaIter) throws java.io.IOException, InterruptedException {
+    public void submit(
+        String id, 
+        ArrayList<String> expertSet, 
+        double simThreshold, 
+        int simMinValues, 
+        int simsPerExpert, 
+        double apvWeight,
+        double aptWeight, 
+        int outputSize) throws java.io.IOException, InterruptedException {
 
         // create folder to store results
         String outputDir = FileUtil.createDir(id);
-        String hdfsOutputDir = "";
         String outputLog = FileUtil.getLogfile(id);
 
-        String config = FileUtil.writeConfig(analysis, outputDir, hdfsOutputDir, metapath, joinpath, constraints, constraintsExpression, primaryEntity, searchK, t,
-                targetId, folder, selectField, edgesThreshold, prAlpha, prTol, simMinValues, lpaIter);
+        String config = FileUtil.writeConfig(outputDir, simThreshold, simMinValues, simsPerExpert, apvWeight, aptWeight, outputSize);
+        FileUtil.writeExperts(outputDir, expertSet);
 
         // prepare ranking script arguments
         ProcessBuilder pb = new ProcessBuilder();
 
-        PredefinedMetapath predefinedMetapath = predefinedMetapathRepository.findFirstByDatasetAndMetapathAbbreviation(folder, metapath);
-        if (predefinedMetapath!=null) {
-            PredefinedMetapath.Analytics metapathAnalytics = predefinedMetapath.getAnalytics();
-            PredefinedMetapath.Analytics.TimesUsed frequencies = metapathAnalytics.getTimesUsed();
-            for (String analysisType : analysis) {
-                String analysisTypeNormalized = analysisType.toLowerCase();
-                log.debug("analysis: " + analysisTypeNormalized);
-                switch (analysisTypeNormalized) {
-                    case "ranking":
-                        frequencies.setRanking(frequencies.getRanking() + 1);
-                        break;
-                    case "community detection":
-                        frequencies.setCommunityDetection(frequencies.getCommunityDetection() + 1);
-                        break;
-                    case "similarity join":
-                        frequencies.setSimJoin(frequencies.getSimJoin() + 1);
-                        break;
-                    case "similarity search":
-                        frequencies.setSimSearch(frequencies.getSimSearch() + 1);
-                        break;
-                    default:
-                        break;
-                }
-            }
-            metapathAnalytics.setTimesUsed(frequencies);
-            predefinedMetapath.setAnalytics(metapathAnalytics);
-
-            predefinedMetapathRepository.save(predefinedMetapath);
-        }
-
-        pb.command("/bin/bash", Constants.WORKFLOW_DIR + "analysis/analysis.sh", config);
+        pb.command("/bin/bash", Constants.WORKFLOW_DIR + "entrypoint.sh", config);
 
         // redirect ouput to logfile
         File out = new File(outputLog);
@@ -98,7 +71,7 @@ public class AnalysisService {
         // write to file that the job has finished
         FileWriter fileWriter = new FileWriter(outputLog, true);
         PrintWriter printWriter = new PrintWriter(fileWriter);
-        printWriter.print("Exit Code\t" + exitCode);
+        printWriter.print(exitCode + "\tExit Code");
         printWriter.close();
 
         log.debug("Analysis task for id: " + id + " exited with code: " + exitCode);
@@ -202,15 +175,8 @@ public class AnalysisService {
         return docs;
     }
 
-    public double getProgress(ArrayList<String> analyses, int stage, int step) {
-        int analysesSize = analyses.size();
-
-        // do count combinations Ranking-CD and CD-Ranking as extra analyses in progress
-        if (analyses.contains("Ranking") && analyses.contains("Community Detection")) {
-            analysesSize -= 2;
-        }
-
-        return (step / 3.0) * (100.0 / (analysesSize + 1)) + (stage - 1) * (100.0 / (analysesSize + 1));
+    public double getProgress(int step) {
+        return (step / 7.0) * 100.0;
     }
 
     public Document getCommunityCounts(String detailsFile, List<Document> docs)

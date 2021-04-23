@@ -54,28 +54,13 @@ public final class FileUtil {
         return Constants.BASE_PATH + "/" + uuid + "/" + Constants.CONFIG_FILE;
     }
 
-    public static String getOutputFile(String uuid, String analysis) {
-        String resultsFile = Constants.BASE_PATH + "/" + uuid + "/";
-
-        if (analysis.equals("Ranking")) {
-            resultsFile += Constants.FINAL_RANKING_OUT;
-        } else if (analysis.equals("Community Detection")) {
-            resultsFile += Constants.FINAL_COMMUNITY_OUT;
-        } else if (analysis.equals("Similarity Join")) {
-            resultsFile += Constants.FINAL_SIM_JOIN_OUT;
-        } else if (analysis.equals("Similarity Search")) {
-            resultsFile += Constants.FINAL_SIM_SEARCH_OUT;
-        } else if (analysis.equals("Ranking - Community Detection")) {
-            resultsFile += Constants.RANKING_COMMUNITY_OUT;
-        } else if (analysis.equals("Community Detection - Ranking")) {
-            resultsFile += Constants.COMMUNITY_RANKING_OUT;
-        }
-
-        return resultsFile;
+    public static String getOutputFile(String uuid) {
+        return Constants.BASE_PATH + "/" + uuid + "/" + Constants.FINAL_OUTPUT;
     }
 
     public static String getCommunityDetailsFile(String uuid) {
-        return Constants.BASE_PATH + "/" + uuid + "/" + Constants.COMMUNITY_DETAILS;
+        // return Constants.BASE_PATH + "/" + uuid + "/" + Constants.COMMUNITY_DETAILS;
+        return "";
     }
 
 
@@ -114,80 +99,33 @@ public final class FileUtil {
     }
 
     public static String writeConfig(
-        ArrayList<String> analyses,
         String outputDir,
-        String hdfsOutputDir,
-        String metapath,
-        String joinpath,
-        Document constraints,
-        String constraintsExpression,
-        String primaryEntity,
-        int searchK,
-        int t,
-        int targetId,
-        String folder,
-        String selectField,
-        int edgesThreshold,
-        double prAlpha,
-        double prTol,
+        double simThreshold,
         int simMinValues,
-        int lpaIter
+        int simsPerExpert, 
+        double apvWeight,
+        double aptWeight, 
+        int outputSize
     ) throws IOException {
 
-        Document config = new Document();
+        Document config = new Document();       
+        
+        config.put("apv_hin", Constants.DATA_DIR + "APV-HIN.csv");
+        config.put("apt_hin", Constants.DATA_DIR + "APT-HIN.csv");
+        config.put("author_names", Constants.DATA_DIR + "A.csv");
+        config.put("expert_set", outputDir + "/" + Constants.EXPERT_SET);
 
-        // Input & Output files configuration
-        config.put("indir", Constants.HDFS_DATA_DIR + folder + "/nodes/");
-        config.put("irdir", Constants.HDFS_DATA_DIR + folder + "/relations/");
-        config.put("indir_local", Constants.DATA_DIR + folder + "/nodes/");
+        config.put("apv_sims_dir", outputDir + "/" + Constants.APV_SIMS_DIR);
+        config.put("apt_sims_dir", outputDir + "/" + Constants.APT_SIMS_DIR);
+        config.put("veto_output", outputDir + "/" + Constants.VETO_OUTPUT);
+        config.put("final_output", outputDir + "/" + Constants.FINAL_OUTPUT);
 
-        config.put("hin_out", hdfsOutputDir + "/" + Constants.HIN_OUT);
-        config.put("join_hin_out", hdfsOutputDir + "/" + Constants.JOIN_HIN_OUT);
-
-        config.put("hdfs_out_dir", hdfsOutputDir);
-        config.put("local_out_dir", outputDir);
-			
-        config.put("ranking_out", hdfsOutputDir + "/" + Constants.RANKING_OUT);
-        config.put("communities_out", hdfsOutputDir + "/" + Constants.COMMUNITY_DETECTION_OUT);
-        config.put("communities_details", outputDir + "/" + Constants.COMMUNITY_DETAILS);
-
-        config.put("sim_search_out", hdfsOutputDir + "/" + Constants.SIM_SEARCH_OUT);
-        config.put("sim_join_out", hdfsOutputDir + "/" + Constants.SIM_JOIN_OUT);
-
-        config.put("final_ranking_out", outputDir + "/" + Constants.FINAL_RANKING_OUT);
-        config.put("final_communities_out", outputDir + "/" + Constants.FINAL_COMMUNITY_OUT);
-        config.put("final_sim_search_out", outputDir + "/" + Constants.FINAL_SIM_SEARCH_OUT);
-        config.put("final_sim_join_out", outputDir + "/" + Constants.FINAL_SIM_JOIN_OUT);
-
-        config.put("final_ranking_community_out", outputDir + "/" + Constants.RANKING_COMMUNITY_OUT);
-        config.put("final_community_ranking_out", outputDir + "/" + Constants.COMMUNITY_RANKING_OUT);
-
-        config.put("dataset", folder);
-        config.put("primary_entity", primaryEntity);
-        config.put("select_field", selectField);
-
-        // Ranking params
-        config.put("analyses", analyses);
-        config.put("pr_alpha", prAlpha);
-        config.put("pr_tol", prTol);
-        config.put("edgesThreshold", edgesThreshold);
-
-        // Similarity Search & Join params
-        config.put("target_id", targetId);
-        config.put("searchK", searchK);
-
-        config.put("t", t);
+        config.put("sim_threshold", simThreshold);
         config.put("sim_min_values", simMinValues);
-        config.put("community_detection_iter", lpaIter);
-
-        // Query specific params
-        Document query = new Document();
-        query.put("metapath", metapath);
-        query.put("joinpath", joinpath);
-        query.put("constraints", constraints);
-        query.put("constraintsExpression", constraintsExpression);
-
-        config.put("query", query);
+        config.put("sims_per_expert", simsPerExpert);
+        config.put("apv_weight", apvWeight);
+        config.put("apt_weight", aptWeight);
+        config.put("output_size", outputSize);
 
         // write json to config file
         String configFile = outputDir + "/" + Constants.CONFIG_FILE;
@@ -197,6 +135,16 @@ public final class FileUtil {
         printWriter.close();
 
         return configFile;
+    }
+
+    public static void writeExperts(String outputDir, ArrayList<String> experts) throws IOException {
+        String expertsFile = outputDir + "/" + Constants.EXPERT_SET;
+        FileWriter fileWriter = new FileWriter(expertsFile);
+        PrintWriter printWriter = new PrintWriter(fileWriter);
+        for (String expert : experts) {
+            printWriter.println(expert);
+        }
+        printWriter.close();
     }
 
     public static String[] getHeaders(String filename) throws FileNotFoundException, IOException {
@@ -242,13 +190,6 @@ public final class FileUtil {
           }
         });
         return Arrays.asList(directories);
-    }
-
-    public static int copyToHdfs(String dataset) throws java.io.IOException, InterruptedException {
-        ProcessBuilder pb = new ProcessBuilder();
-        pb.command("hadoop", "dfs", "-put", Constants.DATA_DIR + dataset, Constants.HDFS_DATA_DIR);
-        Process process = pb.start();
-        return process.waitFor();
     }
 
     public static boolean remove(String filename) {

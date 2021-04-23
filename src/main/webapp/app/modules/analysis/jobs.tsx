@@ -49,11 +49,10 @@ export class Jobs extends React.Component<IHomeProps> {
             clearInterval(this.polling);
         }
 
-        _.forOwn(this.props.status, (completed, analysis) => {
-            if ((completed && ((prevProps.status && !prevProps.status[analysis]) || (!prevProps.status))) && !this.props.progressMsg.startsWith('Warning')) {
-                this.props.getResults(analysis, this.props.uuid);
-            }
-        });
+        if (prevProps.loading && !this.props.loading) {
+
+            this.props.getResults(this.props.uuid);
+        }
     }
 
     componentWillUnmount() {
@@ -65,8 +64,8 @@ export class Jobs extends React.Component<IHomeProps> {
         this.props.getJob(this.state.jobId);
     }
 
-    loadMoreResults(analysis, nextPage) {
-        this.props.getMoreResults(analysis, this.props.uuid, nextPage);
+    loadMoreResults(nextPage) {
+        this.props.getMoreResults(this.props.uuid, nextPage);
     }
 
     onChangeInput(e) {
@@ -117,7 +116,6 @@ export class Jobs extends React.Component<IHomeProps> {
                                     <Col md='2'>
                                         <Button color="success" disabled={this.props.loading || this.state.jobId === ''}
                                                 onClick={this.execute.bind(this)}>
-                                            {/* <FontAwesomeIcon icon="search" />  */}
                                             Search
                                         </Button>
                                     </Col>
@@ -128,59 +126,40 @@ export class Jobs extends React.Component<IHomeProps> {
                         </Row>
 
                     </Col>
-
                     <Col md='12'>
-                        <Container>
-                            {(this.props.error || this.props.description || this.props.loading) &&
-                            <Card className={'my-4 pt-0'}>
-                                <Row className={'justify-content-end'}>
-                                    <h5 className={'p-2'}><strong className={'text-muted'}>Analysis
-                                        ID: {this.props.uuid}</strong></h5>
-                                </Row>
-                                <br />
-                                {
-                                    (this.props.error) &&
-                                    <Row>
-                                        <Col md={{ size: 6, offset: 3 }}>
-                                            {this.props.error}
-                                        </Col>
-                                    </Row>
-                                }
-                                <br />
-                                {
-                                    ((this.props.description || '').startsWith('Warning')) &&
-                                    <Row className="small-red text-center">
-                                        <Col>
-                                            {this.props.description}
-                                        </Col>
-                                    </Row>
-                                }
-                                {
-                                    (this.props.loading) &&
-                                    <Row className="small-grey text-center">
-                                        <Col>
-                                            {this.getDescriptionString()}
-                                            {this.props.progress && this.props.progress<100?<Button size={'sm'} className={'badge btn-danger'}><FontAwesomeIcon icon={faTimes}/> Cancel analysis</Button>:''}
-                                        </Col>
-                                    </Row>
-                                }
-                                {
-                                    (this.props.loading) && <Progress animated color="info"
-                                                                      value={this.props.progress}>{this.props.progressMsg}</Progress>
-                                }
-                                <ResultsPanel
-                                    uuid={this.props.uuid}
-                                    description={this.getDescriptionString()}
-                                    results={this.props.results}
-                                    analysis={this.props.analysis}
-                                    analysisId={this.props.uuid}
-                                    loadMore={this.loadMoreResults.bind(this)}
-                                    rerun={this.execute.bind(this)}
-                                />
-                            </Card>
-                            }
-                        </Container>
-                    </Col>
+                        <Row>
+                            <Col md='12'>
+                                <Container>
+                                    {this.props.uuid &&
+                                    <div className={'my-4 pt-0'}>
+
+                                        {this.props.error &&
+                                        <Row>
+                                            <Col xs={'12'} className={'text-danger'}>{this.props.error}</Col>
+                                        </Row>
+                                        }
+                                        {
+                                            (this.props.loading) && <Progress animated color="info"
+                                                                            value={this.props.progress}>{this.props.progressMsg}</Progress>
+                                        }
+                                        {
+
+                                        (!_.isEmpty(this.props.results)) && 
+                                            <div>
+                                                <ResultsPanel
+                                                    uuid={this.props.uuid}
+                                                    results={this.props.results}
+                                                    loadMore={this.loadMoreResults.bind(this)}
+                                                />
+                                            </div>
+                                        }
+                                    </div>
+                                    }
+
+                                </Container>
+                            </Col>
+                        </Row>
+                </Col>
                 </Row>
             </Container>
         );

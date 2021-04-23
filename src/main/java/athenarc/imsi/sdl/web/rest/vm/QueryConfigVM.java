@@ -3,9 +3,6 @@ package athenarc.imsi.sdl.web.rest.vm;
 import java.util.ArrayList;
 
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
-
-import org.bson.Document;
 
 /**
  * View Model object for storing a user's credentials.
@@ -13,183 +10,80 @@ import org.bson.Document;
 public class QueryConfigVM {
 
     @NotNull
-    @Size(min = 1, max = 50)
-    private String metapath;
+    private ArrayList<String> expertSet;
 
     @NotNull
-    @Size(min = 1, max = 50)
-    private String joinpath;
+    private double simThreshold;
 
     @NotNull
-    private String folder;
-
-    @NotNull
-    private Document constraints;
-
-    @NotNull
-    private String selectField;
-
-    @NotNull
-    private ArrayList<String> analysis;
-
-    private String constraintsExpression;
-
-    @NotNull
-    private String primaryEntity;
-
-    private int searchK;
-    private int t;
-    private int minValues;
-    private int targetId;
-    private int edgesThreshold;
-    private double prAlpha;
-    private double prTol;
     private int simMinValues;
-    private int lpaIter;
 
-    public void setConstraintsExpression(String constraintsExpression) {
-        this.constraintsExpression=constraintsExpression;
+    @NotNull
+    private int simsPerExpert;
+    
+    @NotNull
+    private double apvWeight;
+
+    @NotNull
+    private double aptWeight;
+
+    @NotNull
+    private int outputSize;
+    
+    public ArrayList<String> getExpertSet() {
+        return expertSet;
     }
 
-    public String getConstraintsExpression() {
-        return this.constraintsExpression;
+    public void setExpertSet(final ArrayList<String> expertSet) {
+        this.expertSet = expertSet;
+    }
+
+    public double getSimThreshold() {
+        return simThreshold;
+    }
+
+    public void setSimThreshold(final double simThreshold) {
+        this.simThreshold = simThreshold;
     }
 
     public int getSimMinValues() {
-        return this.simMinValues;
+        return simMinValues;
     }
 
-    public void setSimMinValues(int simMinValues) {
+    public void setSimMinValues(final int simMinValues) {
         this.simMinValues = simMinValues;
     }
 
-    public int getLpaIter() {
-        return this.lpaIter;
+    public int getSimsPerExpert() {
+        return simsPerExpert;
     }
 
-    public void setLpaIter(int lpaIter) {
-        this.lpaIter = lpaIter;
+    public void setSimsPerExpert(int simsPerExpert) {
+        this.simsPerExpert = simsPerExpert;
     }
 
-    public String getPrimaryEntity() {
-        return primaryEntity;
+    public double getApvWeight() {
+        return apvWeight;
     }
 
-    public void setPrimaryEntity(String primaryEntity) {
-        this.primaryEntity = primaryEntity;
+    public void setApvWeight(double apvWeight) {
+        this.apvWeight = apvWeight;
     }
 
-    public double getPrAlpha() {
-        return this.prAlpha;
+    public double getAptWeight() {
+        return aptWeight;
     }
 
-    public void setPrAlpha(double prAlpha) {
-        this.prAlpha = prAlpha;
+    public void setAptWeight(double aptWeight) {
+        this.aptWeight = aptWeight;
     }
 
-    public double getPrTol() {
-        return this.prTol;
+    public int getOutputSize() {
+        return outputSize;
     }
 
-    public void setPrTol(double prTol) {
-        this.prTol = prTol;
+    public void setOutputSize(int outputSize) {
+        this.outputSize = outputSize;
     }
 
-    public int getEdgesThreshold() {
-        return this.edgesThreshold;
-    }
-
-    public void setEdgesThreshold(int edgesThreshold) {
-        this.edgesThreshold = edgesThreshold;
-    }
-
-    public String getMetapath() {
-        return metapath;
-    }
-
-    public int getSearchK() {
-        return this.searchK;
-    }
-
-    public void setSearchK(int searchK) {
-        this.searchK = searchK;
-    }
-    public int getT() {
-        return this.t;
-    }
-
-    public void setT(int t) {
-        this.t = t;
-    }
-
-    public int getMinValues() {
-        return this.minValues;
-    }
-
-    public void setMinValues(int minValues) {
-        this.minValues = minValues;
-    }
-
-    public void setMetapath(String metapath) {
-        this.metapath = metapath;
-    }
-
-    public Document getConstraints() {
-        return this.constraints;
-    }
-
-    public void setConstraints(Document constraints) {
-        this.constraints = constraints;
-    }
-
-    public String getFolder() {
-        return this.folder;
-    }
-
-    public void setFolder(String _folder) {
-        this.folder = _folder;
-    }
-
-    public String getSelectField() {
-        return this.selectField;
-    }
-
-    public void setSelectField(String selectField) {
-        this.selectField = selectField;
-    }
-
-    public int getTargetId() {
-        return this.targetId;
-    }
-
-    public void setTargetId(int targetId) {
-        this.targetId = targetId;
-    }
-
-    public ArrayList<String> getAnalysis() {
-        return this.analysis;
-    }
-
-    public void setAnalysis(ArrayList<String> analysis) {
-        this.analysis = analysis;
-    }
-
-    public String getJoinpath() {
-        return this.joinpath;
-    }
-
-    public void setJoinpath(String joinpath) {
-        this.joinpath = joinpath;
-    }
-
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("RankingParamsVM {");
-        sb.append("\tmetapath: " + this.metapath);
-        sb.append("\tconstraint: " + this.constraints.toString());
-        sb.append("\tfolder: " + this.folder);
-        sb.append("}");
-        return sb.toString();
-    }
 }

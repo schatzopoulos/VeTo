@@ -9,10 +9,10 @@ const Footer = props => (
     <div className="footer page-content">
         <Row>
             <Col md="6" className={'text-left'}>
-                <p>ATHENA Research Center &copy; 2020</p>
+                <p>ATHENA Research Center &copy; 2021</p>
             </Col>
             <Col md={'6'} className={'text-right'}>
-                <FontAwesomeIcon icon={faGithub} /> Link to <a href={'https://github.com/schatzopoulos/SciNeM'} target={'_blank'}>SciNeM
+                <FontAwesomeIcon icon={faGithub} /> Link to <a href={'https://github.com/schatzopoulos/VeTo'} target={'_blank'}>VeTo
                 code</a>
             </Col>
         </Row>

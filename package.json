@@ -22,6 +22,7 @@
     "loaders.css": "0.1.2",
     "lodash": "^4.17.21",
     "moment": "2.24.0",
+    "rc-slider": "^9.7.2",
     "react": "16.8.5",
     "react-bootstrap-typeahead": "^4.0.0",
     "react-chartjs-2": "^2.11.1",

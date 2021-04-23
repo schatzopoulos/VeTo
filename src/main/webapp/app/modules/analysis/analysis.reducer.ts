@@ -63,7 +63,6 @@ export default (state: AnalysisState = initialState, action): AnalysisState => {
         progressMsg: null,
         description: null,
         error: errorMsg,
-        analysis: null,
         results: {}
       };
     }
@@ -71,59 +70,35 @@ export default (state: AnalysisState = initialState, action): AnalysisState => {
       return {
         ...state,
         error: null,
-        uuid: action.payload.data.id,
-        analysis: action.payload.data.analysis
+        uuid: action.payload.data.id
       };
     }
     case SUCCESS(ACTION_TYPES.GET_STATUS): {
       const data = action.payload.data;
       return {
         ...state,
-        loading: Object.values(data.completed).some(v => v === false), // when all analysis tasks have been completed
-        status: data.completed,
+        loading: data.progress !== 100,
         progress: data.progress,
-        progressMsg: `${data.stage}: ${data.step}`,
-        analysesParameters: data.analysesParameters,
-        description: data.description,
+        progressMsg: data.description,
         error: null
       };
     }
     case SUCCESS(ACTION_TYPES.GET_RESULTS): {
-      const data = action.payload.data;
-      const results = { ...state.results };
-      const indexedDocs = _.map(data.docs, (doc, resultIndex) => {
-        return { ...doc, resultIndex };
-      });
-      results[data.analysis] = {
-        docs: indexedDocs,
-        meta: data._meta,
-        hin: data.hin || null
-      };
-
       return {
         ...state,
         error: null,
-        results
+        results: action.payload.data
       };
     }
     case SUCCESS(ACTION_TYPES.GET_MORE_RESULTS): {
       const data = action.payload.data;
 
-      const results = { ...state.results };
-      const existingDocs = results[data.analysis]['docs'];
-      const indexedDocs = _.map(data.docs, (doc, resultIndex) => {
-        return { ...doc, resultIndex: existingDocs.length + resultIndex };
-      });
-      const meta = data._meta;
+      let results = { ...state.results };
+      const existingDocs = results['docs'];
 
-      // merge old with new community details
-      if (_.get(results[data.analysis], 'meta.community_counts') && _.get(data, '_meta.community_counts')) {
-        meta['community_counts'] = { ...results[data.analysis].meta.community_counts, ...data._meta.community_counts };
-      }
-
-      results[data.analysis] = {
-        docs: [...existingDocs, ...indexedDocs],
-        meta
+      results = {
+        docs: [...existingDocs, ...data.docs],
+        _meta: data._meta
       };
 
       return {
@@ -179,74 +154,40 @@ export const getStatus = id => {
   };
 };
 
-export const getResults = (analysis, id) => {
+export const getResults = id => {
   return {
     type: ACTION_TYPES.GET_RESULTS,
     payload: axios.get(`${analysisAPIUrl}/get`, {
       params: {
-        id,
-        analysis
+        id
       }
     })
   };
 };
 
-export const getMoreResults = (analysis, id, page) => {
+export const getMoreResults = (id, page) => {
   return {
     type: ACTION_TYPES.GET_MORE_RESULTS,
     payload: axios.get(`${analysisAPIUrl}/get`, {
       params: {
         id,
-        analysis,
         page
       }
     })
   };
 };
 
-export const analysisRun = (
-  analysis,
-  metapath,
-  joinpath,
-  constraints,
-  constraintsExpression,
-  primaryEntity,
-  folder,
-  selectField,
-  targetId,
-  edgesThreshold,
-  prTol,
-  prAlpha,
-  simMinValues,
-  searchK,
-  hashTables,
-  lpaIter,
-  w,
-  minValues
-) => {
-  const payload = {
-    searchK,
-    constraintsExpression,
-    primaryEntity,
-    t: hashTables,
-    minValues: 5,
-    targetId,
-    analysis,
-    metapath,
-    joinpath,
-    folder,
-    selectField,
-    edgesThreshold,
-    prAlpha,
-    prTol,
-    simMinValues,
-    lpaIter
-  };
-
-  formatConstraints(payload, constraints);
-
+export const analysisRun = (expertSet, simThreshold, simMinValues, simsPerExpert, apvWeight, aptWeight, outputSize) => {
   return {
     type: ACTION_TYPES.ANALYSIS_SUBMIT,
-    payload: axios.post(`${analysisAPIUrl}/submit`, payload)
+    payload: axios.post(`${analysisAPIUrl}/submit`, {
+      expertSet,
+      simThreshold,
+      simMinValues,
+      simsPerExpert,
+      apvWeight,
+      aptWeight,
+      outputSize
+    })
   };
 };

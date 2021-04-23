@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.bson.Document;
@@ -17,18 +16,15 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
 
 import athenarc.imsi.sdl.service.DatasetsService;
 import athenarc.imsi.sdl.service.util.FileUtil;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
-import springfox.documentation.annotations.ApiIgnore;
 
 /**
  * RankingResource controller
@@ -41,51 +37,6 @@ public class DatasetsResource {
 
     @Autowired
     private final DatasetsService datasetsService = new DatasetsService();
-
-    /**
-     * POST submit
-     */
-    @ApiIgnore
-    @PostMapping("/upload")
-    public Document upload(@RequestParam("file") MultipartFile file) {
-        String filename = file.getOriginalFilename();
-
-        if (file.isEmpty()) {
-            throw new RuntimeException("Error uploading " + filename);
-        }
-
-        try {
-
-            String zipFile = datasetsService.upload(filename, file.getBytes());
-
-            List<String> initialDatasets = FileUtil.getLocalDatasets();
-
-            if (FileUtil.unzip(zipFile) != 0) {
-                throw new RuntimeException("Error unzipping " + zipFile);
-            }
-
-            List<String> currentDatasets = FileUtil.getLocalDatasets();
-
-            // find the folder that was just created - though unzip
-            List<String> diff = new ArrayList(currentDatasets);
-            diff.removeAll(initialDatasets);
-            String newDataset = diff.get(0);
-
-            // copy that folder to hdfs
-            if (FileUtil.copyToHdfs(newDataset) != 0) {
-                throw new RuntimeException("Error copying to HDFS " + zipFile);
-            }
-
-            if (!FileUtil.remove(zipFile)) {
-                throw new RuntimeException("Error removing zip  " + zipFile);
-            }
-
-        } catch (IOException | InterruptedException e) {
-            throw new RuntimeException("Error uploading " + filename);
-        }
-
-        return new Document("status", "success");
-    }
 
     /**
      * GET status
@@ -149,7 +100,7 @@ public class DatasetsResource {
     public ResponseEntity<Resource> download(String analysisType, String id) {
 
         try {
-            String downloadFile = FileUtil.getOutputFile(id, analysisType);
+            String downloadFile = FileUtil.getOutputFile(id);
             File fd = new File(downloadFile);
             InputStreamResource resource = new InputStreamResource(new FileInputStream(fd));
 
