@@ -87,8 +87,8 @@ export class ResultsPanel extends React.Component<IResultsPanelProps> {
                         return <tr key={index}>
                             <td>{row['name']}</td>
                             <td>{parseFloat(row['Score']).toFixed(4) }</td>
-                            <td><Progress value={aptScore}>{aptScore}%</Progress></td>
-                            <td><Progress value={apvScore}>{apvScore}%</Progress></td>
+                            <td><Progress value={aptScore} color='info'>{aptScore}%</Progress></td>
+                            <td><Progress value={apvScore} color='info'>{apvScore}%</Progress></td>
                         </tr>
                     })
                     }

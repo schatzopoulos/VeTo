@@ -10,7 +10,7 @@ services:
       - SPRING_DATA_MONGODB_DATABASE=SpOT
       - JHIPSTER_SLEEP=30 # gives time for other services to boot before the application
     ports:
-      - 8181:8181
+      - 8282:8282
   spot-mongodb:
     extends:
       file: mongodb.yml

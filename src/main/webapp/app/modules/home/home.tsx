@@ -33,8 +33,8 @@ import axios from 'axios';
 import { AsyncHook } from 'async_hooks';
 import { analysisRun, getMoreResults, getResults, getStatus } from '../analysis/analysis.reducer';
 import ResultsPanel from '../analysis/results/results';
-import Slider from 'rc-slider';
-import 'rc-slider/assets/index.css';
+import 'react-bootstrap-range-slider/dist/react-bootstrap-range-slider.css';
+import RangeSlider from 'react-bootstrap-range-slider';
 
 export interface IHomeProps extends StateProps, DispatchProps {
     loading: boolean;
@@ -209,13 +209,16 @@ export class Home extends React.Component<IHomeProps> {
 			this.state.outputSize,
         );
 	}
-	handleAptWeight(value) {
+	handleAptWeight(e) {
+		const value = e.target.value;
 		this.setState({
 			aptWeight: value,
 			apvWeight: 100 - value,
 		});
 	}
-	handleApvWeight(value) {
+	handleApvWeight(e) {
+		const value = e.target.value;
+
 		this.setState({
 			aptWeight: 100 - value,
 			apvWeight: value
@@ -265,16 +268,17 @@ export class Home extends React.Component<IHomeProps> {
 					</Col>
 				</Row>
 				<Row style={{paddingBottom: '20px', paddingTop: '20px'}}>
-						<Col md='4'>
+						<Col md='6'>
 							<h5>Similarity weights</h5>
-							Topics <Slider min={0} marks={this.marks} included={false} value={this.state.aptWeight} defaultValue={0.5} onChange={this.handleAptWeight.bind(this)} />
+							<RangeSlider value={this.state.aptWeight} onChange={this.handleAptWeight.bind(this)} tooltip='on' tooltipLabel={() => `Topics ${this.state.aptWeight}% - Venues ${this.state.apvWeight}%`} variant='info'/>
 							{/* <br/><small style={{color: 'grey'}}>Similarity weights for Topics and Venue should sum up to 1.</small> */}
-
+							
 						</Col>
-						<Col md='4'>
+						<Col md='2'></Col>
+						{/* <Col md='4'>
 							<h5>&nbsp;</h5>
-							Venues <Slider min={0} marks={this.marks} included={false} value={this.state.apvWeight} defaultValue={0.5} onChange={this.handleApvWeight.bind(this)}/>
-						</Col>
+							Venues <RangeSlider value={this.state.apvWeight} step={10} onChange={this.handleApvWeight.bind(this)} tooltip='on' />
+						</Col> */}
 						<Col md='4'>
 						
 							<Button outline size='sm' color="info" title="Advanced Options"
@@ -448,7 +452,7 @@ export class Home extends React.Component<IHomeProps> {
                     <Col md='12' style={{ paddingTop: '20px' }}>
                         <Row>
                             <Col md={{ size: 2, offset: 5 }}>
-                                <Button block color="success"
+                                <Button block color="info"
                                         disabled={this.props.loading || _.isEmpty(this.state.expertSet) }
                                         onClick={this.execute.bind(this)}>
                                     <FontAwesomeIcon icon="play" /> Execute
