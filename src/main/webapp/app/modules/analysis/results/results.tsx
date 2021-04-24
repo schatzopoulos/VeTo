@@ -41,41 +41,44 @@ export class ResultsPanel extends React.Component<IResultsPanelProps> {
         super(props);
     }
 
-    downloadResults(onlySelected) {
-        // if (!onlySelected) {
-            axios.get('api/datasets/download', {
-                params: {
-                    id: this.props.uuid
-                },
-                responseType: 'blob'
-            }).then(response => {
-                FileSaver.saveAs(response.data, 'results.csv');
-            });
-        // } else {
-        //     const results = this.props.results[this.state.activeAnalysis];
-        //     const headers = results.meta.headers.filter(header => header !== 'resultIndex');
-        //     const tsvRows = [headers];
-        //     this.state.selectedEntries.forEach(entry => {
-        //         const docObject = results.docs.find(doc => doc.resultIndex === entry);
-        //         const docRow = headers.map(header => docObject[header]);
-        //         tsvRows.push(docRow);
-        //     });
-        //     const tsvContent = tsvRows.map(e => e.join('\t')).join('\n');
-        //     const conditionsBlob = new Blob([tsvContent]);
-        //     FileSaver.saveAs(conditionsBlob, 'results.csv');
-        // }
-    }
+    downloadResults() {
+        axios.get('api/datasets/download', {
+            params: {
+                id: this.props.uuid
+            },
+            responseType: 'blob'
+        }).then(response => {
+            FileSaver.saveAs(response.data, 'results.csv');
+        });
+     }
 
     render() {
         // console.warn(this.props.results);
         return (<div>
+            <Row>
+                <Col md={{ offset: 8, size: 4}} style={{ textAlign: 'right', paddingRight: 0, paddingBottom: '10px'}}>
+                    <Button
+                        color="info"
+                        size='sm'
+                        className={'float-right'}
+                        // style={{ marginLeft: '15px' }}
+                        title={'Download all results in a CSV file'}
+                        outline
+                        onClick={this.downloadResults.bind(this, false)}
+                    >
+                        <FontAwesomeIcon icon="download" /> Download all
+                    </Button>
+                </Col>
+            </Row>
+            
+            <Row>
             <Table size="sm">
                 <thead>
                 <tr>
                     <th>Expert Name</th>
                     <th>Score</th>
-                    <th>Topic Contribution</th>
-                    <th>Venue Contribution</th>
+                    <th style={{width: '20%'}}>Topic Contribution</th>
+                    <th style={{width: '20%'}}>Venue Contribution</th>
 
                 </tr>
                 </thead>
@@ -87,7 +90,7 @@ export class ResultsPanel extends React.Component<IResultsPanelProps> {
                         return <tr key={index}>
                             <td>{row['name']}</td>
                             <td>{parseFloat(row['Score']).toFixed(4) }</td>
-                            <td><Progress value={aptScore} color='info'>{aptScore}%</Progress></td>
+                            <td ><Progress value={aptScore} color='info'>{aptScore}%</Progress></td>
                             <td><Progress value={apvScore} color='info'>{apvScore}%</Progress></td>
                         </tr>
                     })
@@ -106,6 +109,7 @@ export class ResultsPanel extends React.Component<IResultsPanelProps> {
                 </Row>
 
             }
+            </Row>
         </div>);
     }
 };

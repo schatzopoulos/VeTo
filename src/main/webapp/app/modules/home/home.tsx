@@ -289,7 +289,7 @@ export class Home extends React.Component<IHomeProps> {
 							<Modal isOpen={this.state.configurationActive}
 								toggle={this.toggleConfiguration.bind(this)} className={'w-75 mw-100'}>
 								<ModalHeader>
-									Coinfiguration
+									Configuration
 								</ModalHeader>
 								<ModalBody>
 									<Container>
