@@ -1,6 +1,6 @@
 <p align="center">
-  <img src="https://github.com/schatzopoulos/SciNeM/blob/master/src/main/webapp/content/images/scinem_logo_purple.png?raw=true" width="400px"/>
-  <h1 align="center">Data Science Tool for Heterogeneous Network Mining (SciNeM)</h1>
+<!--   <img src="https://github.com/schatzopoulos/SciNeM/blob/master/src/main/webapp/content/images/scinem_logo_purple.png?raw=true" width="400px"/> -->
+  <h1 align="center">VeTo-web: Expert Set Expansion in Academia</h1>
   <br />
 </p>
 
