@@ -123,16 +123,16 @@ To package your application as a war in order to deploy it to an application ser
 
 You can also fully dockerize your application and all the services that it depends on.
 To achieve this, first clone this repository:
-    git clone https://github.com/schatzopoulos/VeTo.git VeTo-webapp
+    `git clone https://github.com/schatzopoulos/VeTo.git VeTo-webapp`
 
 Build a docker image of the main application:
-    ./mvnw -Pprod verify jib:dockerBuild
+    `./mvnw -Pprod verify jib:dockerBuild`
 
 Then, build on this docker image; clone veto-workflows and install required packages:
-    docker build -t schatzop/veto-app:latest .
+    `docker build -t schatzop/veto-app:latest .`
 
 At last, replace the path placeholders in src/main/docker/app.yml and run the application:
-    docker-compose -f src/main/docker/app.yml up -d
+    `docker-compose -f src/main/docker/app.yml up -d`
 
 For more information refer to [Using Docker and Docker-Compose][], this page also contains information on the docker-compose sub-generator (`jhipster docker-compose`), which is able to generate docker configurations for one or several JHipster applications.
 
