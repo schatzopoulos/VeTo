@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.CrossOrigin;
 
 import athenarc.imsi.sdl.service.AnalysisService;
 import athenarc.imsi.sdl.service.util.FileUtil;
@@ -33,6 +34,7 @@ import io.swagger.annotations.ExampleProperty;
 /**
  * RankingResource controller
  */
+@CrossOrigin
 @RestController
 @RequestMapping("/api/analysis")
 public class AnalysisResource {
