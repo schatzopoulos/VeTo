@@ -11,7 +11,7 @@ This application was generated using JHipster 6.5.1, you can find documentation 
 ### Clone
 
 ```
-git clone --recursive https://github.com/schatzopoulos/SciNeM.git
+git clone --recursive https://github.com/schatzopoulos/VeTo.git
 ```
 
 ### Dependencies
